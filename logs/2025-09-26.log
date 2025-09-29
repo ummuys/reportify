@@ -1,0 +1,57 @@
+{"level":"info","component":"srv","script":"select * from select","time":"2025-09-26T06:27:26.0426455Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T06:33:59.4056886Z","message":"Turn down the server"}
+{"level":"info","component":"srv","script":"select * from select","time":"2025-09-26T06:39:58.3650616Z","message":"catch new script"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:40:46.3285855Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T06:40:52.0559189Z","message":"Turn down the server"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:41:23.626884Z","message":"catch new script"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:41:25.343677Z","message":"catch new script"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:41:28.0064987Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T06:41:42.8729767Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T06:41:47.8744197Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:50:22.5436965Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T06:52:59.200709Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T06:53:04.2020077Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T06:53:11.9104759Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T07:00:25.4729538Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:00:30.4740105Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:00:49.3108899Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T07:01:35.2432729Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:01:40.2435992Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:02:04.8568822Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T07:06:49.6244301Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:06:54.625572Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:10:27.1455538Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T07:12:36.2764134Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:12:41.2791155Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:12:57.0609896Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T07:13:03.7417617Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:13:08.745603Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:13:26.7836777Z","message":"catch new script"}
+{"level":"debug","component":"svc","evt":"going to main page","time":"2025-09-26T07:13:27.0182121Z"}
+{"level":"debug","component":"svc","evt":"try to paste login data","time":"2025-09-26T07:13:36.0638778Z"}
+{"level":"debug","component":"svc","evt":"login are succsessful","time":"2025-09-26T07:13:36.08621Z"}
+{"level":"info","component":"app","time":"2025-09-26T07:13:58.0030227Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:14:03.0049578Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T07:43:50.2710321Z","message":"catch new script"}
+{"level":"debug","component":"sl","evt":"going to main page","time":"2025-09-26T07:44:10.5956561Z"}
+{"level":"debug","component":"sl","evt":"try to paste login data","time":"2025-09-26T07:44:12.2661139Z"}
+{"level":"debug","component":"sl","evt":"login are succsessful","time":"2025-09-26T07:44:12.2933898Z"}
+{"level":"info","component":"app","time":"2025-09-26T07:51:04.6760322Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T07:51:09.6779201Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T08:37:36.9194618Z","message":"catch new script"}
+{"level":"debug","component":"sl","evt":"going to main page","time":"2025-09-26T08:38:23.0406381Z"}
+{"level":"debug","component":"sl","evt":"try to paste login data","time":"2025-09-26T08:38:24.6987576Z"}
+{"level":"debug","component":"sl","evt":"login are succsessful","time":"2025-09-26T08:38:24.732903Z"}
+{"level":"info","component":"app","time":"2025-09-26T08:42:40.0554142Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T08:42:45.0568291Z","message":"shutdown succsessful"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T08:42:59.9582402Z","message":"catch new script"}
+{"level":"debug","component":"sl","evt":"going to main page","time":"2025-09-26T08:43:30.2025727Z"}
+{"level":"debug","component":"sl","evt":"try to paste login data","time":"2025-09-26T08:43:31.3792712Z"}
+{"level":"debug","component":"sl","evt":"login are succsessful","time":"2025-09-26T08:43:31.4219706Z"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T08:48:32.8965908Z","message":"catch new script"}
+{"level":"debug","component":"sl","evt":"going to main page","time":"2025-09-26T08:49:06.2737969Z"}
+{"level":"debug","component":"sl","evt":"try to paste login data","time":"2025-09-26T08:49:07.4587594Z"}
+{"level":"debug","component":"sl","evt":"login are succsessful","time":"2025-09-26T08:49:07.4953792Z"}
+{"level":"info","component":"srv","script":"select * from level","time":"2025-09-26T08:49:46.471027Z","message":"catch new script"}
+{"level":"info","component":"app","time":"2025-09-26T08:51:57.3842084Z","message":"Turn down the server"}
+{"level":"info","component":"app","time":"2025-09-26T08:52:02.3855652Z","message":"shutdown succsessful"}

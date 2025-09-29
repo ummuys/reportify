@@ -1,0 +1,46 @@
+package logger
+
+import (
+	"io"
+	"os"
+	"time"
+
+	config "sq/internal/config/logger"
+
+	"github.com/rs/zerolog"
+)
+
+func InitLogger(path string) (*config.Loggers, error) {
+
+	zerolog.TimestampFunc = func() time.Time { return time.Now().UTC() }
+	zerolog.DurationFieldUnit = time.Millisecond
+	zerolog.DurationFieldInteger = true
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+
+	cw := zerolog.ConsoleWriter{
+		Out:        os.Stdout,
+		TimeFormat: time.RFC3339Nano,
+	}
+
+	//STD-OUT
+	file := initLogFile(path)
+
+	multiWriter := io.MultiWriter(file, cw)
+
+	baseLog := zerolog.New(multiWriter).With().Timestamp().Logger()
+
+	logLevels, err := config.ParseLogLevels()
+	if err != nil {
+		return nil, err
+	}
+
+	appLog := baseLog.With().Str("component", "app").Logger().Level(logLevels.AppLvl)
+	srvLog := baseLog.With().Str("component", "srv").Logger().Level(logLevels.SrvLvl)
+	dbLog := baseLog.With().Str("component", "db").Logger().Level(logLevels.DbLvl)
+
+	return &config.Loggers{
+		AppLog: &appLog,
+		SrvLog: &srvLog,
+		DbLog:  &dbLog,
+	}, nil
+}
