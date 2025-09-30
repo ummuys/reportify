@@ -13,10 +13,10 @@ import (
 
 type repHandler struct {
 	logger *zerolog.Logger
-	srv    service.RepService
+	srv    service.ReportService
 }
 
-func NewReportHandler(logger *zerolog.Logger, srv service.RepService) RepHandler {
+func NewReportHandler(logger *zerolog.Logger, srv service.ReportService) ReportHandler {
 	return &repHandler{logger: logger, srv: srv}
 }
 
@@ -30,7 +30,11 @@ func (sh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 		sh.logger.Info().Str("script", req.Sql).Msg("catch new script")
-		sh.srv.CreateReport(context.Background(), req.Sql)
+		err := sh.srv.CreateReport(context.Background(), req.Sql)
+		if err != nil {
+			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			return
+		}
 
 		g.JSON(http.StatusOK, gin.H{"msg": "ok"})
 	}

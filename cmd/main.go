@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sq/internal/convert"
 	"sq/internal/logger"
 	"sq/internal/repository"
 	"sq/internal/service"
 	"sq/internal/web"
 	"sq/internal/web/handlers"
+	"sync"
 	"syscall"
 
 	"github.com/joho/godotenv"
@@ -36,39 +38,45 @@ func main() {
 	}
 	logger.AppLog.Debug().Str("evt", "loggers are successful setted").Msg("")
 
-	_, err = repository.NewReportDB(mainCtx, logger.DbLog)
+	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
 	if err != nil {
 		logger.DbLog.Fatal().Err(err)
 		log.Fatal(err)
 	}
 
+	repConv := convert.NewReportConvert()
+
 	// INTERFACE
-	repSrv := service.NewReportService(logger.SrvLog)
+	repSrv := service.NewReportService(logger.SrvLog, repDB, repConv)
 	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
 	server := web.CreateServer(mainCtx, repHand)
 	logger.AppLog.Debug().Msg("Init interfaces: Service, RSLAPI, Handler")
 
 	errsCh := make(chan error, 2)
 
-	go func(errsCh chan<- error) {
+	wg := sync.WaitGroup{}
+	wg.Go(func() {
 		<-mainCtx.Done()
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
 			_ = server.Close()
 			logger.AppLog.Error().Err(fmt.Errorf("shutdown: %v", err))
 		}
-	}(errsCh)
+	})
 
-	go func(errsCh chan<- error) {
+	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
 			errsCh <- err
 			logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
 		}
-	}(errsCh)
+	})
 
 	<-mainCtx.Done()
 	logger.AppLog.Info().Msg("turning down the server")
+	wg.Wait()
+	close(errsCh)
 	var hadErr bool
+
 	for err := range errsCh {
 		if err != nil {
 			hadErr = true

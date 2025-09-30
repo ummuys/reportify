@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -13,6 +14,7 @@ import (
 type rDB struct {
 	logger *zerolog.Logger
 	conn   *pgx.Conn
+	busy   atomic.Bool
 }
 
 func returnConnect(pCtx context.Context, r *rDB, dataConn string) error {
@@ -32,7 +34,7 @@ func returnConnect(pCtx context.Context, r *rDB, dataConn string) error {
 
 func doNotDie(pCtx context.Context, r *rDB) {
 
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -40,6 +42,10 @@ func doNotDie(pCtx context.Context, r *rDB) {
 		case <-pCtx.Done():
 			return
 		case <-ticker.C:
+			if r.busy.Load() {
+				r.logger.Debug().Msg("skip ping")
+				continue
+			}
 
 			if r.conn == nil {
 				r.logger.Warn().Msg("no connection, will try to connect")
@@ -108,4 +114,40 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 
 	return obj, nil
 
+}
+
+func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any, error) {
+	r.logger.Debug().Str("evt", "ExecQuery").Str("Query", script).Msg("")
+	qCtx, cancel := context.WithTimeout(pCtx, time.Second*180)
+	defer cancel()
+
+	r.busy.Store(true)
+	defer func() { r.busy.Store(false) }()
+	rows, err := r.conn.Query(qCtx, script)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	fds := rows.FieldDescriptions()
+	headers := make([]string, len(fds))
+	for i := range fds {
+		headers[i] = string(fds[i].Name)
+	}
+
+	var data [][]any
+	for rows.Next() {
+		vals, err := rows.Values()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		row := make([]any, len(vals))
+		copy(row, vals)
+		data = append(data, row)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	return headers, data, nil
 }

@@ -6,6 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RepHandler interface {
+type ReportHandler interface {
 	CreateReport(pCtx context.Context) gin.HandlerFunc
 }

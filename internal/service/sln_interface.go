@@ -2,6 +2,6 @@ package service
 
 import "context"
 
-type RepService interface {
-	CreateReport(pCtx context.Context, sql string)
+type ReportService interface {
+	CreateReport(pCtx context.Context, sql string) error
 }

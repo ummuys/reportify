@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateServer(pCtx context.Context, slnHand handlers.RepHandler) *http.Server {
+func CreateServer(pCtx context.Context, slnHand handlers.ReportHandler) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
