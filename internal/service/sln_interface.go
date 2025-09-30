@@ -1,7 +1,10 @@
 package service
 
-import "context"
+import (
+	"context"
+	"os"
+)
 
 type ReportService interface {
-	CreateReport(pCtx context.Context, sql string) error
+	CreateReport(pCtx context.Context, sql string, f *os.File) error
 }

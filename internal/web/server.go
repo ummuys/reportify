@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -34,8 +33,6 @@ func CreateServer(pCtx context.Context, slnHand handlers.ReportHandler) *http.Se
 		Addr:    net.JoinHostPort(host, port),
 		Handler: g,
 	}
-
-	fmt.Println(server.Addr)
 
 	return server
 }

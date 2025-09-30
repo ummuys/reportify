@@ -44,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repConv := convert.NewReportConvert()
+	repConv := convert.NewReportConvert(logger.CnvLog)
 
 	// INTERFACE
 	repSrv := service.NewReportService(logger.SrvLog, repDB, repConv)

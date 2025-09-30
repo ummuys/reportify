@@ -30,6 +30,11 @@ func ParseLogLevels() (*LogLevels, error) {
 		add("database")
 	}
 
+	cnvLvl, err := parseLevel(os.Getenv("LOG_LEVEL_CONVERT"))
+	if err != nil {
+		add("convert")
+	}
+
 	if len(sErr) > 0 {
 		return nil, fmt.Errorf(strings.Join(sErr, ", "))
 	}
@@ -38,6 +43,7 @@ func ParseLogLevels() (*LogLevels, error) {
 		AppLvl: appLvl,
 		SrvLvl: srvLvl,
 		DbLvl:  dbLvl,
+		CnvLvl: cnvLvl,
 	}, nil
 }
 

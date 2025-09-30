@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"sync/atomic"
 	"time"
@@ -15,16 +16,25 @@ type rDB struct {
 	logger *zerolog.Logger
 	conn   *pgx.Conn
 	busy   atomic.Bool
+	dsn    string
 }
 
-func returnConnect(pCtx context.Context, r *rDB, dataConn string) error {
+func healthy(pCtx context.Context, r *rDB) bool {
+	if r.conn == nil {
+		return false
+	}
+	pingCtx, cancel := context.WithTimeout(pCtx, 2*time.Second)
+	defer cancel()
+	return r.conn.Ping(pingCtx) == nil
+}
 
+func reconnect(pCtx context.Context, r *rDB) error {
 	if r.conn != nil {
 		_ = r.conn.Close(pCtx)
 		r.conn = nil
 	}
 
-	newConn, err := pgx.Connect(pCtx, dataConn)
+	newConn, err := pgx.Connect(pCtx, r.dsn)
 	if err != nil {
 		return err
 	}
@@ -33,49 +43,59 @@ func returnConnect(pCtx context.Context, r *rDB, dataConn string) error {
 }
 
 func doNotDie(pCtx context.Context, r *rDB) {
+	const (
+		tick         = 10 * time.Second
+		backoffStart = 1 * time.Second
+		backoffMax   = 30 * time.Second
+	)
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
+
+	backoff := backoffStart
 
 	for {
 		select {
 		case <-pCtx.Done():
 			return
+
 		case <-ticker.C:
 			if r.busy.Load() {
-				r.logger.Debug().Msg("skip ping")
+				r.logger.Debug().Msg("skip ping: busy")
 				continue
 			}
 
-			if r.conn == nil {
-				r.logger.Warn().Msg("no connection, will try to connect")
-			} else {
-				if err := r.conn.Ping(pCtx); err == nil {
-					r.logger.Debug().Msg("ping ok")
-					continue
-				} else {
-					r.logger.Error().Err(err).Msg("ping failed")
-				}
-			}
-
-			dataConn := os.Getenv("DB_LINK")
-			if dataConn == "" {
-				r.logger.Error().Msg("DB_LINK is empty")
+			if healthy(pCtx, r) {
+				backoff = backoffStart
 				continue
 			}
+			r.logger.Warn().Msg("db unhealthy or no connection, trying to reconnect")
 
 			for {
-				tryCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-				err := returnConnect(tryCtx, r, dataConn)
-				cancel()
-				if err == nil {
+				if err := reconnect(pCtx, r); err == nil {
 					r.logger.Info().Msg("reconnected to DB")
+					backoff = backoffStart
 					break
+				} else {
+					r.logger.Error().Err(err).Msg("reconnect failed")
 				}
-				r.logger.Error().Err(err).Msg("reconnect failed, will retry")
-				time.Sleep(time.Second * 3)
-			}
 
+				jitter := time.Duration(rand.Int63n(int64(backoff / 2)))
+				wait := backoff + jitter
+
+				select {
+				case <-pCtx.Done():
+					return
+				case <-time.After(wait):
+				}
+
+				if backoff < backoffMax {
+					backoff *= 2
+					if backoff > backoffMax {
+						backoff = backoffMax
+					}
+				}
+			}
 		}
 	}
 }
@@ -89,9 +109,10 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 		conn *pgx.Conn
 		err  error
 	)
+	dsn := os.Getenv("DB_LINK")
 
 	for i := 0; i < 5; i++ {
-		conn, err = pgx.Connect(ctx, os.Getenv("DB_LINK"))
+		conn, err = pgx.Connect(ctx, dsn)
 		if err == nil {
 			break
 		}

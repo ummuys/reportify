@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"sq/internal/convert"
 	"sq/internal/repository"
 
@@ -19,15 +19,18 @@ func NewReportService(logger *zerolog.Logger, db repository.ReportDB, conv conve
 	return &repService{logger: logger, db: db, conv: conv}
 }
 
-func (rs *repService) CreateReport(pCtx context.Context, sql string) error {
+func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File) error {
 	rs.logger.Debug().Str("evt", "call CreateReport")
-	headers, data, err := rs.db.ExecQuery(pCtx, sql)
+
+	headers, rows, err := rs.db.ExecQuery(pCtx, sql)
 	if err != nil {
 		return err
 	}
-	fmt.Println(headers)
-	for _, values := range data {
-		fmt.Println(values...)
+
+	err = rs.conv.ToPDF(headers, rows, f)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }

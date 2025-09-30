@@ -1,7 +1,9 @@
 package convert
 
+import "os"
+
 type ReportConvert interface {
-	ToPDF()
+	ToPDF(headers []string, data [][]any, f *os.File) error
 	// ToXLXS()
 	// ToJSON()
 	// ToCSV()

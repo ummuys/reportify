@@ -37,10 +37,12 @@ func InitLogger(path string) (*config.Loggers, error) {
 	appLog := baseLog.With().Str("component", "app").Logger().Level(logLevels.AppLvl)
 	srvLog := baseLog.With().Str("component", "srv").Logger().Level(logLevels.SrvLvl)
 	dbLog := baseLog.With().Str("component", "db").Logger().Level(logLevels.DbLvl)
+	cnvLog := baseLog.With().Str("component", "cnv").Logger().Level(logLevels.CnvLvl)
 
 	return &config.Loggers{
 		AppLog: &appLog,
 		SrvLog: &srvLog,
 		DbLog:  &dbLog,
+		CnvLog: &cnvLog,
 	}, nil
 }

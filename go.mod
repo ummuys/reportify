@@ -6,12 +6,11 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
+	github.com/phpdave11/gofpdf v1.4.3
 	github.com/rs/zerolog v1.34.0
-	github.com/tebeka/selenium v0.9.9
 )
 
 require (
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
@@ -32,6 +31,8 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/phpdave11/gofpdi v1.0.15 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

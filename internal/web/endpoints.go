@@ -1,5 +1,5 @@
 package web
 
 const (
-	CreateReportPath = "api/v1/report"
+	CreateReportPath = "api/v1/report/:format"
 )

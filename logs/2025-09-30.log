@@ -227,3 +227,320 @@
 {"level":"debug","component":"app","time":"2025-09-30T09:31:45.819824076Z","message":"Init interfaces: Service, RSLAPI, Handler"}
 {"level":"info","component":"app","time":"2025-09-30T09:31:46.901839906Z","message":"turning down the server"}
 {"level":"info","component":"app","time":"2025-09-30T09:31:46.90229254Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:15:14.06201796Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:15:14.568910818Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","time":"2025-09-30T10:15:24.650611563Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:15:34.646100837Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:15:43.33016134Z","message":"ping ok"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:15:47.092409296Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:15:47.092923253Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:15:53.330150679Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:16:01.145001666Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:16:01.145504386Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:16:02.828328125Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:16:03.341679843Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:16:05.888629711Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:16:05.889288863Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:16:12.048322763Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:16:16.001232964Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:16:16.001952601Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:24:48.195699498Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:24:48.700565721Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:24:52.766999315Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:24:52.767707067Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:24:57.435932579Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:07.436505249Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:25:08.623465768Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:25:08.62399337Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:25:10.268569014Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:25:10.780867342Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:25:14.000688865Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:25:14.001494488Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:20.861294578Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:29.532470496Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:39.549284602Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:49.530165171Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:25:59.529548335Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:26:08.232002301Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:26:18.219303433Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:26:26.239324979Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:26:26.239743081Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:26:27.638950523Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:26:28.143785106Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:26:30.563885322Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:26:30.564195374Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:26:36.902160884Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:26:46.907239293Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:26:56.91777639Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:27:05.59145884Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:27:15.591488016Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:27:25.599167882Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:27:34.265695588Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:27:44.281726906Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:27:50.886473387Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:27:50.886923334Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:27:52.176545724Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:27:52.680833907Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:27:54.235442173Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:27:54.235979026Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:28:02.752307229Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:28:11.414272356Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:28:21.41875984Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:28:31.418478501Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:28:32.907630602Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:28:32.907990166Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:35:33.988793015Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:35:34.801727412Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:35:36.998706743Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:35:36.999279996Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:35:44.880433272Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:35:53.561520612Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:03.573160106Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:13.566795486Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:22.243756637Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:32.239536218Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:42.239381883Z","message":"ping ok"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:36:48.89782082Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T10:36:48.898130306Z"}
+{"level":"debug","component":"db","time":"2025-09-30T10:36:50.924914034Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:00.91861114Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:10.919878016Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:19.556236157Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:29.577998416Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:39.556644268Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:49.556308169Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:37:58.256193375Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:08.256731579Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:18.2564084Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:26.931704455Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:36.924450025Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:46.919040893Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:38:55.607032468Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:05.605685558Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:15.608063353Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:24.268552285Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:34.272757016Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:44.271610033Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:39:54.268157637Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:02.911012082Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:12.910398575Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:22.911241529Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:31.599540736Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:41.599073456Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:40:51.601192765Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:41:00.267108102Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:41:10.275532429Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:41:20.267065877Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:41:28.939229435Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:41:38.93867178Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T10:41:40.536658812Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T10:41:40.537428052Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T10:50:11.446043504Z"}
+{"level":"debug","component":"app","time":"2025-09-30T10:50:11.955811494Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","time":"2025-09-30T10:50:20.704913593Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:50:30.714280241Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:50:40.716631323Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:50:49.375833029Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:50:59.389747724Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:09.383021957Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:18.061162018Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:28.064736967Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:38.060754058Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:46.754598319Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:51:56.756228186Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:06.74531294Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:16.745964922Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:25.421917905Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:35.425254745Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:45.414776907Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:52:54.081069011Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:04.080211693Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:14.1165851Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:22.756752074Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:32.780100437Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:42.754864335Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:53:51.462508226Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:01.469226507Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:11.47137199Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:20.137090245Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:30.195027558Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:40.135552119Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:50.171014984Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:54:58.817570724Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:08.834323326Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:18.824656192Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:27.484688645Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:37.495993187Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:47.495744408Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:55:56.16601111Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:06.166415208Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:16.305335157Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:24.835454689Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:34.838024105Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:44.865127133Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:56:54.841571187Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:03.550947998Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:13.54355863Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:23.575268744Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:32.225737224Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:42.224563754Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:57:52.229561435Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:00.90045458Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:10.919581964Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:20.92422061Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:29.590738509Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:39.595917444Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:49.591275545Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:58:58.260177234Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:08.260468298Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:18.254518304Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:28.26356531Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:36.941404164Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:46.944104779Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T10:59:56.945728403Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:05.619474792Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:15.621507076Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:25.620410957Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:34.322235955Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T11:00:36.153965683Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:00:36.154470966Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:00:37.390134755Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:00:37.896620567Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:47.979651512Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:00:57.98057144Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:06.664946332Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:16.662561383Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:26.665095645Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:35.357430845Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:45.346687694Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:01:55.354716088Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T11:02:03.202410936Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:02:03.202786127Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:06:41.689440504Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:06:42.194679895Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","time":"2025-09-30T11:06:52.275526571Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:02.276952508Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:12.283438039Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:20.973801161Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:30.976056066Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:40.972898752Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:49.63427654Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:07:59.634158781Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T11:08:07.712665521Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:08:07.713085151Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:08:09.039705363Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:08:09.549630821Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","time":"2025-09-30T11:08:18.30191069Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:08:28.307460311Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:08:38.307871389Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:08:46.992408402Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:08:56.995928667Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:06.99667815Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:16.993017513Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:25.694048359Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:35.682708554Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:45.681645639Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:09:54.374972668Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:10:04.368521306Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:10:14.376804408Z","message":"ping ok"}
+{"level":"debug","component":"db","time":"2025-09-30T11:10:23.073554436Z","message":"ping ok"}
+{"level":"info","component":"app","time":"2025-09-30T11:10:32.844250063Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:10:32.845011786Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:10:56.548196417Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:10:57.053611877Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T11:11:35.835253283Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:11:35.835995529Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:11:37.564662996Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:11:38.229281344Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T11:12:23.689780008Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:12:23.690634367Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:12:25.003825255Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:12:25.505805166Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T11:13:04.180453769Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:13:04.181084115Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:13:05.672809208Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:13:06.176839499Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"error","component":"srv","time":"2025-09-30T11:14:01.283757998Z","message":"bad format"}
+{"level":"info","component":"app","time":"2025-09-30T11:14:26.599423447Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:14:26.599987413Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:14:28.815089427Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:14:29.322445949Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"error","component":"srv","time":"2025-09-30T11:14:35.892567923Z","message":"bad format"}
+{"level":"info","component":"app","time":"2025-09-30T11:15:01.034717035Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:15:01.035222602Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:15:05.170858245Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:15:05.680048804Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"error","component":"srv","time":"2025-09-30T11:15:08.192379861Z","message":"bad format"}
+{"level":"info","component":"srv","script":"SELECT * FROM rgd.2018_01_asdasd1;","time":"2025-09-30T11:15:13.501103992Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM rgd.2018_01_asdasd1;","time":"2025-09-30T11:15:13.501751586Z"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:15:55.299354165Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:15:55.300932144Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:15:55.452970708Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:17:09.02155131Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:17:09.022380177Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:17:09.102998502Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.caourses;","time":"2025-09-30T11:17:17.552988233Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.caourses;","time":"2025-09-30T11:17:17.555494003Z"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:17:49.586672276Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:17:49.587300532Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:17:49.66435975Z","message":"PDF are successful created and sended"}
+{"level":"error","component":"srv","time":"2025-09-30T11:17:57.552706579Z","message":"bad format"}
+{"level":"error","component":"srv","time":"2025-09-30T11:18:02.59482387Z","message":"bad format"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:18:09.607413823Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:18:09.607897735Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:18:09.685951932Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"srv","script":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:18:21.136048607Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM oulad.courses;","time":"2025-09-30T11:18:21.136894438Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:18:21.214345429Z","message":"PDF are successful created and sended"}
+{"level":"error","component":"srv","time":"2025-09-30T11:18:26.894891166Z","message":"bad format"}
+{"level":"error","component":"srv","time":"2025-09-30T11:18:33.954397313Z","message":"bad format"}
+{"level":"info","component":"srv","script":"bad sql","time":"2025-09-30T11:19:40.418779739Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"bad sql","time":"2025-09-30T11:19:40.419363086Z"}
+{"level":"info","component":"app","time":"2025-09-30T11:27:39.286735172Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:27:39.287447651Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:28:10.626562509Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:28:11.133110233Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM  rgd.\"2018_01_1\";","time":"2025-09-30T11:28:48.66462815Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM  rgd.\"2018_01_1\";","time":"2025-09-30T11:28:48.665177273Z"}
+{"level":"debug","component":"db","time":"2025-09-30T11:28:49.822567635Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:28:58.52804475Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:08.528088322Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:18.527671875Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:27.192831449Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:37.193620004Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:47.192985836Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:29:55.864774826Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:30:05.865012479Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:30:15.865106415Z","message":"skip ping: busy"}
+{"level":"debug","component":"db","time":"2025-09-30T11:30:24.557148242Z","message":"skip ping: busy"}
+{"level":"info","component":"srv","file_size":121838189,"time":"2025-09-30T11:30:56.721550493Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"app","time":"2025-09-30T11:35:09.671358216Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:35:09.67519634Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:35:26.761760782Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:35:27.569186621Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:35:45.54745395Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:35:45.547781695Z"}
+{"level":"info","component":"app","time":"2025-09-30T11:36:09.412584727Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:36:09.413163807Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:36:11.178430405Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:36:11.687637119Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:36:15.369081572Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:36:15.369823066Z"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:03.103964079Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:03.105646177Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:37:07.171951198Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:37:07.678246933Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:37:07.751361793Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:37:07.751941667Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:37:07.900909978Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:42.347317719Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:42.348313085Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T11:37:44.023921059Z"}
+{"level":"debug","component":"app","time":"2025-09-30T11:37:44.527547055Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","script":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:37:45.872046746Z","message":"catch new script"}
+{"level":"debug","component":"db","evt":"ExecQuery","Query":"SELECT * FROM  oulad.courses;","time":"2025-09-30T11:37:45.872345192Z"}
+{"level":"debug","component":"cnv","env":"call toPDF","time":"2025-09-30T11:37:46.016514676Z"}
+{"level":"debug","component":"cnv","msg":"successful create PDF","time":"2025-09-30T11:37:46.021617894Z"}
+{"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:37:46.021910793Z","message":"PDF are successful created and sended"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:51.528725696Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T11:37:51.529230315Z","message":"shutdown successful"}
