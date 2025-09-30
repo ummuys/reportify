@@ -7,18 +7,23 @@ import (
 	"os"
 	"sq/internal/web/handlers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func CreateServer(pCtx context.Context, slnHand handlers.ReportHandler) *http.Server {
+func CreateServer(pCtx context.Context, repHand handlers.ReportHandler) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
 	g.Use(gin.Recovery())
+	g.Use(cors.Default())
 
 	// g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	g.POST(CreateReportPath, slnHand.CreateReport(pCtx)) //    C
+	g.POST(CreateReportPath, repHand.CreateReport(pCtx))
+	g.GET(GetSchemas, repHand.GetSchemas(pCtx))
+	g.GET(GetTables, repHand.GetTables(pCtx))
+	g.GET(GetColumns, repHand.GetColumns(pCtx))
 
 	host := os.Getenv("SERVER_IP")
 	if host == "" {

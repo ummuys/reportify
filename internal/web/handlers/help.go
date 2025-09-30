@@ -5,36 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	models "sq/internal/models/post"
-	"sq/internal/service"
+	models "sq/internal/models/request/post"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
-
-type repHandler struct {
-	logger *zerolog.Logger
-	srv    service.ReportService
-}
-
-func NewReportHandler(logger *zerolog.Logger, srv service.ReportService) ReportHandler {
-	return &repHandler{logger: logger, srv: srv}
-}
-
-func (sh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-
-		format := g.Param("format")
-		switch format {
-		case "pdf":
-			sh.createReportPDF(g.Request.Context(), g)
-		default:
-			sh.logger.Error().Msg("bad format")
-			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "you need to choose a format"})
-		}
-
-	}
-}
 
 func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 	// Create a file

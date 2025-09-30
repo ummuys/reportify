@@ -544,3 +544,281 @@
 {"level":"info","component":"srv","file_size":7532,"time":"2025-09-30T11:37:46.021910793Z","message":"PDF are successful created and sended"}
 {"level":"info","component":"app","time":"2025-09-30T11:37:51.528725696Z","message":"turning down the server"}
 {"level":"info","component":"app","time":"2025-09-30T11:37:51.529230315Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T16:08:06.8429149Z"}
+{"level":"debug","component":"app","time":"2025-09-30T16:08:07.1561111Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T16:12:20.0450149Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T16:12:20.0465315Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:11:06.618773665Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:11:06.969365689Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T17:12:37.211317396Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:12:37.212503618Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:12:39.844483541Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:12:40.150650596Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T17:13:18.07894205Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:13:18.080364761Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:13:25.404500173Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:13:25.972298783Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:13:29.472696034Z"}
+{"level":"info","component":"app","time":"2025-09-30T17:14:05.38922514Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:14:05.39113101Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:14:07.660349691Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:14:08.031910297Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:14:09.170274377Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:14:09.272869988Z","message":"list of schemas name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T17:14:30.043330016Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:14:30.04653005Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:14:31.246903048Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:14:34.091698549Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:14:38.37871444Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:14:46.750266111Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:15:07.280290811Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:15:39.071220549Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:16:22.048929144Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:16:52.518956874Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:17:31.045341262Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T17:17:38.38602371Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:17:38.389368069Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:17:43.666978439Z"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:18:30.24963069Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:18:30.791450537Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:18:35.173709698Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:18:35.270366248Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T17:19:03.885416286Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:19:03.888177409Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:19:06.124382603Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:19:06.43368778Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:19:09.668471656Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:19:09.769362236Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T17:19:14.70980628Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:19:14.710724051Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:25:51.678724771Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:25:52.017711315Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:25:54.250331773Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:25:54.350205235Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:26:03.573646403Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:26:03.625752718Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:26:41.127231006Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:26:41.170631354Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T17:26:49.295326279Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:26:49.296322652Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:32:15.010280318Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:32:15.378874785Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:32:20.972748422Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:32:21.068512643Z","message":"list of schemas name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T17:33:28.740236589Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:33:28.742739893Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:33:29.876366843Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:33:32.376771283Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:33:37.788734727Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:33:47.20934312Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:34:04.535463853Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:34:48.668161166Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:35:31.820058828Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:36:10.753619245Z","message":"reconnect failed"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:36:48.718041669Z"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:36:51.521608729Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:37:31.339543771Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:38:02.090261668Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:38:38.914269597Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:39:17.814147303Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:40:01.451654424Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:40:42.391463501Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:41:17.416203637Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:42:02.251567194Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:42:46.358497524Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:43:23.875888204Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:44:07.093692874Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T17:44:43.415789531Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:44:43.417877609Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:49:46.908940977Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:49:51.420594062Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:50:46.675181126Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:50:48.597844509Z","message":"list of schemas name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T17:50:53.423980115Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:50:53.425851622Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:50:54.651304559Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:50:57.124120492Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:51:02.169805985Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:51:13.432969605Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:51:32.997482154Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:52:05.783711723Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:52:46.446059078Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:53:29.85797292Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:54:12.278181722Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T17:54:58.017351623Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T17:55:01.110797035Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T17:55:01.117451677Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T17:58:47.657429574Z"}
+{"level":"debug","component":"app","time":"2025-09-30T17:58:47.99853686Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:58:58.930814106Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:58:59.072092317Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:06.7834514Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:06.922223234Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:09.158527542Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:09.256245231Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:09.617490841Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:09.718524979Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:09.745212354Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:09.822733648Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:09.90528475Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:09.991643586Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.049469001Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.132629143Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.18349964Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.264037066Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.330114939Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.410353707Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.490772524Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.579982078Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.633790397Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.769110736Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.794876063Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:10.875809566Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:10.938286712Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.043967403Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.108071574Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.202552783Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.251549381Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.340680292Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.418005339Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.496040393Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.561817928Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.643755004Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.699892634Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.799830878Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:11.85836255Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:11.943083845Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetListSchemas","time":"2025-09-30T17:59:12.018469479Z"}
+{"level":"info","component":"srv","time":"2025-09-30T17:59:12.104361916Z","message":"list of schemas name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T18:07:46.396344456Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:07:46.39795872Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:07:47.602884999Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:07:50.326722563Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:07:59.484154276Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:08:08.122191849Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:08:29.755429248Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:09:01.457117528Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:09:52.08112913Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:10:25.37526892Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:11:06.472067904Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:11:45.484439803Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:12:22.035097518Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:13:00.121235125Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:13:30.297407762Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:14:02.503449146Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:14:44.091320383Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:15:29.014512768Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:16:01.141183615Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:16:32.744443126Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:17:07.815540837Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:17:45.211188925Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T18:18:22.620890494Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:18:22.622802366Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:18:26.612068681Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:18:26.974484503Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetSchemas","time":"2025-09-30T18:18:34.321385426Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:18:34.469136968Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T18:18:45.960170223Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:18:45.962491487Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:20:23.458993134Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:20:23.78138775Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T18:20:35.479201286Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:20:35.489818902Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:21:02.328277013Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:21:02.684681078Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:21:10.089840624Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:21:10.22678265Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T18:21:16.666118928Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:21:16.66706015Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:21:32.701051334Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:21:34.104915524Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:21:51.803646594Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:21:51.954795238Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:22:14.944285152Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:22:15.042562893Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:22:47.632967227Z"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:22:51.274835631Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:22:51.369694686Z","message":"list of schemas name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T18:24:44.101143196Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:24:44.10725739Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T18:24:45.402905583Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T18:24:46.600410969Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:24:46.604165723Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:26:26.3638895Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:26:29.71127066Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:26:30.42052859Z"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:26:43.422531335Z"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T18:27:54.544832625Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:27:54.965356239Z","message":"list of schemas name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T18:28:03.756285073Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:28:03.757695423Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:28:06.990966844Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:28:07.338737372Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:28:20.732390839Z"}
+{"level":"info","component":"app","time":"2025-09-30T18:29:17.812330094Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:29:17.817619019Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:29:20.423394291Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:29:21.001344273Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"app","time":"2025-09-30T18:29:22.72140553Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:29:22.72274024Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:30:00.696754054Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:30:01.375559087Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"info","component":"srv","time":"2025-09-30T18:30:02.706068891Z","message":"ZOPA111"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:30:02.707067023Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:30:02.806848283Z","message":"ZOPA222"}
+{"level":"info","component":"app","time":"2025-09-30T18:30:19.133339624Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:30:19.134663961Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:30:21.279530164Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:30:24.657627192Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:30:29.584726642Z"}
+{"level":"info","component":"app","time":"2025-09-30T18:30:45.867778592Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:30:45.871612151Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:31:05.773763964Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:31:09.457005844Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:31:10.926589197Z"}
+{"level":"info","component":"app","time":"2025-09-30T18:31:18.955935506Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T18:31:18.956848975Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T18:34:14.074067558Z"}
+{"level":"debug","component":"app","time":"2025-09-30T18:34:14.659868972Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T18:34:16.706838762Z"}
+{"level":"info","component":"srv","time":"2025-09-30T18:34:17.182807308Z","message":"list of columns name is returned"}
+{"level":"warn","component":"db","time":"2025-09-30T20:41:59.222094114Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:41:59.223545936Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:42:10.261428739Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:42:12.314531554Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:42:17.475744767Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T20:42:20.515599473Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T20:42:20.517890617Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T20:42:25.526555781Z"}
+{"level":"debug","component":"app","time":"2025-09-30T20:42:25.850775235Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"debug","component":"db","evt":"GetSchemas","time":"2025-09-30T20:42:39.496538735Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:42:39.628222688Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T20:43:00.792156538Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:43:00.914044909Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T20:43:10.290301599Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:43:10.406868872Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T20:43:23.67517166Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:43:23.765547478Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetSchemas","time":"2025-09-30T20:43:29.627266257Z"}
+{"level":"debug","component":"db","time":"2025-09-30T20:43:29.711732625Z","message":"skip ping: busy"}
+{"level":"info","component":"srv","time":"2025-09-30T20:43:29.729026523Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetTables","time":"2025-09-30T20:43:41.347895162Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:43:41.449990393Z","message":"list of schemas name is returned"}
+{"level":"debug","component":"db","evt":"GetColumns","time":"2025-09-30T20:44:33.835646308Z"}
+{"level":"info","component":"srv","time":"2025-09-30T20:44:33.967980509Z","message":"list of columns name is returned"}
+{"level":"info","component":"app","time":"2025-09-30T20:46:26.230415856Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T20:46:26.247348954Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T20:57:05.403656185Z"}
+{"level":"debug","component":"app","time":"2025-09-30T20:57:05.712268459Z","message":"Init interfaces: Service, RSLAPI, Handler"}
+{"level":"warn","component":"db","time":"2025-09-30T20:58:30.941209351Z","message":"db unhealthy or no connection, trying to reconnect"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:58:30.949842185Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:58:32.413052094Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:58:35.276322047Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:58:39.682300743Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:58:48.072049509Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:59:10.37459454Z","message":"reconnect failed"}
+{"level":"error","component":"db","error":"failed to connect to `user=ummuys database=`: /tmp/.s.PGSQL.5432 (/tmp): dial error: dial unix /tmp/.s.PGSQL.5432: connect: no such file or directory","time":"2025-09-30T20:59:45.677227091Z","message":"reconnect failed"}
+{"level":"info","component":"app","time":"2025-09-30T20:59:51.686337193Z","message":"turning down the server"}
+{"level":"info","component":"app","time":"2025-09-30T20:59:51.688704383Z","message":"shutdown successful"}
+{"level":"debug","component":"app","evt":"loggers are successful setted","time":"2025-09-30T20:59:56.635415702Z"}
+{"level":"debug","component":"app","time":"2025-09-30T20:59:56.976912394Z","message":"Init interfaces: Service, RSLAPI, Handler"}

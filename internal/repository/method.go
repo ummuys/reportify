@@ -142,8 +142,13 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	qCtx, cancel := context.WithTimeout(pCtx, time.Second*180)
 	defer cancel()
 
+	if err := r.conn.Ping(pCtx); err != nil {
+		return nil, nil, fmt.Errorf("db didn't pinged: %w", err)
+	}
+
 	r.busy.Store(true)
 	defer func() { r.busy.Store(false) }()
+
 	rows, err := r.conn.Query(qCtx, script)
 	if err != nil {
 		return nil, nil, err
@@ -171,4 +176,110 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	}
 
 	return headers, data, nil
+}
+
+func (r *rDB) GetSchemas(pCtx context.Context) ([]string, error) {
+	r.logger.Debug().Str("evt", "GetSchemas").Msg("")
+	r.busy.Store(true)
+	defer func() { r.busy.Store(false) }()
+
+	if err := r.conn.Ping(pCtx); err != nil {
+		return nil, fmt.Errorf("db didn't pinged: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
+	defer cancel()
+
+	query := "SELECT schema_name FROM information_schema.schemata;"
+	rows, err := r.conn.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for rows.Next() {
+		vals, err := rows.Values()
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range vals {
+			res = append(res, v.(string))
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+
+}
+
+func (r *rDB) GetTables(pCtx context.Context, schemaName string) ([]string, error) {
+	r.logger.Debug().Str("evt", "GetTables").Msg("")
+	r.busy.Store(true)
+	defer func() { r.busy.Store(false) }()
+
+	if err := r.conn.Ping(pCtx); err != nil {
+		return nil, fmt.Errorf("db didn't pinged: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
+	defer cancel()
+
+	query := `
+	SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = $1;
+	`
+	rows, err := r.conn.Query(ctx, query, schemaName)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for rows.Next() {
+		vals, err := rows.Values()
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range vals {
+			res = append(res, v.(string))
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+
+}
+func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) ([]string, error) {
+	r.logger.Debug().Str("evt", "GetColumns").Msg("")
+	r.busy.Store(true)
+	defer r.busy.Store(false)
+
+	if err := r.conn.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("db didn't pinged: %w", err)
+	}
+
+	qctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	const query = `
+		SELECT column_name
+		FROM information_schema.columns
+		WHERE table_schema = $1 AND table_name = $2
+		ORDER BY ordinal_position;
+	`
+	rows, err := r.conn.Query(qctx, query, schemaName, tableName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cols []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		cols = append(cols, name)
+	}
+	return cols, rows.Err()
 }
