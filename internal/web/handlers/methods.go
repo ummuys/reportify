@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	models "sq/internal/models/response/get"
 	"sq/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +43,7 @@ func (sh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 		sh.logger.Info().Msg("list of schemas name is returned")
-		g.JSON(http.StatusOK, models.ListSchemas{Schemas: data})
+		g.JSON(http.StatusOK, data)
 
 	}
 }
@@ -65,7 +64,7 @@ func (sh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 		sh.logger.Info().Msg("list of schemas name is returned")
-		g.JSON(http.StatusOK, models.ListTables{Tables: data})
+		g.JSON(http.StatusOK, data)
 
 	}
 }
@@ -87,7 +86,7 @@ func (sh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 		sh.logger.Info().Msg("list of columns name is returned")
-		g.JSON(http.StatusOK, models.ListColumns{Columns: data})
+		g.JSON(http.StatusOK, data)
 
 	}
 }

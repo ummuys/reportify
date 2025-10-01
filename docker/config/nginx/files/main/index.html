@@ -124,8 +124,9 @@
   </div>
 
   <script>
-    // ---- настройки (при необходимости поменяй на /api/... и проксируй через nginx) ----
+    // ---- настройки ----
     const API_BASE = "http://localhost:1337";
+
     // ---- утилиты -----------------------------------------------------------
     async function getJSON(url) {
       const res = await fetch(url, { headers: { Accept: "application/json" } });
@@ -133,18 +134,43 @@
       const txt = await res.text();
       try { return JSON.parse(txt); } catch { return txt; }
     }
-    function normalize(data, keys) {
-      if (Array.isArray(data)) return data;
-      for (const k of keys) if (Array.isArray(data?.[k])) return data[k];
-      if (typeof data === "string") { try {
-        const p = JSON.parse(data); if (Array.isArray(p)) return p;
-      } catch {} }
-      return [];
-    }
     function el(id){return document.getElementById(id)}
-    function ident(s){ // безопасно квотируем идентификатор для Postgres
-      return '"' + String(s).replace(/"/g,'""') + '"';
+    function ident(s){ return '"' + String(s).replace(/"/g,'""') + '"'; }
+
+    // отображение: если есть комментарий — он, иначе оригинал
+    function labelOf(obj) {
+      const c = (obj.comment || "").trim();
+      return c ? c : (obj.name || "");
     }
+    function titleOf(obj) {
+      const c = (obj.comment || "").trim();
+      const n = obj.name || "";
+      return c && c !== n ? `${n} — ${c}` : n;
+    }
+
+    // парсеры под новый бэкенд
+    function parseSchemas(payload){
+      const items = payload?.schemas ?? [];
+      return items.map(x => ({
+        name: x.schema_name ?? x.name ?? "",
+        comment: x.schema_comm ?? x.comment ?? ""
+      })).filter(x=>x.name);
+    }
+    function parseTables(payload){
+      const items = payload?.tables ?? [];
+      return items.map(x => ({
+        name: x.table_name ?? x.name ?? "",
+        comment: x.table_comm ?? x.comment ?? ""
+      })).filter(x=>x.name);
+    }
+    function parseColumns(payload){
+      const items = payload?.columns ?? [];
+      return items.map(x => ({
+        name: x.column_name ?? x.name ?? "",
+        comment: x.column_comm ?? x.comment ?? ""
+      })).filter(x=>x.name);
+    }
+
     // -----------------------------------------------------------------------
 
     const schemaSel = el("schemaSelect");
@@ -169,18 +195,28 @@
 
     // генератор SQL
     function buildSQL(){
-      if (!state.schema || !state.table || !state.chosen.length) { sqlText.value = ""; return; }
-      const cols = state.chosen.map(c=>ident(c)).join(", ");
-      const from = ident(state.schema)+"."+ident(state.table);
-      const sf = sortField.value ? ` ORDER BY ${ident(sortField.value)} ${sortDir.value||"ASC"}` : "";
+      if (!state.schema || !state.table || !state.chosen.length) {
+        sqlText.value = "";
+        return;
+      }
+
+      const cols = state.chosen.map((name) => {
+        const meta   = state.columns.find(c => c.name === name) || {};
+        const comm   = (meta.comment || "").trim();
+        const alias  = comm && comm !== name ? ` AS ${ident(comm)}` : "";
+        return `${ident(name)}${alias}`;
+      }).join(",\n  ");
+
+      const from = `${ident(state.schema)}.${ident(state.table)}`;
+      const sf   = sortField.value ? `\nORDER BY ${ident(sortField.value)} ${sortDir.value || "ASC"}` : "";
+
       sqlText.value = `SELECT ${cols}\nFROM ${from}${sf};`;
     }
-
+    
     function updateButtons(){
       chosenCounter.textContent = `Выбрано: ${state.chosen.length} / ${state.columns.length}` + (state.chosen.length===state.columns.length && state.columns.length? " (все)": "");
       chosenCounter.style.display = state.columns.length? "":"none";
       btnDownload.disabled = !(state.schema && state.table && state.chosen.length && sqlText.value.trim());
-      // (кнопка добавления новых уровней сортировки пока неактивна)
       el("btnAddSort").disabled = true;
     }
 
@@ -188,13 +224,18 @@
     async function loadSchemas() {
       try {
         const data = await getJSON(`${API_BASE}/api/v1/db/schemas`);
-        let listAll = normalize(data, ["schemas","data","items"]);
-        const user = listAll.filter(s => !SYSTEM_SCHEMAS.has(s));
-        const sys  = listAll.filter(s =>  SYSTEM_SCHEMAS.has(s));
+        state.schemas = parseSchemas(data);
+
+        const user = state.schemas.filter(s => !SYSTEM_SCHEMAS.has(s.name));
+        const sys  = state.schemas.filter(s =>  SYSTEM_SCHEMAS.has(s.name));
+
+        const opt = (s)=>`<option value="${s.name}" title="${titleOf(s)}">${labelOf(s)}</option>`;
+
         let html = `<option value="">Выберите схему</option>`;
-        if (user.length) html += `<optgroup label="Пользовательские">${user.map(s=>`<option value="${s}">${s}</option>`).join("")}</optgroup>`;
-        if (sys.length)  html += `<optgroup label="Системные">${sys.map(s=>`<option value="${s}">${s}</option>`).join("")}</optgroup>`;
+        if (user.length) html += `<optgroup label="Пользовательские">${user.map(opt).join("")}</optgroup>`;
+        if (sys.length)  html += `<optgroup label="Системные">${sys.map(opt).join("")}</optgroup>`;
         schemaSel.innerHTML = html;
+
         el("schemaError").style.display="none";
       } catch(e) {
         schemaSel.innerHTML = `<option value="">Ошибка загрузки</option>`;
@@ -209,8 +250,11 @@
       tableSel.innerHTML = `<option value="">Загрузка...</option>`;
       try {
         const data = await getJSON(`${API_BASE}/api/v1/db/tables?schema=${encodeURIComponent(schema)}`);
-        state.tables = normalize(data, ["tables","data","items"]);
-        tableSel.innerHTML = `<option value="">Выберите таблицу</option>` + state.tables.map(t=>`<option value="${t}">${t}</option>`).join("");
+        state.tables = parseTables(data);
+
+        const opt = (t)=>`<option value="${t.name}" title="${titleOf(t)}">${labelOf(t)}</option>`;
+        tableSel.innerHTML = `<option value="">Выберите таблицу</option>` + state.tables.map(opt).join("");
+
         tableSel.disabled = false;
         el("tableError").style.display="none";
       } catch(e) {
@@ -234,17 +278,25 @@
 
       try {
         const data = await getJSON(`${API_BASE}/api/v1/db/columns?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}`);
-        state.columns = normalize(data, ["columns","data","items"]);
+        state.columns = parseColumns(data);
+
+        // чекбоксы колонок: подпись = комментарий или имя
         list.innerHTML = state.columns.map(c => `
-          <label class="item">
-            <input type="checkbox" data-col="${c}" />
-            <span style="overflow:hidden;text-overflow:ellipsis">${c}</span>
+          <label class="item" title="${titleOf(c)}">
+            <input type="checkbox" data-col="${c.name}" />
+            <span style="overflow:hidden;text-overflow:ellipsis">${labelOf(c)}</span>
           </label>
         `).join("");
+
         fakeFieldSelect.disabled = false;
         fakeFieldSelect.innerHTML = `<option>Список полей</option>`;
         btnAll.disabled = btnClear.disabled = state.columns.length===0;
-        sortField.innerHTML = `<option value="">Поле</option>` + state.columns.map(c=>`<option value="${c}">${c}</option>`).join("");
+
+        // селект сортировки — те же подписи
+        sortField.innerHTML =
+          `<option value="">Поле</option>` +
+          state.columns.map(c=>`<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
+
         el("columnsError").style.display="none";
         updateButtons();
       } catch(e) {
@@ -283,7 +335,7 @@
     sortDir.addEventListener("change",   ()=>{ buildSQL(); updateButtons(); });
 
     btnAll.addEventListener("click", ()=>{
-      state.chosen = [...state.columns];
+      state.chosen = state.columns.map(c=>c.name);
       list.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=true);
       buildSQL(); updateButtons();
     });
@@ -311,7 +363,7 @@
       return fallback;
     }
     async function postReportAndGetBlob() {
-      const format = (state.format || 'PDF').toLowerCase(); 
+      const format = (state.format || 'PDF').toLowerCase();
       const url = `${API_BASE}/api/v1/report/${format}`;
       const payload = { sql: sqlText.value.trim() };
       const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
@@ -328,6 +380,7 @@
     function openBlob(blob) { const url = URL.createObjectURL(blob); window.open(url,'_blank'); setTimeout(()=>URL.revokeObjectURL(url),60000); }
 
     // Кнопки
+    const btnPreview = document.getElementById('btnPreview');
     btnDownload.addEventListener('click', async () => {
       if (!sqlText.value.trim()) { alert('SQL пустой'); return; }
       btnDownload.disabled = true; btnDownload.textContent = 'Готовим...';
@@ -336,7 +389,7 @@
       finally { btnDownload.textContent = '⬇️ Скачать'; updateButtons(); }
     });
 
-    el('btnPreview').addEventListener('click', async () => {
+    btnPreview.addEventListener('click', async () => {
       if (!sqlText.value.trim()) { alert('SQL пустой'); return; }
       try { const { blob, format } = await postReportAndGetBlob(); (format==='pdf'||format==='csv') ? openBlob(blob) : saveBlob(blob, `preview.${format}`); }
       catch (e) { alert('Не удалось показать предпросмотр: ' + (e.message || e)); console.error(e); }

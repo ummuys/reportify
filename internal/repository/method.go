@@ -178,7 +178,7 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	return headers, data, nil
 }
 
-func (r *rDB) GetSchemas(pCtx context.Context) ([]string, error) {
+func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetSchemas").Msg("")
 	r.busy.Store(true)
 	defer func() { r.busy.Store(false) }()
@@ -190,30 +190,15 @@ func (r *rDB) GetSchemas(pCtx context.Context) ([]string, error) {
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	query := "SELECT schema_name FROM information_schema.schemata;"
-	rows, err := r.conn.Query(ctx, query)
+	rows, err := r.conn.Query(ctx, qSchemaWithComment)
 	if err != nil {
 		return nil, err
 	}
-	var res []string
-	for rows.Next() {
-		vals, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		for _, v := range vals {
-			res = append(res, v.(string))
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
 
-	return res, nil
-
+	return unpackingRows(rows)
 }
 
-func (r *rDB) GetTables(pCtx context.Context, schemaName string) ([]string, error) {
+func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetTables").Msg("")
 	r.busy.Store(true)
 	defer func() { r.busy.Store(false) }()
@@ -225,31 +210,16 @@ func (r *rDB) GetTables(pCtx context.Context, schemaName string) ([]string, erro
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	query := `
-	SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = $1;
-	`
-	rows, err := r.conn.Query(ctx, query, schemaName)
+	rows, err := r.conn.Query(ctx, qTablesWithComment, schemaName)
 	if err != nil {
 		return nil, err
 	}
-	var res []string
-	for rows.Next() {
-		vals, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		for _, v := range vals {
-			res = append(res, v.(string))
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
 
-	return res, nil
+	return unpackingRows(rows)
 
 }
-func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) ([]string, error) {
+
+func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetColumns").Msg("")
 	r.busy.Store(true)
 	defer r.busy.Store(false)
@@ -261,25 +231,24 @@ func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) ([]s
 	qctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	const query = `
-		SELECT column_name
-		FROM information_schema.columns
-		WHERE table_schema = $1 AND table_name = $2
-		ORDER BY ordinal_position;
-	`
-	rows, err := r.conn.Query(qctx, query, schemaName, tableName)
+	rows, err := r.conn.Query(qctx, qColumnsWithComment, schemaName, tableName)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var cols []string
+	return unpackingRows(rows)
+}
+
+func unpackingRows(rows pgx.Rows) (map[string]string, error) {
+	res := make(map[string]string)
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		vals, err := rows.Values()
+		if err != nil {
 			return nil, err
 		}
-		cols = append(cols, name)
+		res[vals[0].(string)] = vals[1].(string)
 	}
-	return cols, rows.Err()
+
+	return res, rows.Err()
 }
