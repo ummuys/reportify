@@ -8,27 +8,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const (
-	marginL  = 10.0
-	marginR  = 10.0
-	rowPad   = 2.0
-	headerH  = 8.0
-	baseH    = 6.0
-	fontName = "DejaVu"
-	fontSize = 10.0
-	headerSz = 11.0
-)
-
-//TODO:
-// 👉 В результате получится таблица, где:
-
-// заголовки читаемы и разделены;
-
-// данные не накладываются и не обрезаются;
-
-// кириллица/UTF-8 отображается нормально;
-
-// числа и даты форматированы.
 type repConv struct {
 	logger *zerolog.Logger
 }

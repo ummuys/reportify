@@ -31,7 +31,6 @@ func main() {
 	}
 
 	// LOGGER
-
 	logger, err := logger.InitLogger(os.Getenv("LOGS_PATH"))
 	if err != nil {
 		log.Fatal(err)

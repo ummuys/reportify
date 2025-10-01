@@ -311,7 +311,7 @@
       return fallback;
     }
     async function postReportAndGetBlob() {
-      const format = (state.format || 'PDF').toLowerCase(); // pdf/xlsx/csv
+      const format = (state.format || 'PDF').toLowerCase(); 
       const url = `${API_BASE}/api/v1/report/${format}`;
       const payload = { sql: sqlText.value.trim() };
       const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
