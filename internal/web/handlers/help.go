@@ -11,7 +11,6 @@ import (
 )
 
 func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
-	// Create a file
 	f, err := os.CreateTemp("", "report-*.pdf")
 	if err != nil {
 		g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
@@ -19,7 +18,6 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 	}
 	defer os.Remove(f.Name())
 
-	// Take a info from request
 	sh.logger.Debug().Str("evt", "call CreateReport")
 	var req models.CreateReport
 	if err := g.ShouldBindJSON(&req); err != nil {
@@ -29,9 +27,7 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 		return
 	}
 
-	// Take a data from Postgresql
-	sh.logger.Info().Str("script", req.Sql).Msg("catch new script")
-	err = sh.srv.CreateReport(context.Background(), req.Sql, f)
+	err = sh.srv.CreateReport(pCtx, req.Sql, f)
 	if err != nil {
 		sh.logger.Error().Err(err)
 		_ = f.Close()
@@ -39,14 +35,12 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 		return
 	}
 
-	// Close the file
 	if err := f.Close(); err != nil {
 		sh.logger.Error().Err(err)
 		g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
 
-	// Check the file
 	st, err := os.Stat(f.Name())
 	if err != nil || st.Size() == 0 {
 		sh.logger.Error().Msg("empty report")
@@ -54,8 +48,7 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 		return
 	}
 
-	// If all ok -> send file
-	sh.logger.Info().Int64("file_size", st.Size()).Msg("PDF are successful created and sended")
+	sh.logger.Info().Int64("file_size", st.Size()).Msg("pdf created and sent")
 	g.Header("Content-Type", "application/pdf")
 	g.Header("Content-Disposition", "attachment; filename=report.pdf")
 	g.Status(200)

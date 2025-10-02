@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -44,7 +45,7 @@ func CreateServer(pCtx context.Context, repHand handlers.ReportHandler) *http.Se
 
 func RunServer(server *http.Server) error {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return err
+		log.Fatal(err)
 	}
 	return nil
 }

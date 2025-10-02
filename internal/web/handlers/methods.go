@@ -21,16 +21,22 @@ func NewReportHandler(logger *zerolog.Logger, srv service.ReportService) ReportH
 
 func (sh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
-
 		format := g.Param("format")
+
 		switch format {
 		case "pdf":
 			sh.createReportPDF(g.Request.Context(), g)
 		default:
-			sh.logger.Error().Msg("bad format")
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusBadRequest).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).
+				Str("format", format).
+				Msg("bad format for report")
 			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "you need to choose a format"})
 		}
-
 	}
 }
 
@@ -38,11 +44,22 @@ func (sh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		data, err := sh.srv.GetSchemas(pCtx)
 		if err != nil {
-			sh.logger.Error().Err(err)
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusInternalServerError).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).Err(err)
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		sh.logger.Info().Msg("list of schemas name is returned")
+		sh.logger.Info().Str("method", g.Request.Method).
+			Str("path", g.FullPath()).
+			Str("ip", g.ClientIP()).
+			Int("status", http.StatusOK).
+			Int("res_bytes", g.Writer.Size()).
+			Str("user_agent", g.Request.UserAgent()).
+			Msg("list of schemas returned")
 		g.JSON(http.StatusOK, data)
 
 	}
@@ -53,17 +70,37 @@ func (sh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 
 		schema := g.Query("schema")
 		if schema == "" {
-			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "schema is required"})
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusBadRequest).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).
+				Str("schema_name", schema).
+				Msg("bad name for schema")
+			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "schema name is required"})
 			return
 		}
 
 		data, err := sh.srv.GetTables(pCtx, schema)
 		if err != nil {
-			sh.logger.Error().Err(err)
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusInternalServerError).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).Err(err)
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		sh.logger.Info().Msg("list of schemas name is returned")
+		sh.logger.Info().Str("method", g.Request.Method).
+			Str("path", g.FullPath()).
+			Str("ip", g.ClientIP()).
+			Int("status", http.StatusOK).
+			Int("res_bytes", g.Writer.Size()).
+			Str("user_agent", g.Request.UserAgent()).
+			Msg("list of tables returned")
+
 		g.JSON(http.StatusOK, data)
 
 	}
@@ -75,17 +112,37 @@ func (sh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 		schema := g.Query("schema")
 		table := g.Query("table")
 		if schema == "" || table == "" {
-			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "schema and table are required"})
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusBadRequest).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).
+				Str("schema_name", schema).
+				Str("table_name", table).
+				Msg("bad names for schema and table")
+			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "schema and table names is required"})
 			return
 		}
 		data, err := sh.srv.GetColumns(pCtx, schema, table)
 		fmt.Println(data)
 		if err != nil {
-			sh.logger.Error().Err(err)
+			sh.logger.Error().Str("method", g.Request.Method).
+				Str("path", g.FullPath()).
+				Str("ip", g.ClientIP()).
+				Int("status", http.StatusInternalServerError).
+				Int("res_bytes", g.Writer.Size()).
+				Str("user_agent", g.Request.UserAgent()).Err(err)
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		sh.logger.Info().Msg("list of columns name is returned")
+		sh.logger.Info().Str("method", g.Request.Method).
+			Str("path", g.FullPath()).
+			Str("ip", g.ClientIP()).
+			Int("status", http.StatusOK).
+			Int("res_bytes", g.Writer.Size()).
+			Str("user_agent", g.Request.UserAgent()).
+			Msg("list of tables returned")
 		g.JSON(http.StatusOK, data)
 
 	}

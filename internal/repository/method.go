@@ -106,7 +106,7 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 	defer cancel()
 
 	var (
-		conn *pgx.Conn
+		conn 
 		err  error
 	)
 	dsn := os.Getenv("DB_LINK")

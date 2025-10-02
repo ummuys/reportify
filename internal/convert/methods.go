@@ -32,6 +32,11 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		sampleRows    = 80
 		minColWidthMM = 14.0
 		maxColWidthMM = 70.0
+
+		logoPath  = "internal/convert/pgups_icon.png"
+		logoWmm   = 18.0 // ширина логотипа (высота сохранит пропорции)
+		logoTopY  = 6.0  // отступ логотипа от верхнего края страницы
+		logoSpace = 14.0 // дополнительное место над контентом под логотип
 	)
 
 	sampleN := sampleRows
@@ -51,7 +56,7 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		topBottom   float64
 	}
 	presets := []paperPreset{
-		{"A4", "P", 10, 12}, // ← пробуем сначала портретный A4
+		{"A4", "P", 10, 12},
 		{"A4", "L", 8, 10},
 		{"A3", "P", 10, 12},
 		{"A3", "L", 8, 10},
@@ -73,8 +78,31 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		pdf := gofpdf.New(p.orientation, "mm", p.sizeStr, "")
 		pdf.AddUTF8FontFromBytes("DejaVu", "", ttf)
 		pdf.SetFont("DejaVu", "", baseFontSize)
-		pdf.SetMargins(p.leftRight, p.topBottom, p.leftRight)
+
+		// ВАЖНО: верхнее поле увеличиваем на высоту для логотипа
+		pdf.SetMargins(p.leftRight, p.topBottom+logoSpace, p.leftRight)
+		pdf.SetTopMargin(p.topBottom + logoSpace)
 		pdf.SetAutoPageBreak(true, p.topBottom)
+
+		// Регистрируем и рисуем логотип в хедере (позицию контента не трогаем)
+		_ = pdf.RegisterImageOptions(logoPath, gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true})
+		pdf.SetHeaderFuncMode(func() {
+			pageW, _ := pdf.GetPageSize()
+			_, _, rm, _ := pdf.GetMargins()
+
+			x := pageW - rm - logoWmm
+			y := logoTopY
+			pdf.ImageOptions(
+				logoPath,
+				x, y,
+				logoWmm, 0, // высота по пропорциям
+				false,
+				gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true},
+				0,
+				"",
+			)
+		}, true)
+
 		return pdf
 	}
 
@@ -115,8 +143,8 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		colW         []float64
 		usableW      float64
 		fontSize     float64
-		hadToShrink  bool    // понадобилось ли сжатие/уменьшение кегля на этапе baseFontSize
-		shrinkFactor float64 // итоговое сжатие (<1) относительно исходной ширины на выбранном кегле
+		hadToShrink  bool
+		shrinkFactor float64
 	}
 
 	tryFit := func(p paperPreset) fitResult {
@@ -124,10 +152,8 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		pageW, _ := pdf.GetPageSize()
 		usableW := pageW - 2*p.leftRight
 
-		// 1) проверяем на БАЗОВОМ кегле: влезает без сжатия?
 		cwBase, sumBase := measure(pdf, baseFontSize)
 		if sumBase <= usableW {
-			// растягиваем, чтобы занять всю ширину
 			grow := usableW / sumBase
 			for i := range cwBase {
 				cwBase[i] *= grow
@@ -142,20 +168,17 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 			}
 		}
 
-		// 2) иначе — пытаемся уменьшить кегль и/или сжать
 		font := baseFontSize
 		cw := cwBase
 		sum := sumBase
 		hadToShrink := true
 
 		for {
-			// если не влазит — сначала уменьшаем кегль
 			if sum > usableW && font > minFontSize {
 				font -= 0.5
 				cw, sum = measure(pdf, font)
 				continue
 			}
-			// если всё ещё не влазит — сжимаем пропорционально
 			if sum > usableW {
 				scale := usableW / sum
 				for i := range cw {
@@ -164,12 +187,10 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 						cw[i] = minColWidthMM
 					}
 				}
-				// пересчёт суммы
 				sum = 0
 				for _, v := range cw {
 					sum += v
 				}
-				// финальная нормализация
 				if sum > usableW {
 					ratio := usableW / sum
 					for i := range cw {
@@ -182,7 +203,6 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 			break
 		}
 
-		// растягиваем до полной ширины (чтобы не было пустот)
 		if sum < usableW && sum > 0 {
 			grow := usableW / sum
 			for i := range cw {
@@ -196,16 +216,12 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 			usableW:      usableW,
 			fontSize:     font,
 			hadToShrink:  hadToShrink,
-			shrinkFactor: usableW / sumBase, // насколько пришлось ужимать от базовой ширины
+			shrinkFactor: usableW / sumBase,
 		}
 	}
 
-	// ——— выбор лучшего пресета ———
-
 	var chosen fitResult
 	chosenSet := false
-
-	// 1) сначала ищем первый пресет, где НЕ пришлось сжимать на baseFontSize (т.е. A4-P победит, если реально влазит)
 	for _, p := range presets {
 		fr := tryFit(p)
 		if !fr.hadToShrink {
@@ -214,22 +230,15 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 			break
 		}
 	}
-
-	// 2) если нигде "без сжатия" не получилось — берём тот, где минимальная потеря качества:
-	// максимальный итоговый кегль и наименьшее сжатие
 	if !chosenSet {
 		var bestFont float64 = -1
 		var bestShrink float64 = -1
 		var best fitResult
-
 		for _, p := range presets {
 			fr := tryFit(p)
-			scoreFont := fr.fontSize
-			scoreShrink := fr.shrinkFactor // ближе к 1 — лучше
-
-			if scoreFont > bestFont || (scoreFont == bestFont && scoreShrink > bestShrink) {
-				bestFont = scoreFont
-				bestShrink = scoreShrink
+			if fr.fontSize > bestFont || (fr.fontSize == bestFont && fr.shrinkFactor > bestShrink) {
+				bestFont = fr.fontSize
+				bestShrink = fr.shrinkFactor
 				best = fr
 			}
 		}
@@ -237,10 +246,9 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 	}
 
 	pdf := chosen.pdf
-	pdf.AddPage()
+	pdf.AddPage() // контент стартует ниже: topMargin уже увеличен на logoSpace
 	pdf.SetFont("DejaVu", "", chosen.fontSize)
 
-	// заголовок таблицы
 	pdf.SetFillColor(240, 240, 240)
 	pdf.SetDrawColor(200, 200, 200)
 	for i, htxt := range headers {
@@ -248,7 +256,6 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 	}
 	pdf.Ln(-1)
 
-	// строки
 	alt := false
 	for _, row := range rows {
 		alt = !alt

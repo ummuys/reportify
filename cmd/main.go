@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger.AppLog.Debug().Str("evt", "loggers are successful setted").Msg("")
+	logger.AppLog.Info().Str("msg", "loggers successfully set up").Msg("")
 
 	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
 	if err != nil {
@@ -49,7 +49,7 @@ func main() {
 	repSrv := service.NewReportService(logger.SrvLog, repDB, repConv)
 	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
 	server := web.CreateServer(mainCtx, repHand)
-	logger.AppLog.Debug().Msg("Init interfaces: Service, RSLAPI, Handler")
+	logger.AppLog.Info().Msg("Init interfaces: Service, RSLAPI, Handler")
 
 	errsCh := make(chan error, 2)
 
