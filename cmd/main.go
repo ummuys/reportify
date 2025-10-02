@@ -14,8 +14,6 @@ import (
 	"sq/internal/web/handlers"
 	"sync"
 	"syscall"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -24,11 +22,11 @@ func main() {
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// ENVIRONMENT AND CONFIGS
-	err := godotenv.Load(".env.test")
-	if err != nil {
-		log.Fatal(fmt.Errorf("can't load a env: %v", err))
-	}
+	// // ENVIRONMENT AND CONFIGS
+	// err := godotenv.Load(".env.test")
+	// if err != nil {
+	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
+	// }
 
 	// LOGGER
 	logger, err := logger.InitLogger(os.Getenv("LOGS_PATH"))

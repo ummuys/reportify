@@ -1,5 +1,17 @@
 services:
 
+
+
+  app:
+    container_name: app
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - 1337:1337
+    env_file:
+     - ../.env.test
+
   nginx:
     image: nginx:alpine
     container_name: nginx-proxy

@@ -27,9 +27,6 @@ func CreateServer(pCtx context.Context, repHand handlers.ReportHandler) *http.Se
 	g.GET(GetColumns, repHand.GetColumns(pCtx))
 
 	host := os.Getenv("SERVER_IP")
-	if host == "" {
-		host = "127.0.0.1"
-	}
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "1337"

@@ -3,121 +3,44 @@ package repository
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"os"
-	"sync/atomic"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 )
 
 type rDB struct {
 	logger *zerolog.Logger
-	conn   *pgx.Conn
-	busy   atomic.Bool
+	conn   *pgxpool.Pool
 	dsn    string
-}
-
-func healthy(pCtx context.Context, r *rDB) bool {
-	if r.conn == nil {
-		return false
-	}
-	pingCtx, cancel := context.WithTimeout(pCtx, 2*time.Second)
-	defer cancel()
-	return r.conn.Ping(pingCtx) == nil
-}
-
-func reconnect(pCtx context.Context, r *rDB) error {
-	if r.conn != nil {
-		_ = r.conn.Close(pCtx)
-		r.conn = nil
-	}
-
-	newConn, err := pgx.Connect(pCtx, r.dsn)
-	if err != nil {
-		return err
-	}
-	r.conn = newConn
-	return nil
-}
-
-func doNotDie(pCtx context.Context, r *rDB) {
-	const (
-		tick         = 10 * time.Second
-		backoffStart = 1 * time.Second
-		backoffMax   = 30 * time.Second
-	)
-
-	ticker := time.NewTicker(tick)
-	defer ticker.Stop()
-
-	backoff := backoffStart
-
-	for {
-		select {
-		case <-pCtx.Done():
-			return
-
-		case <-ticker.C:
-			if r.busy.Load() {
-				r.logger.Debug().Msg("skip ping: busy")
-				continue
-			}
-
-			if healthy(pCtx, r) {
-				backoff = backoffStart
-				continue
-			}
-			r.logger.Warn().Msg("db unhealthy or no connection, trying to reconnect")
-
-			for {
-				if err := reconnect(pCtx, r); err == nil {
-					r.logger.Info().Msg("reconnected to DB")
-					backoff = backoffStart
-					break
-				} else {
-					r.logger.Error().Err(err).Msg("reconnect failed")
-				}
-
-				jitter := time.Duration(rand.Int63n(int64(backoff / 2)))
-				wait := backoff + jitter
-
-				select {
-				case <-pCtx.Done():
-					return
-				case <-time.After(wait):
-				}
-
-				if backoff < backoffMax {
-					backoff *= 2
-					if backoff > backoffMax {
-						backoff = backoffMax
-					}
-				}
-			}
-		}
-	}
 }
 
 func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
 	defer cancel()
 
-	var (
-		conn 
-		err  error
-	)
-	dsn := os.Getenv("DB_LINK")
+	cfg, err := pgxpool.ParseConfig(os.Getenv("DB_LINK"))
+	if err != nil {
+		return nil, err
+	}
+	cfg.MinConns = 2
+	cfg.MaxConns = 16
+	cfg.MaxConnLifetime = 45 * time.Minute
+	cfg.MaxConnLifetimeJitter = 5 * time.Minute
+	cfg.MaxConnIdleTime = 2 * time.Minute
 
+	var conn *pgxpool.Pool
 	for i := 0; i < 5; i++ {
-		conn, err = pgx.Connect(ctx, dsn)
+		conn, err = pgxpool.NewWithConfig(ctx, cfg)
 		if err == nil {
 			break
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
+
 	if err != nil {
 		return nil, fmt.Errorf("can't connect to db: %w", err)
 	}
@@ -131,8 +54,6 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 		logger: logger,
 	}
 
-	go doNotDie(pCtx, obj)
-
 	return obj, nil
 
 }
@@ -145,9 +66,6 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	if err := r.conn.Ping(pCtx); err != nil {
 		return nil, nil, fmt.Errorf("db didn't pinged: %w", err)
 	}
-
-	r.busy.Store(true)
-	defer func() { r.busy.Store(false) }()
 
 	rows, err := r.conn.Query(qCtx, script)
 	if err != nil {
@@ -180,8 +98,6 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 
 func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetSchemas").Msg("")
-	r.busy.Store(true)
-	defer func() { r.busy.Store(false) }()
 
 	if err := r.conn.Ping(pCtx); err != nil {
 		return nil, fmt.Errorf("db didn't pinged: %w", err)
@@ -194,14 +110,13 @@ func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	return unpackingRows(rows)
 }
 
 func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetTables").Msg("")
-	r.busy.Store(true)
-	defer func() { r.busy.Store(false) }()
 
 	if err := r.conn.Ping(pCtx); err != nil {
 		return nil, fmt.Errorf("db didn't pinged: %w", err)
@@ -214,15 +129,13 @@ func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]str
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	return unpackingRows(rows)
 
 }
 
 func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map[string]string, error) {
-	r.logger.Debug().Str("evt", "GetColumns").Msg("")
-	r.busy.Store(true)
-	defer r.busy.Store(false)
 
 	if err := r.conn.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("db didn't pinged: %w", err)
@@ -243,11 +156,12 @@ func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map
 func unpackingRows(rows pgx.Rows) (map[string]string, error) {
 	res := make(map[string]string)
 	for rows.Next() {
-		vals, err := rows.Values()
+		var key, value string
+		err := rows.Scan(&key, &value)
 		if err != nil {
 			return nil, err
 		}
-		res[vals[0].(string)] = vals[1].(string)
+		res[key] = value
 	}
 
 	return res, rows.Err()

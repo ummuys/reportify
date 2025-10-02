@@ -125,7 +125,6 @@
 
   <script>
     // ---- настройки ----
-    const API_BASE = "http://localhost:1337";
 
     // ---- утилиты -----------------------------------------------------------
     async function getJSON(url) {
@@ -223,7 +222,7 @@
     // загрузка схем
     async function loadSchemas() {
       try {
-        const data = await getJSON(`${API_BASE}/api/v1/db/schemas`);
+        const data = await getJSON(`/api/v1/db/schemas`);
         state.schemas = parseSchemas(data);
 
         const user = state.schemas.filter(s => !SYSTEM_SCHEMAS.has(s.name));
@@ -249,7 +248,7 @@
       tableSel.disabled = true;
       tableSel.innerHTML = `<option value="">Загрузка...</option>`;
       try {
-        const data = await getJSON(`${API_BASE}/api/v1/db/tables?schema=${encodeURIComponent(schema)}`);
+        const data = await getJSON(`/api/v1/db/tables?schema=${encodeURIComponent(schema)}`);
         state.tables = parseTables(data);
 
         const opt = (t)=>`<option value="${t.name}" title="${titleOf(t)}">${labelOf(t)}</option>`;
@@ -277,7 +276,7 @@
       sqlText.value = "";
 
       try {
-        const data = await getJSON(`${API_BASE}/api/v1/db/columns?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}`);
+        const data = await getJSON(`/api/v1/db/columns?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}`);
         state.columns = parseColumns(data);
 
         // чекбоксы колонок: подпись = комментарий или имя
@@ -364,7 +363,7 @@
     }
     async function postReportAndGetBlob() {
       const format = (state.format || 'PDF').toLowerCase();
-      const url = `${API_BASE}/api/v1/report/${format}`;
+      const url = `/api/v1/report/${format}`;
       const payload = { sql: sqlText.value.trim() };
       const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) { const txt = await res.text().catch(()=> ''); throw new Error(`HTTP ${res.status} ${res.statusText}${txt ? ' — ' + txt : ''}`); }
