@@ -1,0 +1,213 @@
+:root {
+      --bg: #fff; 
+      --panel: hsla(167, 22%, 71%, .5);
+      --muted:hsla(167, 22%, 71%, .5); 
+      --text: hsla(0, 0%, 20%, 1);
+      --drop:#0f172a; 
+      --drop-hover:#1e293b; 
+      --accent:#2563eb; 
+      --green:#26d07c;
+    }
+
+* {
+        box-sizing:border-box;
+    }
+
+    body {
+        margin:0;
+        font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+        background:var(--bg);
+        color:var(--text)
+    }
+
+    .container {
+        max-width:1120px;
+        margin:0 auto;
+        padding:24px
+    
+    }
+
+    h1 {
+        font-size:28px;
+        margin:0 0 6px;
+        font-weight:800
+    }
+
+    p.lead {
+        margin:0 0 20px;
+    }
+
+    .grid {
+        display:grid;
+        gap:20px
+    }
+
+    @media(min-width:1024px) {
+        .grid-2 {
+            grid-template-columns:1fr 1fr
+        }
+    }
+
+    .panel {
+        /*background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));*/
+        background-color: var(--panel);
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:16px;
+        padding:20px
+    }
+
+    .panel h3 {
+        margin:0 0 12px;
+        color: var(--text);
+        font-size:14px;
+        font-weight:700
+    }
+
+    label.small {
+        font-size:12px;
+        margin-bottom:6px;
+        color: var(--text);
+        display:flex;
+        gap:8px;
+        align-items:center
+    }
+
+    .dot {
+        width:8px;
+        height:8px;
+        border-radius:999px;
+        background:var(--green);
+        display:inline-block
+    }
+
+    select,button,input[type="text"] {
+        background: #fff;
+        border:1px solid rgba(255,255,255,.18);
+        color:var(--text);
+        border-radius:12px;
+        padding:10px 12px;
+        font-size:15px;
+        line-height:1.35;
+        width:100%
+    }
+
+    select:disabled {
+        opacity:.65
+    }
+    
+    select:focus {
+        outline:2px solid var(--accent);
+        outline-offset:1px
+    }
+
+    select option, optgroup {
+        background:var(--drop);
+        color:var(--text);
+        font-size:15px;
+        line-height:1.6
+    }
+
+    select option:checked {
+        background:var(--drop-hover) linear-gradient(0deg,var(--drop-hover),var(--drop-hover))
+    }
+
+    .row {
+        display:grid;
+        gap:12px
+    }
+
+    .row-3 {
+        grid-template-columns:1fr 1fr 1fr
+    }
+
+    .toolbar {
+        display:flex;
+        gap:10px;
+        align-items:center
+    }
+
+    .btn {
+        cursor:pointer
+    }
+
+    .btn-ghost {
+        background: hsla(167, 22%, 71%, .8)
+    }
+
+    .btn-ghost:hover {
+        background-color:hsla(167, 22%, 71%, 1)
+    }
+
+    .btn-primary {
+        background:#22c55e;
+        color:#092413;
+        border:0
+    } 
+    
+    .btn-primary:disabled {
+        opacity:.5
+    }
+
+    .chips {
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap
+    }
+
+    .chip {
+        padding:8px 12px;
+        border:1px solid rgba(255,255,255,.14);
+        border-radius:999px;
+        font-size:13px;
+        background:hsla(167, 22%, 71%, .4);
+        cursor:pointer
+    }
+
+    .chip.active {
+        background:hsla(167, 22%, 71%, 1)
+    }
+
+    .list {
+        max-height:220px;
+        overflow:auto;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        padding-right:4px
+    }
+
+    .item {
+        display:flex;
+        gap:8px;
+        align-items:center;
+        padding:10px 12px;
+        border:1px solid rgba(255,255,255,.12);
+        border-radius:12px;
+        background:rgba(255,255,255,.05)
+    }
+
+    .error {
+        color:#ff8080;
+        font-size:13px;
+        margin-top:8px
+    } 
+    
+    .hint {
+        color: var(--text);
+        font-size:12px;
+        margin-top:8px
+    }
+
+    textarea.sql {
+        width:100%;
+        min-height:160px;
+        resize:vertical;
+        background: #fff;
+        border:1px solid hsla(167, 22%, 71%, .8);
+        color: var(--text);
+        border-radius:12px;
+        padding:12px;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        font-size:14px;
+        line-height:1.5
+    }
