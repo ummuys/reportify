@@ -15,4 +15,4 @@ docker compose up -d
 Посмотреть логи у приложения -> docker logs app
 ```
 
-## Автор: Ummuys
+## Автор: Ummuys :)
