@@ -68,10 +68,6 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	qCtx, cancel := context.WithTimeout(pCtx, time.Second*180)
 	defer cancel()
 
-	if err := r.conn.Ping(pCtx); err != nil {
-		return nil, nil, fmt.Errorf("db didn't pinged: %w", err)
-	}
-
 	rows, err := r.conn.Query(qCtx, script)
 	if err != nil {
 		return nil, nil, err
@@ -104,10 +100,6 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetSchemas").Msg("")
 
-	if err := r.conn.Ping(pCtx); err != nil {
-		return nil, fmt.Errorf("db didn't pinged: %w", err)
-	}
-
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
@@ -123,10 +115,6 @@ func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]string, error) {
 	r.logger.Debug().Str("evt", "GetTables").Msg("")
 
-	if err := r.conn.Ping(pCtx); err != nil {
-		return nil, fmt.Errorf("db didn't pinged: %w", err)
-	}
-
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
@@ -141,10 +129,7 @@ func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]str
 }
 
 func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map[string]string, error) {
-
-	if err := r.conn.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("db didn't pinged: %w", err)
-	}
+	r.logger.Debug().Str("evt", "GetColumns").Msg("")
 
 	qctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

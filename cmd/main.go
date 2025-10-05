@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sq/internal/cache"
 	"sq/internal/convert"
 	"sq/internal/logger"
 	"sq/internal/repository"
@@ -22,10 +23,10 @@ func main() {
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// // ENVIRONMENT AND CONFIGS
+	// // ENVIRONMENT AND CONFIGS -- Не нужно для docker
 	// err := godotenv.Load(".env.test")
 	// if err != nil {
-	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err)) -- Не нужно для docker
+	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
 	// }
 
 	// LOGGER
@@ -35,19 +36,23 @@ func main() {
 	}
 	logger.AppLog.Info().Str("msg", "loggers successfully set up").Msg("")
 
+	// INTERFACE
 	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
 	if err != nil {
-		logger.DbLog.Fatal().Err(err)
-		log.Fatal(err)
+		logger.DbLog.Fatal().Err(err).Msg("")
+		return
 	}
-
+	repChc, err := cache.NewReportCache(mainCtx, logger.ChcLog)
+	if err != nil {
+		logger.DbLog.Fatal().Err(err).Msg("")
+		return
+	}
 	repConv := convert.NewReportConvert(logger.SvcLog)
-
-	// INTERFACE
-	repSrv := service.NewReportService(logger.SvcLog, repDB, repConv)
+	repSrv := service.NewReportService(logger.SvcLog, repDB, repConv, repChc)
 	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
+	logger.AppLog.Info().Msg("Init interfaces: repService, repCache, repHandler, repDatabase, repConv")
+
 	server := web.CreateServer(mainCtx, repHand, logger.SrvLog)
-	logger.AppLog.Info().Msg("Init interfaces: Service, RSLAPI, Handler")
 
 	errsCh := make(chan error, 2)
 
@@ -57,7 +62,7 @@ func main() {
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
 			_ = server.Close()
-			logger.AppLog.Error().Err(fmt.Errorf("shutdown: %v", err))
+			logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
 		}
 	})
 

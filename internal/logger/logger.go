@@ -38,11 +38,13 @@ func InitLogger(path string) (*config.Loggers, error) {
 	srvLog := baseLog.With().Str("component", "srv").Logger().Level(logLevels.SrvLvl)
 	svcLog := baseLog.With().Str("component", "svc").Logger().Level(logLevels.SvcLvl)
 	dbLog := baseLog.With().Str("component", "db").Logger().Level(logLevels.DbLvl)
+	chcLog := baseLog.With().Str("component", "chc").Logger().Level(logLevels.ChcLvl)
 
 	return &config.Loggers{
 		AppLog: &appLog,
 		SrvLog: &srvLog,
 		DbLog:  &dbLog,
 		SvcLog: &svcLog,
+		ChcLog: &chcLog,
 	}, nil
 }

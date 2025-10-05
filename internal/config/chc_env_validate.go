@@ -28,6 +28,11 @@ func ParseRepCacheEnv() (*RepCacheConfig, error) {
 		add("cache_db")
 	}
 
+	exp, err := parseInt(os.Getenv("CACHE_EXPIRE_TIME"), true)
+	if err != nil {
+		add("cache_db")
+	}
+
 	if len(sErr) > 0 {
 		return nil, fmt.Errorf(strings.Join(sErr, ", "))
 	}
@@ -36,5 +41,6 @@ func ParseRepCacheEnv() (*RepCacheConfig, error) {
 		Addr:     addr,
 		Password: pass,
 		DB:       db,
+		Exp:      exp,
 	}, nil
 }

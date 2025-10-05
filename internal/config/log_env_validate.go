@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/rs/zerolog"
 )
 
 func ParseLogLevels() (*LogLevels, error) {
@@ -32,7 +30,12 @@ func ParseLogLevels() (*LogLevels, error) {
 
 	svcLvl, err := parseLevel(os.Getenv("LOG_LEVEL_SERVICE"))
 	if err != nil {
-		add("log_level_convert")
+		add("log_level_service")
+	}
+
+	chcLvl, err := parseLevel(os.Getenv("LOG_LEVEL_CACHE"))
+	if err != nil {
+		add("log_level_cache")
 	}
 
 	if len(sErr) > 0 {
@@ -44,18 +47,6 @@ func ParseLogLevels() (*LogLevels, error) {
 		SrvLvl: srvLvl,
 		DbLvl:  dbLvl,
 		SvcLvl: svcLvl,
+		ChcLvl: chcLvl,
 	}, nil
-}
-
-func parseLevel(levelStr string) (zerolog.Level, error) {
-	if levelStr == "" {
-		return 0, fmt.Errorf("empty")
-	}
-
-	level, err := zerolog.ParseLevel(levelStr)
-	if err != nil {
-		return 0, err
-	}
-
-	return level, nil
 }

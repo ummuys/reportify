@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"os"
+	"sq/internal/cache"
 	"sq/internal/convert"
 	models "sq/internal/models/response/get"
 	"sq/internal/repository"
@@ -14,10 +15,12 @@ type repService struct {
 	logger *zerolog.Logger
 	db     repository.ReportDB
 	conv   convert.ReportConvert
+	chc    cache.ReportCache
 }
 
-func NewReportService(logger *zerolog.Logger, db repository.ReportDB, conv convert.ReportConvert) ReportService {
-	return &repService{logger: logger, db: db, conv: conv}
+func NewReportService(logger *zerolog.Logger, db repository.ReportDB,
+	conv convert.ReportConvert, chc cache.ReportCache) ReportService {
+	return &repService{logger: logger, db: db, conv: conv, chc: chc}
 }
 
 func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File) error {
