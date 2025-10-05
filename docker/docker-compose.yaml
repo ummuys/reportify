@@ -1,7 +1,5 @@
 services:
 
-
-
   app:
     container_name: app
     build:
@@ -14,7 +12,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: nginx-proxy
+    container_name: nginx
     ports:
       - "8088:80"
     volumes:
@@ -23,3 +21,22 @@ services:
     command: >
       sh -c "chgrp -R nginx /var/www && nginx -g 'daemon off;'"
 
+  cache:
+    image: redis:7.2.11-alpine3.21
+    container_name: cache
+    volumes:
+      - cache:/data
+    ports:
+        - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}  
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  cache:

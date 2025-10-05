@@ -6,19 +6,21 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sq/internal/middleware"
 	"sq/internal/web/handlers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 )
 
-func CreateServer(pCtx context.Context, repHand handlers.ReportHandler) *http.Server {
+func CreateServer(pCtx context.Context, repHand handlers.ReportHandler, logger *zerolog.Logger) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
+	g.Use(middleware.RequestLogger(logger))
 	g.Use(gin.Recovery())
 	g.Use(cors.Default())
-
 	// g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	g.POST(CreateReportPath, repHand.CreateReport(pCtx))

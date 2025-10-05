@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	"os"
+	"sq/internal/config"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -14,31 +14,36 @@ import (
 type rDB struct {
 	logger *zerolog.Logger
 	conn   *pgxpool.Pool
-	dsn    string
 }
 
 func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error) {
 
-	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*10)
 	defer cancel()
 
-	cfg, err := pgxpool.ParseConfig(os.Getenv("DB_LINK"))
+	cfg, err := config.ParseRepDBeEnv()
 	if err != nil {
 		return nil, err
 	}
-	cfg.MinConns = 2
-	cfg.MaxConns = 16
-	cfg.MaxConnLifetime = 45 * time.Minute
-	cfg.MaxConnLifetimeJitter = 5 * time.Minute
-	cfg.MaxConnIdleTime = 2 * time.Minute
+
+	poolCfg, err := pgxpool.ParseConfig(cfg.Addr)
+	if err != nil {
+		return nil, err
+	}
+	poolCfg.MinConns = cfg.MinConn
+	poolCfg.MaxConns = cfg.MaxConn
+	poolCfg.MaxConnLifetime = time.Duration(cfg.MaxConnLifetime) * time.Second
+	poolCfg.MaxConnLifetimeJitter = time.Duration(cfg.MaxConnLifetimeJitter) * time.Second
+	poolCfg.MaxConnIdleTime = time.Duration(cfg.MaxConnIdleTime) * time.Second
+	poolCfg.HealthCheckPeriod = time.Duration(cfg.HealthCheckPeriod) * time.Second
 
 	var conn *pgxpool.Pool
 	for i := 0; i < 5; i++ {
-		conn, err = pgxpool.NewWithConfig(ctx, cfg)
+		conn, err = pgxpool.NewWithConfig(ctx, poolCfg)
 		if err == nil {
 			break
 		}
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	if err != nil {

@@ -8,14 +8,14 @@ type LogLevels struct {
 	AppLvl zerolog.Level
 	SrvLvl zerolog.Level
 	DbLvl  zerolog.Level
-	CnvLvl zerolog.Level
+	SvcLvl zerolog.Level
 }
 
 type Loggers struct {
 	AppLog *zerolog.Logger // APP
 	SrvLog *zerolog.Logger // SERVER
 	DbLog  *zerolog.Logger // DATABASE
-	CnvLog *zerolog.Logger // CONVERT
+	SvcLog *zerolog.Logger // SERVICE
 }
 
 //---LOGS---

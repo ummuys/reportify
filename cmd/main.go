@@ -25,7 +25,7 @@ func main() {
 	// // ENVIRONMENT AND CONFIGS
 	// err := godotenv.Load(".env.test")
 	// if err != nil {
-	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
+	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err)) -- Не нужно для docker
 	// }
 
 	// LOGGER
@@ -41,12 +41,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repConv := convert.NewReportConvert(logger.CnvLog)
+	repConv := convert.NewReportConvert(logger.SvcLog)
 
 	// INTERFACE
-	repSrv := service.NewReportService(logger.SrvLog, repDB, repConv)
+	repSrv := service.NewReportService(logger.SvcLog, repDB, repConv)
 	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
-	server := web.CreateServer(mainCtx, repHand)
+	server := web.CreateServer(mainCtx, repHand, logger.SrvLog)
 	logger.AppLog.Info().Msg("Init interfaces: Service, RSLAPI, Handler")
 
 	errsCh := make(chan error, 2)
