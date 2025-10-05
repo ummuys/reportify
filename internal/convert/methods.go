@@ -36,7 +36,7 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 		logoPath  = "internal/convert/pgups_icon.png"
 		logoWmm   = 18.0 // ширина логотипа (высота сохранит пропорции)
 		logoTopY  = 6.0  // отступ логотипа от верхнего края страницы
-		logoSpace = 14.0 // дополнительное место над контентом под логотип
+		logoSpace = 20   // дополнительное место над контентом под логотип
 	)
 
 	sampleN := sampleRows

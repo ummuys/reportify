@@ -10,10 +10,12 @@ import (
 
 func RequestLogger(logger *zerolog.Logger) gin.HandlerFunc {
 	return func(g *gin.Context) {
+
+		// Latenсy нормально не отображается
 		start := time.Now()
 		g.Next()
 		status := g.Writer.Status()
-		latency := time.Since(start)
+		latency := time.Since(start).Milliseconds()
 
 		msg := g.GetString("msg")
 
@@ -40,7 +42,7 @@ func RequestLogger(logger *zerolog.Logger) gin.HandlerFunc {
 			Str("user_agent", g.Request.UserAgent()).
 			Int("status", status).
 			Int("res_bytes", resBytes).
-			Dur("latency", latency).
+			Int64("latency", latency).
 			Logger()
 
 		if len(g.Errors) > 0 {

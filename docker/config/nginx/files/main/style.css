@@ -11,20 +11,38 @@
 
 * {
         box-sizing:border-box;
+  
+    }
+
+
+    @font-face {
+        font-family: 'OpenSansL';                     /* ← имя, под которым ты потом используешь шрифт */
+        src: url('../fonts/OpenSans/OpenSans-Light.ttf')    /* ← путь к файлу шрифта */
+            format('truetype');                   /* ← формат файла (ttf = TrueType Font) */
+        font-weight: 300;                          /* ← “толщина” (обычный) */
+        font-style: normal;                        /* ← стиль (normal, italic и т.п.) */
+    }
+
+    @font-face {
+        font-family: 'Montserrat';                     /* ← имя, под которым ты потом используешь шрифт */
+        src: url('../fonts/Montserrat/Montserrat-Medium.ttf')    /* ← путь к файлу шрифта */
+            format('truetype');                   /* ← формат файла (ttf = TrueType Font) */
+        font-weight: 400;                          /* ← “толщина” (обычный) */
+        font-style: normal;                        /* ← стиль (normal, italic и т.п.) */
     }
 
     body {
         margin:0;
-        font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+        /* font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; */
+        font-family: 'Montserrat';
         background:var(--bg);
         color:var(--text)
     }
 
     .container {
-        max-width:1120px;
+        max-width:50vw;
         margin:0 auto;
-        padding:24px
-    
+        padding:100px;
     }
 
     h1 {
@@ -59,12 +77,13 @@
     .panel h3 {
         margin:0 0 12px;
         color: var(--text);
-        font-size:14px;
-        font-weight:700
+        font-size:18px;
+        font-weight:700;
     }
 
     label.small {
-        font-size:12px;
+        font-size:16px;
+        font-weight:500;
         margin-bottom:6px;
         color: var(--text);
         display:flex;
@@ -183,7 +202,7 @@
         padding:10px 12px;
         border:1px solid rgba(255,255,255,.12);
         border-radius:12px;
-        background-color: #0d6037 
+        background-color:rgb(68, 164, 146)
         /* #26d07c  */
     }
 
