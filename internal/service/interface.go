@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"os"
-	models "sq/internal/models/response/get"
+	models "sq/internal/models/response"
 )
 
 type ReportService interface {

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"sq/internal/cache"
 	"sq/internal/convert"
-	models "sq/internal/models/response/get"
+	models "sq/internal/models/response"
 	"sq/internal/repository"
 	"strings"
 

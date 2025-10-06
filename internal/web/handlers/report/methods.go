@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
-	models "sq/internal/models/response/get"
+	models "sq/internal/models/response"
 	"sq/internal/service"
 
 	"github.com/gin-gonic/gin"
