@@ -26,3 +26,7 @@ type Column struct {
 	Name    string `json:"column_name"`
 	Comment string `json:"column_comm"`
 }
+
+type QueryList struct {
+	Querys []string `json:"querys"`
+}

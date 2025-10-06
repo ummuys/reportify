@@ -35,3 +35,7 @@ func (mrs *mockRepService) GetTables(pCtx context.Context, schemaName string) (*
 func (mrs *mockRepService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
 	return nil, nil
 }
+
+func (mrs *mockRepService) GetHashQuerys(pCtx context.Context, key string) ([]string, error) {
+	return nil, nil
+}

@@ -43,27 +43,27 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	}, nil
 }
 
-func (rc *repCache) Set(pCtx context.Context, key string, value any) error {
+func (rc *repCache) SetQuery(pCtx context.Context, key string, value any) error {
 	rc.logger.Debug().Str("evt", "call Set").Msg("")
 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
 
-	err := rc.cli.Set(ctx, key, value, rc.expire).Err()
+	err := rc.cli.LPush(ctx, key, value).Err()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rc *repCache) Get(pCtx context.Context, key string) (string, error) {
+func (rc *repCache) GetQuerys(pCtx context.Context, key string) ([]string, error) {
 	rc.logger.Debug().Str("evt", "call Get").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
 
-	value, err := rc.cli.Get(ctx, key).Result()
+	value, err := rc.cli.LRange(ctx, key, 0, -1).Result()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return value, nil

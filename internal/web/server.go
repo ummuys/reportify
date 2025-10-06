@@ -26,6 +26,7 @@ func CreateServer(pCtx context.Context, repHand handlers.ReportHandler, logger *
 	g.GET(GetSchemas, repHand.GetSchemas(pCtx))
 	g.GET(GetTables, repHand.GetTables(pCtx))
 	g.GET(GetColumns, repHand.GetColumns(pCtx))
+	g.GET(GetHashQuerys)
 
 	host := os.Getenv("SERVER_IP")
 	port := os.Getenv("SERVER_PORT")
