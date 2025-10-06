@@ -24,7 +24,7 @@ dev-update-app:
 	docker compose -f $(DEV_COMPOSE) up -d app
 
 dev-update-front:
-	docker restart -f $(DEV_COMPOSE) nginx
+	docker restart nginx
 
 dev-psql:
 	docker exec -it db psql -U admin -d base
@@ -53,7 +53,7 @@ prod-update-app:
 	docker compose -f $(PROD_COMPOSE) up -d app
 
 prod-update-front:
-	docker restart -f $(PROD_COMPOSE) nginx
+	docker restart nginx
 	
 
 check_app_logs:
