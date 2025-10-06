@@ -49,7 +49,6 @@
 
     const schemaSel = el("schemaSelect");
     const tableSel  = el("tableSelect");
-    const fakeFieldSelect = el("fakeFieldSelect");
     const list = el("columnsList");
     const btnAll = el("btnAll");
     const btnClear = el("btnClear");
@@ -139,10 +138,8 @@
     }
 
     // загрузка колонок
-    async function loadColumns(schema, table){
+    async function loadColumns(schema, table) {
       list.innerHTML = "";
-      fakeFieldSelect.disabled = true;
-      fakeFieldSelect.innerHTML = `<option>Загрузка...</option>`;
       btnAll.disabled = btnClear.disabled = true;
       btnDownload.disabled = true;
       chosenCounter.style.display = "none";
@@ -162,22 +159,19 @@
           </label>
         `).join("");
 
-        fakeFieldSelect.disabled = false;
-        fakeFieldSelect.innerHTML = `<option>Список полей</option>`;
-        btnAll.disabled = btnClear.disabled = state.columns.length===0;
-
-        // селект сортировки — те же подписи
+        // кнопки и сортировка
+        btnAll.disabled = btnClear.disabled = state.columns.length === 0;
         sortField.innerHTML =
           `<option value="">Поле</option>` +
-          state.columns.map(c=>`<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
+          state.columns.map(c => `<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
 
-        el("columnsError").style.display="none";
+        el("columnsError").style.display = "none";
         updateButtons();
-      } catch(e) {
-        el("columnsError").textContent = "Не удалось получить столбцы с /api/v1/db/columns. " + (e.message||e);
-        el("columnsError").style.display="";
+      } catch (e) {
+        el("columnsError").textContent = "Не удалось получить столбцы с /api/v1/db/columns. " + (e.message || e);
+        el("columnsError").style.display = "";
       }
-    }
+}
 
     // события выбора
     schemaSel.addEventListener("change", ()=>{

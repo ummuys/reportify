@@ -23,7 +23,6 @@
           <label class="small">Схема БД <span class="dot"></span></label>
           <select id="schemaSelect" aria-label="Схема"><option value="">Загрузка...</option></select>
           <div id="schemaError" class="error" style="display:none"></div>
-          <div class="hint">Если не загрузится — смотри консоль.</div>
         </div>
         <div style="height:14px"></div>
         <div>
@@ -37,7 +36,6 @@
       <div class="panel">
         <h3>2) Выбрать поля</h3>
         <div class="toolbar">
-          <select id="fakeFieldSelect" disabled><option>— Сначала выберите таблицу —</option></select>
           <button id="btnAll" class="btn btn-ghost" disabled>Все</button>
           <button id="btnClear" class="btn btn-ghost" disabled>Очистить</button>
         </div>
@@ -53,16 +51,12 @@
       <h3>3) Сортировка</h3>
       <div class="row row-3">
         <select id="sortField"><option value="">Поле</option></select>
-        <select id="sortType">
-          <option>Текст</option><option>Число</option><option>Дата</option>
-        </select>
         <select id="sortDir">
           <option value="ASC">По возрастанию</option><option value="DESC">По убыванию</option>
         </select>
       </div>
       <div style="height:8px"></div>
       <button class="btn btn-ghost" id="btnAddSort" disabled>Добавить уровень сортировки</button>
-      <div class="hint">Сейчас используется один уровень ORDER BY (поле + направление).</div>
     </div>
 
     <!-- 4) Формат + 5) Экспорт -->
@@ -83,7 +77,6 @@
           <button id="btnDownload" class="btn btn-primary" disabled>⬇️ Скачать</button>
           <button class="btn btn-ghost" id="btnPreview">Предпросмотр</button>
         </div>
-        <div class="hint">POST на <code>api/v1/report/:format</code> с JSON <code>{ "sql": "..." }</code>.</div>
       </div>
     </div>
 
