@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	models "sq/internal/models/response"
 	"sq/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -18,12 +19,13 @@ func NewReportHandler(logger *zerolog.Logger, srv service.ReportService) ReportH
 	return &repHandler{logger: logger, srv: srv}
 }
 
-func (sh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
+		rh.logger.Debug().Str("evt", "call CreateReport")
 		format := g.Param("format")
 		switch format {
 		case "pdf":
-			sh.createReportPDF(g.Request.Context(), g)
+			rh.createReportPDF(g.Request.Context(), g)
 		default:
 			g.Set("msg", "bad format")
 			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "format is required"})
@@ -31,9 +33,10 @@ func (sh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (sh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		data, err := sh.srv.GetSchemas(pCtx)
+		rh.logger.Debug().Str("evt", "call GetSchemas")
+		data, err := rh.srv.GetSchemas(pCtx)
 		if err != nil {
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -44,9 +47,9 @@ func (sh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (sh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
-
+		rh.logger.Debug().Str("evt", "call GetTables")
 		schema := g.Query("schema")
 		if schema == "" {
 			g.Set("msg", "schema name: "+schema)
@@ -54,7 +57,7 @@ func (sh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		data, err := sh.srv.GetTables(pCtx, schema)
+		data, err := rh.srv.GetTables(pCtx, schema)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -66,9 +69,9 @@ func (sh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (sh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
-
+		rh.logger.Debug().Str("evt", "call GetColumns")
 		schema := g.Query("schema")
 		table := g.Query("table")
 		if schema == "" || table == "" {
@@ -76,7 +79,7 @@ func (sh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "schema and table names are required"})
 			return
 		}
-		data, err := sh.srv.GetColumns(pCtx, schema, table)
+		data, err := rh.srv.GetColumns(pCtx, schema, table)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -85,5 +88,19 @@ func (sh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 		g.Set("msg", "column names are returned")
 		g.JSON(http.StatusOK, data)
 
+	}
+}
+
+func (rh *repHandler) GetHashQuerys(pCtx context.Context) gin.HandlerFunc {
+	return func(g *gin.Context) {
+
+		querys, err := rh.srv.GetHashQuerys(pCtx, "good key")
+		if err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		g.Set("msg", "list querys are returned")
+		g.JSON(http.StatusOK, models.QueryList{Querys: querys})
 	}
 }

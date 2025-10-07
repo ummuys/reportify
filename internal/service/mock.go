@@ -5,7 +5,7 @@ import (
 	"os"
 	"sq/internal/cache"
 	"sq/internal/convert"
-	models "sq/internal/models/response/get"
+	models "sq/internal/models/response"
 	"sq/internal/repository"
 )
 
@@ -33,5 +33,9 @@ func (mrs *mockRepService) GetTables(pCtx context.Context, schemaName string) (*
 }
 
 func (mrs *mockRepService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
+	return nil, nil
+}
+
+func (mrs *mockRepService) GetHashQuerys(pCtx context.Context, key string) ([]string, error) {
 	return nil, nil
 }

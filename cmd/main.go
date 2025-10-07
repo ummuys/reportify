@@ -10,9 +10,11 @@ import (
 	"sq/internal/convert"
 	"sq/internal/logger"
 	"sq/internal/repository"
+	"sq/internal/secure"
 	"sq/internal/service"
 	"sq/internal/web"
-	"sq/internal/web/handlers"
+	ha "sq/internal/web/handlers/auth"
+	hr "sq/internal/web/handlers/report"
 	"sync"
 	"syscall"
 )
@@ -47,12 +49,14 @@ func main() {
 		logger.DbLog.Fatal().Err(err).Msg("")
 		return
 	}
+	tm := secure.NewTokenManager()
 	repConv := convert.NewReportConvert(logger.SvcLog)
 	repSrv := service.NewReportService(logger.SvcLog, repDB, repConv, repChc)
-	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
-	logger.AppLog.Info().Msg("Init interfaces: repService, repCache, repHandler, repDatabase, repConv")
+	repHand := hr.NewReportHandler(logger.SrvLog, repSrv)
+	authHand := ha.NewAuthHandler(logger.SrvLog, tm)
+	logger.AppLog.Info().Msg("Init interfaces: repService, repCache, repHandler, authHandler, repDatabase, repConv")
 
-	server := web.CreateServer(mainCtx, repHand, logger.SrvLog)
+	server := web.CreateServer(mainCtx, repHand, authHand, logger.SrvLog)
 
 	errsCh := make(chan error, 2)
 
