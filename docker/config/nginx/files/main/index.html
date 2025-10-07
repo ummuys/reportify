@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Конструктор отчёта</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="Loader/loader.css">
+  <script src="Loader/loader.js" defer></script>
   <script src="main.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -90,7 +92,15 @@
   </div>
 
   <script>
-    
+    // Показываем loader при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+      loader.show();
+      
+      // Имитируем загрузку данных
+      setTimeout(() => {
+        loader.hide();
+      }, 1000);
+    });
   </script>
 </body>
 </html>
