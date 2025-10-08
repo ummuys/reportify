@@ -1,7 +1,8 @@
 // Конфигурация
 const config = {
     API_BASE: "http://127.0.0.1:8088/",
-    AuthPath: "api/v1/secure/auth"
+    AuthPath: "api/v1/secure/auth",
+    MAIN_MENU: "http://127.0.0.1:8088/menu/"
 };
 
 // Элементы
@@ -81,7 +82,7 @@ btnLogin.addEventListener("click", async () => {
         render();
 
         // Редирект (можно убрать, если SPA)
-        window.location.href = config.API_BASE;
+        window.location.href = config.MAIN_MENU;
 
     } catch (e) {
         log("Ошибка при входе:", e.message);

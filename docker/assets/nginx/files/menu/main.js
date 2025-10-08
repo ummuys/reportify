@@ -131,26 +131,36 @@ function updateButtons(){
 
 // загрузка схем
 async function loadSchemas() {
-  try {
-    const data = await getJSON(`${API_BASE}/api/v1/db/schemas`);
-    state.schemas = parseSchemas(data);
+	try {
+		loader.show() // Показываем loader
+		const data = await getJSON(`${API_BASE}/api/v1/db/schemas`)
+		state.schemas = parseSchemas(data)
 
-    const user = state.schemas.filter(s => !SYSTEM_SCHEMAS.has(s.name));
-    const sys  = state.schemas.filter(s =>  SYSTEM_SCHEMAS.has(s.name));
+		const user = state.schemas.filter(s => !SYSTEM_SCHEMAS.has(s.name))
+		const sys = state.schemas.filter(s => SYSTEM_SCHEMAS.has(s.name))
 
-    const opt = (s)=>`<option value="${s.name}" title="${titleOf(s)}">${labelOf(s)}</option>`;
+		const opt = s =>
+			`<option value="${s.name}" title="${titleOf(s)}">${labelOf(s)}</option>`
 
-    let html = `<option value="">Выберите схему</option>`;
-    if (user.length) html += `<optgroup label="Пользовательские">${user.map(opt).join("")}</optgroup>`;
-    if (sys.length)  html += `<optgroup label="Системные">${sys.map(opt).join("")}</optgroup>`;
-    schemaSel.innerHTML = html;
+		let html = `<option value="">Выберите схему</option>`
+		if (user.length)
+			html += `<optgroup label="Пользовательские">${user
+				.map(opt)
+				.join('')}</optgroup>`
+		if (sys.length)
+			html += `<optgroup label="Системные">${sys.map(opt).join('')}</optgroup>`
+		schemaSel.innerHTML = html
 
-    el("schemaError").style.display="none";
-  } catch(e) {
-    schemaSel.innerHTML = `<option value="">Ошибка загрузки</option>`;
-    el("schemaError").textContent = "Не удалось получить список схем с /api/v1/db/schemas. " + (e.message||e);
-    el("schemaError").style.display="";
-  }
+		el('schemaError').style.display = 'none'
+	} catch (e) {
+		schemaSel.innerHTML = `<option value="">Ошибка загрузки</option>`
+		el('schemaError').textContent =
+			'Не удалось получить список схем с /api/v1/db/schemas. ' +
+			(e.message || e)
+		el('schemaError').style.display = ''
+	} finally {
+		loader.hide() // Скрываем loader в любом случае
+	}
 }
 
 // загрузка таблиц
