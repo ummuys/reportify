@@ -249,10 +249,57 @@
 
     // Кнопки
     const btnPreview = document.getElementById('btnPreview');
+    // ---- История отчётов ----
+    const historyList = document.getElementById('historyList');
+    let reportHistory = JSON.parse(localStorage.getItem('reportHistory') || "[]");
+
+    function saveHistoryEntry() {
+      const entry = {
+        schema: state.schema,
+        table: state.table,
+        sql: sqlText.value.trim(),
+        time: new Date().toLocaleString()
+      };
+      reportHistory.unshift(entry);
+      if (reportHistory.length > 10) reportHistory = reportHistory.slice(0, 10);
+      localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = reportHistory.length
+        ? reportHistory.map((r, i) =>
+            `<li data-i="${i}">
+              <b>${r.schema}.${r.table}</b>
+              <small>${r.time}</small>
+            </li>`).join('')
+        : '<li><small>Пока нет отчётов</small></li>';
+    }
+
+    historyList.addEventListener('click', e => {
+      const li = e.target.closest('li[data-i]');
+      if (!li) return;
+      const item = reportHistory[+li.dataset.i];
+      if (!item) return;
+      state.schema = item.schema;
+      state.table = item.table;
+      sqlText.value = item.sql;
+      alert(`Загружен SQL из истории:\n\n${item.sql}`);
+    });
+
+    renderHistory();
+
+
     btnDownload.addEventListener('click', async () => {
       if (!sqlText.value.trim()) { alert('SQL пустой'); return; }
       btnDownload.disabled = true; btnDownload.textContent = 'Готовим...';
-      try { const { blob, filename } = await postReportAndGetBlob(); saveBlob(blob, filename); }
+      
+      try {
+        const { blob, filename } = await postReportAndGetBlob();
+        saveBlob(blob, filename);
+        saveHistoryEntry();
+      }
+
       catch (e) { alert('Не удалось сформировать отчёт: ' + (e.message || e)); console.error(e); }
       finally { btnDownload.textContent = '⬇️ Скачать'; updateButtons(); }
     });

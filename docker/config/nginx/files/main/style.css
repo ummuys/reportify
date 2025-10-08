@@ -42,7 +42,7 @@
     .container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 100px;
+        padding: 50px;
     }
 
     h1 {
@@ -204,6 +204,7 @@
         border:1px solid rgba(255,255,255,.12);
         border-radius:12px;
         background-color: hsla(167, 22%, 71%, .5);
+        /* margin-top: 8px; */
     }
 
     .error {
@@ -231,3 +232,59 @@
         font-size:14px;
         line-height:1.5
     }
+
+    /* --- Боковая панель истории --- */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 300px;
+  background: hsla(167, 22%, 71%, .5);
+  border-right: 1px solid hsla(167, 22%, 71%, .7);
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-list li {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: hsla(167, 22%, 71%, .6);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word; /* чтобы длинные SQL не выходили за границы */
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.history-list li:hover {
+  background: hsla(167, 22%, 71%, .7);
+  transform: scale(1.02);
+}
+
+.history-list li small {
+  /* display: block; */
+  color: #555;
+  font-size: 12px;
+  margin-top: 4px;
+}
