@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
-	"sq/internal/cache"
-	"sq/internal/convert"
-	"sq/internal/logger"
-	"sq/internal/repository"
-	"sq/internal/service"
+	"sq/internal/di"
 	"sq/internal/web"
-	"sq/internal/web/handlers"
 	"sync"
 	"syscall"
 )
+
+// // ENVIRONMENT AND CONFIGS -- Не нужно для docker
+// err := godotenv.Load(".env.test")
+// if err != nil {
+// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
+// }
 
 func main() {
 
@@ -23,36 +23,24 @@ func main() {
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// // ENVIRONMENT AND CONFIGS -- Не нужно для docker
-	// err := godotenv.Load(".env.test")
-	// if err != nil {
-	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
-	// }
-
-	// LOGGER
-	logger, err := logger.InitLogger(os.Getenv("LOGS_PATH"))
+	// INTERFACES
+	tools, err := di.InitTools()
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger.AppLog.Info().Str("msg", "loggers successfully set up").Msg("")
+	tools.Logger.AppLog.Info().Msg("Start the app")
 
-	// INTERFACE
-	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
+	repos, err := di.InitRepositorys(mainCtx, tools.Logger)
 	if err != nil {
-		logger.DbLog.Fatal().Err(err).Msg("")
-		return
+		tools.Logger.AppLog.Fatal().Err(err).Msg("")
 	}
-	repChc, err := cache.NewReportCache(mainCtx, logger.ChcLog)
-	if err != nil {
-		logger.DbLog.Fatal().Err(err).Msg("")
-		return
-	}
-	repConv := convert.NewReportConvert(logger.SvcLog)
-	repSrv := service.NewReportService(logger.SvcLog, repDB, repConv, repChc)
-	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
-	logger.AppLog.Info().Msg("Init interfaces: repService, repCache, repHandler, repDatabase, repConv")
 
-	server := web.CreateServer(mainCtx, repHand, logger.SrvLog)
+	srv := di.InitServices(repos, tools)
+	sec := di.InitSecure()
+	hand := di.InitHandlers(tools, srv, sec)
+	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
+
+	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
 
 	errsCh := make(chan error, 2)
 
@@ -62,19 +50,19 @@ func main() {
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
 			_ = server.Close()
-			logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
+			tools.Logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
 		}
 	})
 
 	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
 			errsCh <- err
-			logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
+			tools.Logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
 		}
 	})
 
 	<-mainCtx.Done()
-	logger.AppLog.Info().Msg("turning down the server")
+	tools.Logger.AppLog.Info().Msg("turning down the server")
 	wg.Wait()
 	close(errsCh)
 	var hadErr bool
@@ -82,13 +70,13 @@ func main() {
 	for err := range errsCh {
 		if err != nil {
 			hadErr = true
-			logger.AppLog.Error().Err(err).Send()
+			tools.Logger.AppLog.Error().Err(err).Send()
 		}
 	}
 
 	if hadErr {
-		logger.AppLog.Error().Msg("fatal shutdown")
+		tools.Logger.AppLog.Error().Msg("fatal shutdown")
 	} else {
-		logger.AppLog.Info().Msg("shutdown successful")
+		tools.Logger.AppLog.Info().Msg("shutdown successful")
 	}
 }

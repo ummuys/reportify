@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auth UI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card login">
+      <div>
+        <h1>Вход в систему</h1>
+        <div class="hint">Минималистичный интерфейс для получения access токена</div>
+      </div>
+
+      <div>
+        <label for="username">Имя пользователя</label>
+        <input id="username" type="text" autocomplete="username" value="demo_user">
+      </div>
+
+      <div>
+        <label for="password">Пароль</label>
+        <input id="password" type="password" autocomplete="current-password" value="password123">
+      </div>
+
+      <div class="row">
+        <button id="btnLogin">Войти</button>
+        <button class="ghost" id="btnLogout" style="display:none">Выйти</button>
+      </div>
+
+      <div style="margin-top:6px" class="small">
+        Эндпоинт сервера: <code>api/v1/secure/auth</code>
+      </div>
+    </div>
+
+    <div class="card panel">
+      <div class="status" id="status">
+        <div class="dot"></div>
+        <div id="statusText">Не авторизован</div>
+      </div>
+
+      <div>
+        <div class="small">Access token</div>
+        <div class="token-box" id="accessBox"><em class="hint">пусто</em></div>
+      </div>
+
+      <div>
+        <div class="small">Лог запросов</div>
+        <div class="token-box" id="logBox" style="max-height:220px;overflow:auto;font-size:12px;">
+          <em class="hint">здесь будут сообщения</em>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

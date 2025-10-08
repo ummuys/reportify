@@ -16,10 +16,14 @@ services:
     ports:
       - "8088:80"
     volumes:
-      - ./../config/nginx/files/:/var/www/:rw
-      - ./../config/nginx/main.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./../assets/nginx/files/:/var/www/:rw
+      - ./../assets/nginx/main.conf:/etc/nginx/conf.d/default.conf:ro
     command: >
-      sh -c "chgrp -R nginx /var/www && nginx -g 'daemon off;'"
+      sh -c "chown -R nginx:nginx /var/www && 
+             chmod -R 755 /var/www && 
+             nginx -g 'daemon off;'"
+    depends_on:
+      - app
 
   cache:
     image: redis:7.2.11-alpine3.21

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	models "sq/internal/models/request/post"
+	"sq/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
