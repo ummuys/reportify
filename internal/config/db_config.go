@@ -1,6 +1,6 @@
 package config
 
-type RepDBConfig struct {
+type DBConfig struct {
 	Addr                  string
 	MinConn               int32
 	MaxConn               int32

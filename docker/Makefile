@@ -10,7 +10,7 @@ dev-start:
 dev-stop:
 	docker compose -f $(DEV_COMPOSE) down
 
-dev-update-all:
+dev-update:
 	docker compose -f $(DEV_COMPOSE) down
 	docker image rm dev-app
 	docker compose -f $(DEV_COMPOSE) up -d

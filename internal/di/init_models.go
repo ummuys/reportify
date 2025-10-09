@@ -12,11 +12,13 @@ import (
 
 type Services struct {
 	ReportService service.ReportService
+	UserService   service.UserService
 }
 
 type Repositorys struct {
 	ReportDB    repository.ReportDB
 	ReportCache cache.ReportCache
+	UserDB      repository.UserDB
 }
 
 type Tools struct {

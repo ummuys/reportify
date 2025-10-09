@@ -13,7 +13,7 @@ import (
 
 type rDB struct {
 	logger *zerolog.Logger
-	conn   *pgxpool.Pool
+	pool   *pgxpool.Pool
 }
 
 func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error) {
@@ -37,9 +37,9 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 	poolCfg.MaxConnIdleTime = time.Duration(cfg.MaxConnIdleTime) * time.Second
 	poolCfg.HealthCheckPeriod = time.Duration(cfg.HealthCheckPeriod) * time.Second
 
-	var conn *pgxpool.Pool
+	var pool *pgxpool.Pool
 	for i := 0; i < 5; i++ {
-		conn, err = pgxpool.NewWithConfig(ctx, poolCfg)
+		pool, err = pgxpool.NewWithConfig(ctx, poolCfg)
 		if err == nil {
 			break
 		}
@@ -50,12 +50,12 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 		return nil, fmt.Errorf("can't connect to db: %w", err)
 	}
 
-	if err = conn.Ping(ctx); err != nil {
+	if err = pool.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("db didn't pinged: %w", err)
 	}
 
 	obj := &rDB{
-		conn:   conn,
+		pool:   pool,
 		logger: logger,
 	}
 
@@ -68,7 +68,7 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 	qCtx, cancel := context.WithTimeout(pCtx, time.Second*180)
 	defer cancel()
 
-	rows, err := r.conn.Query(qCtx, script)
+	rows, err := r.pool.Query(qCtx, script)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -103,7 +103,7 @@ func (r *rDB) GetSchemas(pCtx context.Context) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	rows, err := r.conn.Query(ctx, qSchemaWithComment)
+	rows, err := r.pool.Query(ctx, qSchemaWithComment)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]str
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	rows, err := r.conn.Query(ctx, qTablesWithComment, schemaName)
+	rows, err := r.pool.Query(ctx, qTablesWithComment, schemaName)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map
 	qctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	rows, err := r.conn.Query(qctx, qColumnsWithComment, schemaName, tableName)
+	rows, err := r.pool.Query(qctx, qColumnsWithComment, schemaName, tableName)
 	if err != nil {
 		return nil, err
 	}

@@ -13,9 +13,10 @@ import (
 	"sq/internal/web/handlers"
 )
 
-func InitServices(repos Repositorys, tools Tools) Services {
-	repSrv := service.NewReportService(tools.Logger.SrvLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
-	return Services{ReportService: repSrv}
+func InitServices(repos Repositorys, sec Secure, tools Tools) Services {
+	repSrv := service.NewReportService(tools.Logger.SvcLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
+	userSrv := service.NewUserService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
+	return Services{ReportService: repSrv, UserService: userSrv}
 }
 
 func InitTools() (Tools, error) {
@@ -29,7 +30,7 @@ func InitTools() (Tools, error) {
 
 func InitHandlers(tools Tools, serv Services, sec Secure) Handlers {
 	repHand := handlers.NewReportHandler(tools.Logger.SrvLog, serv.ReportService)
-	authHand := handlers.NewAuthHandler(tools.Logger.SrvLog, sec.TokenManager)
+	authHand := handlers.NewAuthHandler(tools.Logger.SrvLog, sec.TokenManager, serv.UserService)
 	return Handlers{ReportHandler: repHand, AuthHandler: authHand}
 }
 
@@ -42,7 +43,12 @@ func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositor
 	if err != nil {
 		return Repositorys{}, err
 	}
-	return Repositorys{ReportDB: repDB, ReportCache: repChc}, nil
+
+	udDB, err := repository.NewUserDB(mainCtx, logger.DbLog)
+	if err != nil {
+		return Repositorys{}, err
+	}
+	return Repositorys{ReportDB: repDB, ReportCache: repChc, UserDB: udDB}, nil
 }
 
 func InitSecure() Secure {

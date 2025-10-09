@@ -2,21 +2,25 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"sq/internal/models"
 	"sq/internal/secure"
+	"sq/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 )
 
 type authHandler struct {
 	logger *zerolog.Logger
 	tm     secure.TokenManager
+	u      service.UserService
 }
 
-func NewAuthHandler(logger *zerolog.Logger, tm secure.TokenManager) AuthHandler {
-	return &authHandler{logger: logger, tm: tm}
+func NewAuthHandler(logger *zerolog.Logger, tm secure.TokenManager, u service.UserService) AuthHandler {
+	return &authHandler{logger: logger, tm: tm, u: u}
 }
 
 func (ah *authHandler) UpdateRefreshToken(pCtx context.Context) gin.HandlerFunc {
@@ -80,16 +84,30 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
+		err := ah.u.CheckPass(pCtx, req.Username, req.Password)
+		if errors.Is(err, pgx.ErrNoRows) {
+			msg := "invalid username or password"
+			g.Set("msg", msg)
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": msg})
+			return
+		} else if err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+			return
+		}
+
 		access, err := ah.tm.GenerateAccessToken(req.Username)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 
 		refresh, err := ah.tm.GenerateRefreshToken(req.Username)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 
 		g.Set("msg", "auth successful")

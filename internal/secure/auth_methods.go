@@ -13,7 +13,7 @@ func NewTokenManager() TokenManager {
 	return &tokMan{}
 }
 
-func (tm tokMan) GenerateRefreshToken(username string) (string, error) {
+func (tm *tokMan) GenerateRefreshToken(username string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": username,
 		"exp":     time.Now().Add(time.Hour * 144).Unix(), // Срок действия — 144 часа
@@ -22,7 +22,7 @@ func (tm tokMan) GenerateRefreshToken(username string) (string, error) {
 	return refresh.SignedString([]byte(secret_refresh))
 }
 
-func (tm tokMan) GenerateAccessToken(username string) (string, error) {
+func (tm *tokMan) GenerateAccessToken(username string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": username,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Срок действия — 24 часа
@@ -31,7 +31,7 @@ func (tm tokMan) GenerateAccessToken(username string) (string, error) {
 	return access.SignedString([]byte(secret_access))
 }
 
-func (tm tokMan) ValidateToken(rawToken string, mode bool) (jwt.MapClaims, error) {
+func (tm *tokMan) ValidateToken(rawToken string, mode bool) (jwt.MapClaims, error) {
 	claims, err := getClaims(rawToken, mode)
 	return claims, err
 }

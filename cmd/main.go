@@ -35,8 +35,8 @@ func main() {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("")
 	}
 
-	srv := di.InitServices(repos, tools)
 	sec := di.InitSecure()
+	srv := di.InitServices(repos, sec, tools)
 	hand := di.InitHandlers(tools, srv, sec)
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
