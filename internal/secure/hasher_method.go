@@ -1,6 +1,8 @@
 package secure
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"golang.org/x/crypto/bcrypt"
+)
 
 type bcryptH struct{}
 

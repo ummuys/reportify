@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"sq/internal/errs"
 	"sq/internal/models"
 	"sq/internal/secure"
 	"sq/internal/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 )
 
@@ -85,14 +85,13 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 		}
 
 		err := ah.u.CheckPass(pCtx, req.Username, req.Password)
-		if errors.Is(err, pgx.ErrNoRows) {
-			msg := "invalid username or password"
-			g.Set("msg", msg)
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": msg})
+		if errors.Is(err, errs.ErrBadData) || errors.Is(err, errs.ErrUsernameUnq) {
+			g.Set("msg", err.Error())
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
 			return
 		} else if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 			return
 		}
 

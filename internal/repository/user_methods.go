@@ -2,10 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sq/internal/config"
+	"sq/internal/errs"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 )
@@ -68,6 +72,12 @@ func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword str
 	defer cancel()
 
 	_, err := u.pool.Exec(ctx, NewUser, username, hashPassword)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return errs.ErrUsernameUnq
+		}
+	}
 	return err
 }
 
@@ -78,6 +88,11 @@ func (u *uDB) GetPassword(pCtx context.Context, username string) (string, error)
 
 	var pass string
 	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&pass)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return pass, errs.ErrBadData
+		}
+	}
 	return pass, err
 }
 
@@ -87,5 +102,10 @@ func (u *uDB) Exists(pCtx context.Context, username string) error {
 	defer cancel()
 
 	_, err := u.pool.Exec(ctx, CheckUset, username)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.ErrBadData
+		}
+	}
 	return err
 }

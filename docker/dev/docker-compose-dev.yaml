@@ -91,6 +91,18 @@ services:
       retries: 5
     restart: unless-stopped
 
+  migration-userdata:
+    image: migrate/migrate
+    container_name: db-ud-migrate
+    environment:
+     - ${DB_UD_URL}
+    volumes:
+      - ./../assets/pgsql/userdata/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "${DB_UD_URL}", "up"]
+    depends_on:
+      db-userdata:
+        condition: service_healthy
+    restart: no
   
 
 volumes:

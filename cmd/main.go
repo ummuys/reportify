@@ -40,6 +40,13 @@ func main() {
 	hand := di.InitHandlers(tools, srv, sec)
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
+	//TO DELETE IN FUTURE
+	pass, _ := sec.PasswordHasher.Hash("admin")
+	err = repos.UserDB.CreateUser(mainCtx, "admin", pass)
+	if err != nil {
+		tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+	}
+
 	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
 
 	errsCh := make(chan error, 2)

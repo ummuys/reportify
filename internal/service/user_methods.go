@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"sq/internal/errs"
 	"sq/internal/repository"
 	"sq/internal/secure"
 
@@ -21,7 +21,9 @@ func NewUserService(logger *zerolog.Logger, db repository.UserDB, ph secure.Pass
 
 func (u *uSrv) Create(pCtx context.Context, username, password string) error {
 	u.logger.Debug().Str("evt", "call Create").Msg("")
-	if err := u.db.Exists(pCtx, username); err != nil {
+
+	err := u.db.Exists(pCtx, username)
+	if err != nil {
 		return err
 	}
 
@@ -33,27 +35,26 @@ func (u *uSrv) Create(pCtx context.Context, username, password string) error {
 	if err := u.db.CreateUser(pCtx, username, hashPass); err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (u *uSrv) CheckPass(pCtx context.Context, username, password string) error {
 	u.logger.Debug().Str("evt", "call CheckPass").Msg("")
-	if err := u.db.Exists(pCtx, username); err != nil {
-		return err
-	}
 
-	hashPass, err := u.ph.Hash(password)
+	err := u.db.Exists(pCtx, username)
 	if err != nil {
 		return err
 	}
 
-	dbHashPass, err := u.db.GetPassword(pCtx, username)
+	hashPass, err := u.db.GetPassword(pCtx, username)
 	if err != nil {
 		return err
 	}
 
-	if dbHashPass != hashPass {
-		return fmt.Errorf("incorrect pass")
+	if !u.ph.ChechHash(password, hashPass) {
+		return errs.ErrBadData
 	}
+
 	return nil
 }
