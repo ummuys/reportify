@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os/signal"
+	"sq/internal/config"
 	"sq/internal/di"
+	"sq/internal/errs"
 	"sq/internal/web"
 	"sync"
 	"syscall"
@@ -40,11 +43,19 @@ func main() {
 	hand := di.InitHandlers(tools, srv, sec)
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
-	//TO DELETE IN FUTURE
-	pass, _ := sec.PasswordHasher.Hash("admin")
-	err = repos.UserDB.CreateUser(mainCtx, "admin", pass)
+	// CREATE BASIC USER
+
+	appConf, err := config.ParseAppConfig()
+	fmt.Println(appConf)
 	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't load app config")
+	}
+	pass, _ := sec.PasswordHasher.Hash(appConf.Password)
+	err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
+	if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
 		tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+	} else {
+		tools.Logger.AppLog.Info().Msg("basic user successful init")
 	}
 
 	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)

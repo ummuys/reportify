@@ -16,6 +16,10 @@ services:
         condition: service_healthy
       db-userdata:
         condition: service_healthy
+      migration-userdata:
+        condition: service_completed_successfully
+
+      
     
     
 
@@ -93,7 +97,7 @@ services:
 
   migration-userdata:
     image: migrate/migrate
-    container_name: db-ud-migrate
+    container_name: migration-userdata
     environment:
      - ${DB_UD_URL}
     volumes:

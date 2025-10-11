@@ -75,7 +75,7 @@ func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword str
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return errs.ErrUsernameUnq
+			return errs.ErrUsernameAlredyExists
 		}
 	}
 	return err
@@ -90,7 +90,7 @@ func (u *uDB) GetPassword(pCtx context.Context, username string) (string, error)
 	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&pass)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return pass, errs.ErrBadData
+			return pass, errs.ErrInvalidCredentials
 		}
 	}
 	return pass, err
@@ -104,7 +104,7 @@ func (u *uDB) Exists(pCtx context.Context, username string) error {
 	_, err := u.pool.Exec(ctx, CheckUset, username)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return errs.ErrBadData
+			return errs.ErrInvalidCredentials
 		}
 	}
 	return err

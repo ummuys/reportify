@@ -23,32 +23,6 @@ func NewAuthHandler(logger *zerolog.Logger, tm secure.TokenManager, u service.Us
 	return &authHandler{logger: logger, tm: tm, u: u}
 }
 
-func (ah *authHandler) UpdateRefreshToken(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-		refreshToken, err := g.Cookie("refresh_token")
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
-			return
-		}
-
-		claims, err := ah.tm.ValidateToken(refreshToken, false)
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "bad refresh token"})
-		}
-
-		nRefTok, err := ah.tm.GenerateRefreshToken(claims["username"].(string))
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusUnauthorized)
-		}
-
-		g.Set("msg", "refresh token is updated")
-		g.SetCookie("refresh_token", nRefTok, 3600*144, "/", "app", false, false)
-	}
-}
-
 func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		refreshToken, err := g.Cookie("refresh_token")
@@ -85,14 +59,16 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 		}
 
 		err := ah.u.CheckPass(pCtx, req.Username, req.Password)
-		if errors.Is(err, errs.ErrBadData) || errors.Is(err, errs.ErrUsernameUnq) {
-			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
-			return
-		} else if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
-			return
+		if err != nil {
+			switch {
+			case errors.Is(err, errs.ErrInvalidCredentials):
+				g.Set("msg", err.Error())
+				g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+				return
+			default:
+				g.Set("msg", err.Error())
+				g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+			}
 		}
 
 		access, err := ah.tm.GenerateAccessToken(req.Username)
