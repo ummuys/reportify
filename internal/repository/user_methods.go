@@ -109,3 +109,48 @@ func (u *uDB) Exists(pCtx context.Context, username string) error {
 	}
 	return err
 }
+
+func (u *uDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) error {
+	u.logger.Debug().Str("evt", "call SaveCacheQuerys").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
+	defer cancel()
+
+	b := &pgx.Batch{}
+	for key, values := range cache {
+		b.Queue(qSetCacheQuery, key, values)
+	}
+	br := u.pool.SendBatch(ctx, b)
+	defer br.Close()
+	for range cache {
+		if _, err := br.Exec(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *uDB) GetCacheQueries(pCtx context.Context) (map[string][]string, error) {
+	u.logger.Debug().Str("evt", "call SaveCacheQuerys").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
+	defer cancel()
+
+	rows, err := u.pool.Query(ctx, qGetCacheQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	m := make(map[string][]string)
+	for rows.Next() {
+		var (
+			key   string
+			value []string
+		)
+		err := rows.Scan(&key, &value)
+		if err != nil {
+			return nil, err
+		}
+		m[key] = value
+	}
+	return m, nil
+}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -61,7 +62,8 @@ func ParseLogLevels() (*LogLevels, error) {
 	}
 
 	if len(sErr) > 0 {
-		return nil, fmt.Errorf(strings.Join(sErr, ", "))
+		msg := strings.Join(sErr, ", ")
+		return nil, errors.New(msg)
 	}
 
 	return &LogLevels{

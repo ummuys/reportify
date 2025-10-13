@@ -44,34 +44,50 @@ func main() {
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
 	// CREATE BASIC USER
-
 	appConf, err := config.ParseAppConfig()
-	fmt.Println(appConf)
 	if err != nil {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("can't load app config")
 	}
-	pass, _ := sec.PasswordHasher.Hash(appConf.Password)
-	err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
-	if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
-		tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+	pass, err := sec.PasswordHasher.Hash(appConf.Password)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't hash the password")
 	} else {
-		tools.Logger.AppLog.Info().Msg("basic user successful init")
+		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
+		if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
+			tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+		} else {
+			tools.Logger.AppLog.Info().Msg("basic user successfull init")
+		}
 	}
 
+	//Warn Up (Cache)
+	m, err := repos.UserDB.GetCacheQueries(mainCtx)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
+	}
+	err = repos.ReportCache.WarmUp(mainCtx, m)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't set querys in cache")
+	}
+	tools.Logger.DbLog.Info().Msg("cache successfully warmed up")
+
 	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
+	errsCh := make(chan error, 4)
+	srvOff := make(chan struct{})
 
-	errsCh := make(chan error, 2)
-
+	// Аккуратно выключаем после ctx.Done
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
 		<-mainCtx.Done()
+		defer server.Close()
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
-			_ = server.Close()
 			tools.Logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
 		}
+		srvOff <- struct{}{}
 	})
 
+	// Включаем сервер
 	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
 			errsCh <- err
@@ -79,10 +95,25 @@ func main() {
 		}
 	})
 
+	// Сохраняем кэш
+	wg.Go(func() {
+		<-srvOff
+		cache, err := repos.ReportCache.GetCacheQueries(context.Background())
+		if err != nil {
+			errsCh <- err
+		}
+
+		err = repos.UserDB.SetCacheQueries(context.Background(), cache)
+		if err != nil {
+			errsCh <- err
+		}
+	})
+
 	<-mainCtx.Done()
 	tools.Logger.AppLog.Info().Msg("turning down the server")
 	wg.Wait()
 	close(errsCh)
+	close(srvOff)
 	var hadErr bool
 
 	for err := range errsCh {

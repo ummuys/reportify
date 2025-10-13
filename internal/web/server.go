@@ -34,7 +34,7 @@ func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, sr
 	rep.GET(GetSchemasPath, hand.ReportHandler.GetSchemas(pCtx))
 	rep.GET(GetTablesPath, hand.ReportHandler.GetTables(pCtx))
 	rep.GET(GetColumnsPath, hand.ReportHandler.GetColumns(pCtx))
-	rep.GET(GetHashQuerysPath, hand.ReportHandler.GetHashQuerys(pCtx))
+	rep.GET(GetCacheQuerysPath, hand.ReportHandler.GetCacheQueries(pCtx))
 
 	// SECURE
 	auth := g.Group("")

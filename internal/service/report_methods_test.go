@@ -7,7 +7,7 @@ import (
 
 func TestReportService(t *testing.T) {
 	mockService := newMockReportService(nil, nil, nil)
-	mockService.CreateReport(t.Context(), "", nil)
+	mockService.CreateReport(t.Context(), "", "", nil)
 	mockService.GetSchemas(t.Context())
 	mockService.GetColumns(t.Context(), "", "")
 	mockService.GetTables(t.Context(), "")

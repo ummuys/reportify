@@ -20,7 +20,7 @@ func newMockReportService(db repository.ReportDB,
 	return &mockRepService{db: db, conv: conv, chc: chc}
 }
 
-func (mrs *mockRepService) CreateReport(pCtx context.Context, sql string, f *os.File) error {
+func (mrs *mockRepService) CreateReport(pCtx context.Context, username string, sql string, f *os.File) error {
 	return nil
 }
 
@@ -36,6 +36,6 @@ func (mrs *mockRepService) GetColumns(pCtx context.Context, schemaName string, t
 	return nil, nil
 }
 
-func (mrs *mockRepService) GetHashQuerys(pCtx context.Context, key string) ([]string, error) {
+func (mrs *mockRepService) GetCacheQueries(pCtx context.Context, key string) ([]string, error) {
 	return nil, nil
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -25,41 +26,42 @@ func ParseRepDBeEnv() (DBConfig, error) {
 
 	addr, err := parseStr(os.Getenv("DB_RP_ADDR"))
 	if err != nil {
-		add("db_addr")
+		add("db_rp_addr")
 	}
 
 	minConn, err := parseInt(os.Getenv("DB_RP_MIN_CONN"), true)
 	if err != nil {
-		add("db_min_conn")
+		add("db_rp_min_conn")
 	}
 
 	maxConn, err := parseInt(os.Getenv("DB_RP_MAX_CONN"), false)
 	if err != nil {
-		add("db_max_conn")
+		add("db_rp_max_conn")
 	}
 
 	mclt, err := parseInt(os.Getenv("DB_RP_MAX_CONN_LIFETIME"), false)
 	if err != nil {
-		add("db_max_conn_lifetime")
+		add("db_rp_max_conn_lifetime")
 	}
 
 	mcltj, err := parseInt(os.Getenv("DB_RP_MAX_CONN_LIFETIME_JITTER"), true)
 	if err != nil {
-		add("db_max_conn_lifetime_jitter")
+		add("db_rp_max_conn_lifetime_jitter")
 	}
 
 	mcit, err := parseInt(os.Getenv("DB_RP_MAX_CONN_IDLE_TIME"), true)
 	if err != nil {
-		add("db_max_conn_idle_time")
+		add("db_rp_max_conn_idle_time")
 	}
 
 	hcp, err := parseInt(os.Getenv("DB_RP_HEALTH_CHECK_PERIOD"), false)
 	if err != nil {
-		add("db_max_conn_idle_time")
+		add("db_rp_max_conn_idle_time")
 	}
 
 	if len(sErr) > 0 {
-		return DBConfig{}, fmt.Errorf(strings.Join(sErr, ", "))
+		msg := strings.Join(sErr, ", ")
+		return DBConfig{}, errors.New(msg)
 	}
 
 	return DBConfig{
@@ -82,41 +84,42 @@ func ParseUDDBeEnv() (DBConfig, error) {
 
 	addr, err := parseStr(os.Getenv("DB_UD_ADDR"))
 	if err != nil {
-		add("db_rp_addr")
+		add("db_ud_addr")
 	}
 
 	minConn, err := parseInt(os.Getenv("DB_UD_MIN_CONN"), true)
 	if err != nil {
-		add("db_rp_min_conn")
+		add("db_ud_min_conn")
 	}
 
 	maxConn, err := parseInt(os.Getenv("DB_UD_MAX_CONN"), false)
 	if err != nil {
-		add("db_rp_max_conn")
+		add("db_ud_max_conn")
 	}
 
 	mclt, err := parseInt(os.Getenv("DB_UD_MAX_CONN_LIFETIME"), false)
 	if err != nil {
-		add("db_rp_max_conn_lifetime")
+		add("db_ud_max_conn_lifetime")
 	}
 
 	mcltj, err := parseInt(os.Getenv("DB_UD_MAX_CONN_LIFETIME_JITTER"), true)
 	if err != nil {
-		add("db_rp_max_conn_lifetime_jitter")
+		add("db_ud_max_conn_lifetime_jitter")
 	}
 
 	mcit, err := parseInt(os.Getenv("DB_UD_MAX_CONN_IDLE_TIME"), true)
 	if err != nil {
-		add("db_rp_max_conn_idle_time")
+		add("db_ud_max_conn_idle_time")
 	}
 
 	hcp, err := parseInt(os.Getenv("DB_UD_HEALTH_CHECK_PERIOD"), false)
 	if err != nil {
-		add("db_rp_max_conn_idle_time")
+		add("db_ud_max_conn_idle_time")
 	}
 
 	if len(sErr) > 0 {
-		return DBConfig{}, fmt.Errorf(strings.Join(sErr, ", "))
+		msg := strings.Join(sErr, ", ")
+		return DBConfig{}, errors.New(msg)
 	}
 
 	return DBConfig{

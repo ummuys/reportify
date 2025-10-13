@@ -91,16 +91,16 @@ func (rh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (rh *repHandler) GetHashQuerys(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) GetCacheQueries(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		username := g.GetString("username")
-		querys, err := rh.srv.GetHashQuerys(pCtx, username)
+		queries, err := rh.srv.GetCacheQueries(pCtx, username)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		g.Set("msg", "list querys are returned")
-		g.JSON(http.StatusOK, models.QueryList{Querys: querys})
+		g.Set("msg", "list Queries are returned")
+		g.JSON(http.StatusOK, models.QueryList{Queries: queries})
 	}
 }

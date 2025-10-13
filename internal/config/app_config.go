@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -29,7 +30,8 @@ func ParseAppConfig() (AppConfig, error) {
 	}
 
 	if len(sErr) > 0 {
-		return AppConfig{}, fmt.Errorf(strings.Join(sErr, ", "))
+		msg := strings.Join(sErr, ", ")
+		return AppConfig{}, errors.New(msg)
 	}
 
 	return AppConfig{Username: un, Password: pw}, nil

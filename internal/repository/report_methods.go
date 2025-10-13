@@ -128,13 +128,13 @@ func (r *rDB) GetTables(pCtx context.Context, schemaName string) (map[string]str
 
 }
 
-func (r *rDB) GetColumns(ctx context.Context, schemaName, tableName string) (map[string]string, error) {
-	r.logger.Debug().Str("evt", "GetColumns").Msg("")
+func (r *rDB) GetColumns(pCtx context.Context, schemaName, tableName string) (map[string]string, error) {
+	r.logger.Debug().Str("evt", "call GetColumns").Msg("")
 
-	qctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
 
-	rows, err := r.pool.Query(qctx, qColumnsWithComment, schemaName, tableName)
+	rows, err := r.pool.Query(ctx, qColumnsWithComment, schemaName, tableName)
 	if err != nil {
 		return nil, err
 	}

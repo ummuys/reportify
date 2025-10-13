@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -41,7 +42,8 @@ func ParseRepCacheEnv() (RepCacheConfig, error) {
 	}
 
 	if len(sErr) > 0 {
-		return RepCacheConfig{}, fmt.Errorf(strings.Join(sErr, ", "))
+		msg := strings.Join(sErr, ", ")
+		return RepCacheConfig{}, errors.New(msg)
 	}
 
 	return RepCacheConfig{

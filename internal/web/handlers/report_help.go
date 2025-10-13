@@ -23,20 +23,25 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 	if err := g.ShouldBindJSON(&req); err != nil {
 		_ = f.Close()
 		sh.logger.Error().Err(fmt.Errorf("bad json: %v", err))
+		g.Set("msg", err.Error())
 		g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "bad json"})
 		return
 	}
 
-	err = sh.srv.CreateReport(pCtx, req.Sql, f)
+	u := g.GetString("username")
+
+	err = sh.srv.CreateReport(pCtx, u, req.Sql, f)
 	if err != nil {
 		sh.logger.Error().Err(err)
 		_ = f.Close()
+		g.Set("msg", err.Error())
 		g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
 	if err := f.Close(); err != nil {
 		sh.logger.Error().Err(err)
+		g.Set("msg", err.Error())
 		g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
@@ -44,6 +49,7 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 	st, err := os.Stat(f.Name())
 	if err != nil || st.Size() == 0 {
 		sh.logger.Error().Msg("empty report")
+		g.Set("msg", err.Error())
 		g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": "empty report"})
 		return
 	}
@@ -52,5 +58,6 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 	g.Header("Content-Type", "application/pdf")
 	g.Header("Content-Disposition", "attachment; filename=report.pdf")
 	g.Status(200)
+	g.Set("msg", "report successful created")
 	g.File(f.Name())
 }

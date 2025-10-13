@@ -58,3 +58,8 @@ prod-update-front:
 
 check_app_logs:
 	-docker logs app
+
+delete_all_volumes:
+	-docker volume rm prod_pg_ud_data
+	-docker volume rm dev_pg_ud_data
+	-docker volume rm dev_pg_rp_data

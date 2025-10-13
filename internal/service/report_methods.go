@@ -57,7 +57,7 @@ func checkQuery(query string) error {
 	return nil
 }
 
-func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File) error {
+func (rs *repService) CreateReport(pCtx context.Context, username string, sql string, f *os.File) error {
 	rs.logger.Debug().Str("evt", "call CreateReport")
 
 	if err := checkQuery(sql); err != nil {
@@ -74,7 +74,7 @@ func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File)
 		return err
 	}
 
-	if err := rs.chc.SetQuery(pCtx, "good key", sql); err != nil {
+	if err := rs.chc.SetQuery(pCtx, username, sql); err != nil {
 		rs.logger.Error().Err(err).Str("script", sql).Msg("failed to save last query")
 	}
 
@@ -127,7 +127,7 @@ func (rs *repService) GetColumns(pCtx context.Context, schemaName string, tableN
 	return &lc, nil
 }
 
-func (rs *repService) GetHashQuerys(pCtx context.Context, key string) ([]string, error) {
-	rs.logger.Debug().Str("evt", "call GetHashQuerys")
-	return rs.chc.GetQuerys(pCtx, key)
+func (rs *repService) GetCacheQueries(pCtx context.Context, key string) ([]string, error) {
+	rs.logger.Debug().Str("evt", "call GetHashQueries")
+	return rs.chc.GetQueries(pCtx, key)
 }
