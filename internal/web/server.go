@@ -8,15 +8,18 @@ import (
 	"sq/internal/di"
 	"sq/internal/web/middleware"
 
+	_ "sq/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, srv di.Services, sec di.Secure, hand di.Handlers) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
-
 	g.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://127.0.0.1:8088"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
@@ -26,6 +29,7 @@ func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, sr
 	}))
 	g.Use(middleware.RequestLogger(tools.Logger.SrvLog)) // -- Логгирование любого запроса
 	g.Use(gin.Recovery())
+	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// REPORT
 	rep := g.Group("")

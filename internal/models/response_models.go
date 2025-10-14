@@ -30,3 +30,7 @@ type Column struct {
 type QueryList struct {
 	Queries []string `json:"queries"`
 }
+
+type EmptyResponse struct {
+	Message string `json:"msg"`
+}

@@ -28,14 +28,14 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 		refreshToken, err := g.Cookie("refresh_token")
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: err.Error()})
 			return
 		}
 
 		claims, err := ah.tm.ValidateToken(refreshToken, false)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "bad refresh token"})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: "bad refresh token"})
 		}
 
 		accessToken, err := ah.tm.GenerateAccessToken(claims["user_id"].(int64))
@@ -54,7 +54,7 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 		var req models.Auth
 		if err := g.ShouldBindJSON(&req); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "bad request"})
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad request"})
 			return
 		}
 
@@ -63,11 +63,11 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 			switch {
 			case errors.Is(err, errs.ErrInvalidCredentials):
 				g.Set("msg", err.Error())
-				g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: err.Error()})
 				return
 			default:
 				g.Set("msg", err.Error())
-				g.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
 			}
 		}
 
