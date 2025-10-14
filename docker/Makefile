@@ -27,7 +27,7 @@ dev-update-front:
 	docker restart nginx
 
 dev-psql:
-	docker exec -it db psql -U admin -d base
+	docker exec -it db-report psql -U admin -d report
 
 
 
