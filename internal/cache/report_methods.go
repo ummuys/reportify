@@ -43,12 +43,12 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	}, nil
 }
 
-func (rc *repCache) WarmUp(pCtx context.Context, Queries map[string][]string) error {
+func (rc *repCache) WarmUp(pCtx context.Context, queries map[string][]string) error {
 	rc.logger.Debug().Str("evt", "call WarmUp").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
 
-	for key, values := range Queries {
+	for key, values := range queries {
 		for _, val := range values {
 			err := rc.cli.LPush(ctx, key, val).Err()
 			if err != nil {

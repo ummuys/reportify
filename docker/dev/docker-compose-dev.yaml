@@ -50,8 +50,8 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
 
   db-report:
     image: postgres:17
@@ -69,8 +69,8 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_RP_USER} -d ${PG_RP_DB}" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
     restart: unless-stopped
 
   db-userdata:
@@ -89,8 +89,8 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_UD_USER} -d ${PG_UD_DB}" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
     restart: unless-stopped
 
   migration-userdata:

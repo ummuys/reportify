@@ -25,7 +25,9 @@ func Auth(tm secure.TokenManager) gin.HandlerFunc {
 			return
 		}
 
-		g.Set("username", claims["username"])
+		//ok
+		user_id := int64(claims["user_id"].(float64))
+		g.Set("user_id", user_id)
 		g.Next()
 	}
 }

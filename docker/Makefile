@@ -60,6 +60,8 @@ check_app_logs:
 	-docker logs app
 
 delete_all_volumes:
+	-docker compose -f prod/docker-compose-prod.yaml down -v db-userdata
+	-docker compose -f prod/docker-compose-prod.yaml down -v db-report
 	-docker volume rm prod_pg_ud_data
 	-docker volume rm dev_pg_ud_data
 	-docker volume rm dev_pg_rp_data

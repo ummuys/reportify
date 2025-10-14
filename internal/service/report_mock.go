@@ -1,41 +1,41 @@
 package service
 
-import (
-	"context"
-	"os"
-	"sq/internal/cache"
-	"sq/internal/convert"
-	"sq/internal/models"
-	"sq/internal/repository"
-)
+// import (
+// 	"context"
+// 	"os"
+// 	"sq/internal/cache"
+// 	"sq/internal/convert"
+// 	"sq/internal/models"
+// 	"sq/internal/repository"
+// )
 
-type mockRepService struct {
-	db   repository.ReportDB
-	conv convert.ReportConvert
-	chc  cache.ReportCache
-}
+// type mockRepService struct {
+// 	db   repository.ReportDB
+// 	conv convert.ReportConvert
+// 	chc  cache.ReportCache
+// }
 
-func newMockReportService(db repository.ReportDB,
-	conv convert.ReportConvert, chc cache.ReportCache) ReportService {
-	return &mockRepService{db: db, conv: conv, chc: chc}
-}
+// func newMockReportService(db repository.ReportDB,
+// 	conv convert.ReportConvert, chc cache.ReportCache) ReportService {
+// 	return &mockRepService{db: db, conv: conv, chc: chc}
+// }
 
-func (mrs *mockRepService) CreateReport(pCtx context.Context, username string, sql string, f *os.File) error {
-	return nil
-}
+// func (mrs *mockRepService) CreateReport(pCtx context.Context, username string, sql string, f *os.File) error {
+// 	return nil
+// }
 
-func (mrs *mockRepService) GetSchemas(pCtx context.Context) (*models.ListSchemas, error) {
-	return nil, nil
-}
+// func (mrs *mockRepService) GetSchemas(pCtx context.Context) (*models.ListSchemas, error) {
+// 	return nil, nil
+// }
 
-func (mrs *mockRepService) GetTables(pCtx context.Context, schemaName string) (*models.ListTables, error) {
-	return nil, nil
-}
+// func (mrs *mockRepService) GetTables(pCtx context.Context, schemaName string) (*models.ListTables, error) {
+// 	return nil, nil
+// }
 
-func (mrs *mockRepService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
-	return nil, nil
-}
+// func (mrs *mockRepService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
+// 	return nil, nil
+// }
 
-func (mrs *mockRepService) GetCacheQueries(pCtx context.Context, key string) ([]string, error) {
-	return nil, nil
-}
+// func (mrs *mockRepService) GetCacheQueries(pCtx context.Context, key string) ([]string, error) {
+// 	return nil, nil
+// }

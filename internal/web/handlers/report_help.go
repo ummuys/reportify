@@ -28,7 +28,7 @@ func (sh *repHandler) createReportPDF(pCtx context.Context, g *gin.Context) {
 		return
 	}
 
-	u := g.GetString("username")
+	u := g.GetInt64("user_id")
 
 	err = sh.srv.CreateReport(pCtx, u, req.Sql, f)
 	if err != nil {

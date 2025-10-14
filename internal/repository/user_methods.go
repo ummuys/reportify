@@ -81,19 +81,23 @@ func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword str
 	return err
 }
 
-func (u *uDB) GetPassword(pCtx context.Context, username string) (string, error) {
+func (u *uDB) GetPassword(pCtx context.Context, username string) (int64, string, error) {
 	u.logger.Debug().Str("evt", "call Get").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	var pass string
-	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&pass)
+	var (
+		user_id int64
+		pass    string
+	)
+	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&user_id, &pass)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return pass, errs.ErrInvalidCredentials
+			return 0, pass, errs.ErrInvalidCredentials
 		}
 	}
-	return pass, err
+
+	return user_id, pass, nil
 }
 
 func (u *uDB) Exists(pCtx context.Context, username string) error {
@@ -116,9 +120,6 @@ func (u *uDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) e
 	defer cancel()
 
 	b := &pgx.Batch{}
-	for key, values := range cache {
-		b.Queue(qSetCacheQuery, key, values)
-	}
 	br := u.pool.SendBatch(ctx, b)
 	defer br.Close()
 	for range cache {

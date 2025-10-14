@@ -1,18 +1,17 @@
 package repository
 
 // NEW USER
-const NewUser = `INSERT INTO users.data (username, password) VALUES ($1, $2)`
+const NewUser = `INSERT INTO identity.users (username, password) VALUES ($1, $2)`
 
 // GET PASSWORD
-const GetPass = `SELECT password FROM users.data  WHERE username = $1`
+const GetPass = `SELECT user_id, password FROM identity.users  WHERE username = $1`
 
 // CHECK USER
-const CheckUset = `SELECT 1 FROM users.data WHERE username = $1`
+const CheckUset = `SELECT 1 FROM identity.users WHERE username = $1`
 
-// CACHE
 const (
 	qSetCacheQuery = `
-  INSERT INTO users.user_queries VALUES($1, $2)
-  ON CONFLICT (username) DO UPDATE SET queries = EXCLUDED.queries`
-	qGetCacheQuery = `SELECT * FROM users.user_queries`
+  INSERT INTO identity.queries VALUES($1, $2)
+  ON CONFLICT (user_id) DO UPDATE SET list = EXCLUDED.list`
+	qGetCacheQuery = `SELECT * FROM identity.queries`
 )

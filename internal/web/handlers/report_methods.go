@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sq/internal/models"
 	"sq/internal/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -93,8 +94,8 @@ func (rh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 
 func (rh *repHandler) GetCacheQueries(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
-		username := g.GetString("username")
-		queries, err := rh.srv.GetCacheQueries(pCtx, username)
+		user_id := g.GetInt64("user_id")
+		queries, err := rh.srv.GetCacheQueries(pCtx, strconv.FormatInt(user_id, 10))
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)

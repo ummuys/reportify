@@ -10,6 +10,7 @@ import (
 	"sq/internal/convert"
 	"sq/internal/models"
 	"sq/internal/repository"
+	"strconv"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -57,7 +58,7 @@ func checkQuery(query string) error {
 	return nil
 }
 
-func (rs *repService) CreateReport(pCtx context.Context, username string, sql string, f *os.File) error {
+func (rs *repService) CreateReport(pCtx context.Context, user_id int64, sql string, f *os.File) error {
 	rs.logger.Debug().Str("evt", "call CreateReport")
 
 	if err := checkQuery(sql); err != nil {
@@ -74,7 +75,7 @@ func (rs *repService) CreateReport(pCtx context.Context, username string, sql st
 		return err
 	}
 
-	if err := rs.chc.SetQuery(pCtx, username, sql); err != nil {
+	if err := rs.chc.SetQuery(pCtx, strconv.FormatInt(user_id, 10), sql); err != nil {
 		rs.logger.Error().Err(err).Str("script", sql).Msg("failed to save last query")
 	}
 
