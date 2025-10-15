@@ -1,115 +1,127 @@
-// Конфигурация
+// ==== Конфигурация ====
 const config = {
-    API_BASE: "http://127.0.0.1:8088/",
-    AuthPath: "api/v1/secure/auth",
-    MAIN_MENU: "http://127.0.0.1:8088/menu/"
+  API_BASE: "http://127.0.0.1:8088/",
+  AuthPath: "api/v1/secure/auth",
+  MAIN_MENU: "http://127.0.0.1:8088/menu/"
 };
 
-// Элементы
-const btnLogin = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
-const accessBox = document.getElementById("accessBox");
-const logBox = document.getElementById("logBox");
-const statusEl = document.getElementById("status");
-const statusText = document.getElementById("statusText");
+// ==== Элементы ====
+const form       = document.getElementById("auth-form");
+const btnLogin   = document.getElementById("btnLogin");
+const usernameEl = document.getElementById("username");
+const passwordEl = document.getElementById("password");
+const togglePass = document.getElementById("toggle-pass");
+const uCountEl   = document.getElementById("username-count");
+const pCountEl   = document.getElementById("password-count");
+const errorBox   = document.getElementById("error");
 
 const TOKEN_KEY = "access_token_v1";
 
-// Логгер
-function log(...args) {
-    const line = document.createElement("div");
-    line.textContent = new Date().toISOString() + " — " + args.join(" ");
-    logBox.prepend(line);
-}
-
-// Токены
+// ==== Хелперы ====
 function saveAccess(token) { localStorage.setItem(TOKEN_KEY, token || ""); }
-function loadAccess() { return localStorage.getItem(TOKEN_KEY) || ""; }
-function clearAccess() { localStorage.removeItem(TOKEN_KEY); }
+function loadAccess()      { return localStorage.getItem(TOKEN_KEY) || ""; }
+function clearAccess()     { localStorage.removeItem(TOKEN_KEY); }
 
-// Отображение UI
-function render() {
-    const access = loadAccess();
-    if (access) {
-        accessBox.textContent = access;
-        statusEl.classList.add("ok");
-        statusText.textContent = "Авторизован";
-        btnLogin.style.display = "none";
-        btnLogout.style.display = "inline-block";
-    } else {
-        accessBox.innerHTML = "<em class='hint'>пусто</em>";
-        statusEl.classList.remove("ok");
-        statusText.textContent = "Не авторизован";
-        btnLogout.style.display = "none";
-        btnLogin.style.display = "inline-block";
-    }
+function setBtnLoading(isLoading) {
+  if (!btnLogin) return;
+  btnLogin.classList.toggle("loading", isLoading);
+  btnLogin.disabled = !!isLoading;
 }
 
-// Авторизация
-btnLogin.addEventListener("click", async () => {
-    const u = document.getElementById("username").value.trim();
-    const p = document.getElementById("password").value;
-    if (!u || !p) return alert("Введите имя пользователя и пароль");
+function showError(msg) {
+  if (!errorBox) return alert(msg || "Ошибка");
+  errorBox.textContent = msg || "Ошибка";
+  errorBox.hidden = false;
+}
+function clearError() {
+  if (errorBox) {
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+  }
+}
+async function safeJson(res) {
+  try { return await res.json(); } catch { return null; }
+}
+function bindCounter(input, outEl) {
+  if (!input || !outEl) return;
+  const update = () => outEl.textContent = String(input.value.length);
+  input.addEventListener("input", update);
+  update();
+}
 
-    btnLogin.disabled = true;
-    btnLogin.textContent = "Выполняется...";
+// ==== Основная логика входа ====
+async function doLogin() {
+  clearError();
 
-    try {
-        const res = await fetch(config.API_BASE + config.AuthPath, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: u, password: p }),
-            credentials: 'include' // важный момент для передачи HttpOnly cookie с refresh
-        });
+  const u = (usernameEl?.value || "").trim();
+  const p = (passwordEl?.value || "");
+  if (!u || !p) {
+    showError("Введите логин и пароль");
+    return;
+  }
 
-        if (!res.ok) {
-            log("Ошибка входа:", res.status);
-            alert("Ошибка входа: " + res.status);
-            return;
-        }
+  setBtnLoading(true);
 
-        const data = await res.json();
-        const token = data.access || data.access_token || "";
-        if (!token) {
-            alert("Сервер не вернул access токен");
-            return;
-        }
+  try {
+    const res = await fetch(config.API_BASE + config.AuthPath, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include", // для refresh-cookie (HttpOnly)
+      body: JSON.stringify({ username: u, password: p })
+    });
 
-        saveAccess(token);
-        log("Вход успешен, токен сохранён.");
-
-        // Обновляем UI
-        render();
-
-        // Редирект (можно убрать, если SPA)
-        window.location.href = config.MAIN_MENU;
-
-    } catch (e) {
-        log("Ошибка при входе:", e.message);
-        alert("Ошибка сети");
-    } finally {
-        btnLogin.disabled = false;
-        btnLogin.textContent = "Войти";
+    const data = await safeJson(res);
+    if (!res.ok) {
+      const msg = (data && (data.message || data.msg)) || `Ошибка входа: ${res.status}`;
+      showError(msg);
+      return;
     }
+
+    const token = data?.access_token || data?.access || data?.token || data?.AccessToken || "";
+    if (!token) {
+      showError("Сервер не вернул access-токен");
+      return;
+    }
+
+    saveAccess(token);
+    // ✅ После успешного входа — сразу переходим в меню
+    window.location.assign(config.MAIN_MENU);
+  } catch (e) {
+    showError("Ошибка сети");
+  } finally {
+    setBtnLoading(false);
+  }
+}
+
+// ==== Слушатели ====
+form?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  doLogin();
 });
 
-// Выход
-btnLogout.addEventListener("click", async () => {
-    clearAccess();
-    render();
-    log("Вышли из системы, токен удалён.");
-
-    // Можно добавить запрос на бек, чтобы сбросить refresh-token cookie
-    try {
-        await fetch(config.API_BASE + "api/v1/secure/logout", {
-            method: "POST",
-            credentials: 'include'
-        });
-        log("Refresh-token на сервере удалён");
-    } catch (e) {
-        log("Ошибка при выходе:", e.message);
-    }
+togglePass?.addEventListener("click", () => {
+  if (!passwordEl) return;
+  const vis = passwordEl.type === "text";
+  passwordEl.type = vis ? "password" : "text";
+  togglePass.textContent = vis ? "Показать" : "Скрыть";
+  togglePass.setAttribute("aria-label", vis ? "Показать пароль" : "Скрыть пароль");
 });
 
-// Инициализация
-(function init() { render(); })();
+[usernameEl, passwordEl].forEach(el => {
+  el?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") form?.requestSubmit(btnLogin);
+  });
+});
+
+bindCounter(usernameEl, uCountEl);
+bindCounter(passwordEl, pCountEl);
+
+// ==== 🚀 Автоматический редирект, если уже авторизован ====
+(function init() {
+  const token = loadAccess();
+  if (token) {
+    // Пользователь уже вошёл — сразу перекидываем на меню
+    window.location.assign(config.MAIN_MENU);
+    return;
+  }
+})();
