@@ -470,7 +470,7 @@ async function loadColumns(schema, table) {
   }
 
   const sortContainer = document.getElementById('sortContainer');
-  sortContainer.innerHTML = '';         // очистка
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
   sortContainer.appendChild(createSortRow()); // создаём 1 строку по умолчанию
 }
 
@@ -544,12 +544,12 @@ schemaSel.addEventListener("change", () => {
 
   // очищаем фильтры
   const filtersContainer = document.getElementById('filtersContainer');
-  filtersContainer.innerHTML = '';
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
   filtersContainer.appendChild(createFilterRow());
 
   // очищаем сортировки
   const sortContainer = document.getElementById('sortContainer');
-  sortContainer.innerHTML = '';
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
   sortContainer.appendChild(createSortRow());
 
   // сброс сортировки/лимита
@@ -572,11 +572,11 @@ tableSel.addEventListener("change", () => {
   sqlText.value = "";
 
   const filtersContainer = document.getElementById('filtersContainer');
-  filtersContainer.innerHTML = '';
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
   filtersContainer.appendChild(createFilterRow());
 
   const sortContainer = document.getElementById('sortContainer');
-  sortContainer.innerHTML = '';
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
   sortContainer.appendChild(createSortRow());
 
   sortField.value = "";
@@ -710,112 +710,121 @@ btnPreview.addEventListener('click', async () => {
   }
 })();
 
-    // ---- Автоматическое увеличение высоты комментария ----
-    reportComment.addEventListener('input', () => {
-      reportComment.style.height = 'auto';            // сброс
-      reportComment.style.height = reportComment.scrollHeight + 'px'; // подгонка под контент
-    });
+// ---- Автоматическое увеличение высоты комментария ----
+reportComment.addEventListener('input', () => {
+  reportComment.style.height = 'auto';            // сброс
+  reportComment.style.height = reportComment.scrollHeight + 'px'; // подгонка под контент
+});
 
 // ---- История отчётов ----
-    const historyList = document.getElementById('historyList');
-    let reportHistory = JSON.parse(localStorage.getItem('reportHistory') || "[]");
+const historyList = document.getElementById('historyList');
+let reportHistory = JSON.parse(localStorage.getItem('reportHistory') || "[]");
 
-    function saveHistoryEntry() {
-      const filters = Array.from(document.querySelectorAll('.filter-row')).map(row => ({
-        field: row.querySelector('.filterField').value || "",
-        cond:  row.querySelector('.filterCondition').value || "eq",
-        value: row.querySelector('.filterValue').value || ""
-      }));
+function saveHistoryEntry() {
+  const filters = Array.from(document.querySelectorAll('.filter-row')).map(row => ({
+    field: row.querySelector('.filterField').value || "",
+    cond:  row.querySelector('.filterCondition').value || "eq",
+    value: row.querySelector('.filterValue').value || ""
+  }));
 
-      const sorts = Array.from(document.querySelectorAll('.sort-row')).map(row => ({
-        field: row.querySelector('.sortField').value,
-        dir: row.querySelector('.sortDir').value
-      }));
+  const sorts = Array.from(document.querySelectorAll('.sort-row')).map(row => ({
+    field: row.querySelector('.sortField').value,
+    dir: row.querySelector('.sortDir').value
+  }));
 
-      const entry = {
-        schema: state.schema,
-        table: state.table,
-        chosen: [...state.chosen],
-        sortField: sortField.value || "",
-        sortDir: sortDir.value || "ASC",
-        limit: limitInput.value.trim() || "",
-        name: reportName.value.trim() || "Без названия",
-        comment: reportComment.value.trim() || "",
-        filters, // <-- добавлено
-        sorts,
-        time: new Date().toLocaleString()
-      };
+  const entry = {
+    schema: state.schema,
+    table: state.table,
+    chosen: [...state.chosen],
+    sortField: sortField.value || "",
+    sortDir: sortDir.value || "ASC",
+    limit: limitInput.value.trim() || "",
+    name: reportName.value.trim() || "Без названия",
+    comment: reportComment.value.trim() || "",
+    filters, // <-- добавлено
+    sorts,
+    time: new Date().toLocaleString()
+  };
 
-      reportHistory.unshift(entry);
-      if (reportHistory.length > 10) reportHistory = reportHistory.slice(0, 10);
-      localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
-      renderHistory();
-    }
+  reportHistory.unshift(entry);
+  if (reportHistory.length > 10) reportHistory = reportHistory.slice(0, 10);
+  localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+  renderHistory();
+}
 
-    function renderHistory() {
-      historyList.innerHTML = reportHistory.length
-        ? reportHistory.map((r, i) => `
-            <li data-i="${i}">
-              <div class="history-item">
-                <div class="history-title">${r.name || "Без названия"}</div>
-                ${r.comment ? `<div class="history-comment">${r.comment}</div>` : ""}
-                <small>${r.schema}.${r.table}</small>
-                <small>${r.time}</small>
-              </div>
-            </li>`).join('')
-        : '<li><small>Пока нет отчётов</small></li>';
-    }
+function renderHistory() {
+  historyList.innerHTML = reportHistory.length
+    ? reportHistory.map((r, i) => `
+        <li data-i="${i}">
+          <div class="history-item">
+            <div class="history-header">
+              <div class="history-title">${r.name || "Без названия"}</div>
+              <button class="btn-delete-history" title="Удалить отчёт">✕</button>
+            </div>
+            ${r.comment ? `<div class="history-comment">${r.comment}</div>` : ""}
+            <small>${r.schema}.${r.table}</small>
+            <small>${r.time}</small>
+          </div>
+        </li>`).join('')
+    : '<li><small>Пока нет отчётов</small></li>';
+}
 
 historyList.addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-delete-history');
   const li = e.target.closest('li[data-i]');
   if (!li) return;
-  const item = reportHistory[+li.dataset.i];
+  const index = +li.dataset.i;
+
+  // Если клик по кнопке удаления
+  if (btn) {
+    e.stopPropagation(); // предотвращаем открытие
+    const removed = reportHistory[index];
+
+    const confirmed = confirm(`Удалить отчёт "${removed.name || 'Без названия'}"?`);
+    if (!confirmed) return;
+
+    // Удаление
+    reportHistory.splice(index, 1);
+    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+    renderHistory();
+    showToast(`Отчёт "${removed.name || 'Без названия'}" удалён`);
+    return;
+  }
+
+  // Если клик по самому элементу — открыть отчёт
+  const item = reportHistory[index];
   if (!item) return;
 
-  // Устанавливаем схему
   state.schema = item.schema;
   schemaSel.value = item.schema;
   tableSel.innerHTML = `<option>Загрузка таблиц...</option>`;
 
-  // Загружаем таблицы и выбираем нужную
   await loadTables(item.schema);
   tableSel.value = item.table;
   state.table = item.table;
 
-  // Загружаем колонки таблицы
   await loadColumns(item.schema, item.table);
 
-  // Ставим галочки для нужных полей
   state.chosen = [...item.chosen];
   list.querySelectorAll("input[type=checkbox]").forEach(chk => {
     chk.checked = state.chosen.includes(chk.dataset.col);
   });
 
-  // Применяем сортировку (если есть)
-  sortField.value = item.sortField || "";
-  sortDir.value  = item.sortDir  || "ASC";
-  limitInput.value = item.limit || "";
-
-  // ---- ВОССТАНОВЛЕНИЕ ФИЛЬТРОВ ----
-  // Очищаем контейнер фильтров и воссоздаём строки из item.filters (если есть)
+  // Фильтры
   const filtersContainer = document.getElementById('filtersContainer');
-  filtersContainer.innerHTML = ''; // убираем шаблон/старые строки
-
-  const filters = item.filters || []; // здесь item определён, поэтому ошибки нет
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
+  filtersContainer.appendChild(createFilterRow());
+  const filters = item.filters || [];
   if (filters.length === 0) {
-    // добавляем одну пустую строку (тот же шаблон, что в HTML)
-    const row = createFilterRow(); // helper-функция (см. ниже)
-    filtersContainer.appendChild(row);
+    filtersContainer.appendChild(createFilterRow());
   } else {
-    filters.forEach(f => {
-      const row = createFilterRow(f);
-      filtersContainer.appendChild(row);
-    });
+    filters.forEach(f => filtersContainer.appendChild(createFilterRow(f)));
   }
 
-    // Восстанавливаем сортировки
+  // Сортировки
   const sortContainer = document.getElementById('sortContainer');
-  sortContainer.innerHTML = '';
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
+  sortContainer.appendChild(createSortRow());
   const sorts = item.sorts || [];
   if (sorts.length === 0) {
     sortContainer.appendChild(createSortRow());
@@ -823,22 +832,24 @@ historyList.addEventListener('click', async e => {
     sorts.forEach(s => sortContainer.appendChild(createSortRow(s)));
   }
 
-  // Перестраиваем SQL
-  buildSQL();
-  updateButtons();
-
+  // Прочие поля
   reportName.value = item.name || "";
   reportComment.value = item.comment || "";
+  sortField.value = item.sortField || "";
+  sortDir.value = item.sortDir || "ASC";
+  limitInput.value = item.limit || "";
 
   reportComment.style.height = 'auto';
   reportComment.style.height = reportComment.scrollHeight + 'px';
 
-  showToast(`Загружен отчёт: ${item.name || (item.schema + '.' + item.table)}`);
-
-  updateCommentCounter();
+  buildSQL();
   updateNameCounter();
+  updateCommentCounter();
   updateButtons();
+
+  showToast(`Загружен отчёт: ${item.name || (item.schema + '.' + item.table)}`);
 });
+
 
 renderHistory();
 

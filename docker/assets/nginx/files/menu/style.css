@@ -388,6 +388,12 @@ textarea.sql {
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 9999;
+
+  max-width: 300px;         /* ограничиваем ширину */
+  word-wrap: break-word;    /* переносим длинные слова */
+  white-space: normal;      /* разрешаем перенос строк */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toast.show {
@@ -406,6 +412,37 @@ textarea.sql {
   font-weight: 700;
   font-size: 16px;
   color: var(--text);
+  word-break: break-word;
+}
+
+.history-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    grid-gap: 8px;
+}
+
+/* Кнопка удаления */
+.btn-delete-history {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  padding: 0;
+  line-height: 1;
+  justify-self: end; /* ⬅️ крестик прижат вправо */
+}
+
+.history-item:hover .btn-delete-history {
+  opacity: 1;
+}
+
+.btn-delete-history:hover {
+  color: var(--err);
+  transform: scale(1.1);
 }
 
 #historyList {
