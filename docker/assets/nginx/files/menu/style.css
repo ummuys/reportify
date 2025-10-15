@@ -42,8 +42,7 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 150px;
-    margin-left: 320px;
+    padding: 20px 30px 20px 350px;
 }
 
 h1 {
@@ -344,8 +343,22 @@ textarea.sql {
 
 .history-list li small {
   color: #555;
-  font-size: 12px;
   margin-top: 4px;
+}
+
+.history-list li.empty-state {
+  background: transparent !important;
+  cursor: default !important;
+  transform: none !important;
+  text-align: center;
+  font-size: 18px !important;
+  font-weight: 400;
+  padding: 20px;
+}
+
+.history-list li.empty-state:hover {
+  background: transparent !important;
+  transform: none !important;
 }
 
 .sidebar-header {
@@ -360,12 +373,39 @@ textarea.sql {
   z-index: 10;
 }
 
+.sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ⭐ Кнопка фильтра избранного */
+.btn-fav-filter {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.btn-fav-filter:hover {
+  color: gold;
+}
+
+/* Активное состояние — фильтр включён */
+.btn-fav-filter.active {
+  color: gold;
+}
+
 .btn-clear-history {
   background: hsla(0, 0%, 100%, 0.6);
   border: 1px solid hsla(167, 22%, 71%, 0.6);
   border-radius: 8px;
   font-size: 16px;
-  padding: 6px 10px;
+  padding: 6px 7px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
   width: auto;                  
@@ -427,6 +467,13 @@ textarea.sql {
     grid-gap: 8px;
 }
 
+.history-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 /* Кнопка удаления */
 .btn-delete-history {
   background: transparent;
@@ -438,7 +485,6 @@ textarea.sql {
   transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
   padding: 0;
   line-height: 1;
-  justify-self: end; /* ⬅️ крестик прижат вправо */
 }
 
 .history-item:hover .btn-delete-history {
@@ -447,6 +493,31 @@ textarea.sql {
 
 .btn-delete-history:hover {
   color: var(--err);
+  transform: scale(1.1);
+}
+
+.btn-fav-history {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 20px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.history-item:hover .btn-fav-history {
+  opacity: 1;
+}
+
+.btn-fav-history.active {
+  color: gold;
+}
+
+.btn-fav-history:hover {
+  color: gold;
   transform: scale(1.1);
 }
 
@@ -577,7 +648,7 @@ input.invalid, textarea.invalid {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, .6);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -586,7 +657,8 @@ input.invalid, textarea.invalid {
 }
 
 .modal {
-  background: var(--panel);
+  background: hsla(167, 22%, 71%, 0.8);
+  border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 16px;
   padding: 24px 28px;
   min-width: 300px;

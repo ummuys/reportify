@@ -105,6 +105,8 @@ const filtersContainer = document.getElementById('filtersContainer');
 const btnAddSort = document.getElementById('btnAddSort');
 const btnClearSort = document.getElementById('btnClearSort');
 
+let showOnlyFavorites = false;
+
 // Добавить уровень сортировки
 btnAddSort.addEventListener('click', () => {
   const row = createSortRow();        
@@ -741,8 +743,9 @@ function saveHistoryEntry() {
     limit: limitInput.value.trim() || "",
     name: reportName.value.trim() || "Без названия",
     comment: reportComment.value.trim() || "",
-    filters, // <-- добавлено
+    filters, 
     sorts,
+    favorite: false,
     time: new Date().toLocaleString()
   };
 
@@ -753,50 +756,101 @@ function saveHistoryEntry() {
 }
 
 function renderHistory() {
-  historyList.innerHTML = reportHistory.length
-    ? reportHistory.map((r, i) => `
-        <li data-i="${i}">
-          <div class="history-item">
-            <div class="history-header">
-              <div class="history-title">${r.name || "Без названия"}</div>
+  const historyList = document.getElementById('historyList');
+  const favBtn = document.getElementById('btnFavFilter');
+  if (!historyList) return;
+
+  // копия для отображения
+  let visibleReports = [...reportHistory];
+
+  // фильтрация по избранным, если включено
+  if (showOnlyFavorites) {
+    visibleReports = visibleReports.filter(r => r.favorite);
+    if (favBtn) favBtn.classList.add('active');
+  } else {
+    if (favBtn) favBtn.classList.remove('active');
+  }
+
+  // размещаем избранные выше (локальная сортировка по видимому массиву)
+  visibleReports.sort((a, b) => (b.favorite === true) - (a.favorite === true));
+
+  // если пусто — показываем заглушку
+  if (!visibleReports.length) {
+    historyList.innerHTML = '<li class="empty-state"><small>Пока нет отчётов</small></li>';
+    return;
+  }
+
+  // Рендерим элементы — важно: в data-i кладём оригинальный индекс из reportHistory
+  historyList.innerHTML = visibleReports.map(r => {
+    const originalIndex = reportHistory.indexOf(r);
+    return `
+      <li data-i="${originalIndex}">
+        <div class="history-item">
+          <div class="history-header">
+            <div class="history-title">${r.name || "Без названия"}</div>
+            <div class="history-controls">
               <button class="btn-delete-history" title="Удалить отчёт">✕</button>
+              <button class="btn-fav-history ${r.favorite ? 'active' : ''}" title="Избранное">★</button>
             </div>
-            ${r.comment ? `<div class="history-comment">${r.comment}</div>` : ""}
-            <small>${r.schema}.${r.table}</small>
-            <small>${r.time}</small>
           </div>
-        </li>`).join('')
-    : '<li><small>Пока нет отчётов</small></li>';
+          ${r.comment ? `<div class="history-comment">${r.comment}</div>` : ""}
+          <small>${r.schema}.${r.table}</small>
+          <small>${r.time}</small>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+const favFilterBtn = document.getElementById('btnFavFilter');
+if (favFilterBtn) {
+  favFilterBtn.addEventListener('click', () => {
+    showOnlyFavorites = !showOnlyFavorites;
+    renderHistory();
+    showToast(showOnlyFavorites 
+      ? 'Показаны только ⭐ избранные отчёты' 
+      : 'Показаны все отчёты');
+  });
 }
 
 historyList.addEventListener('click', async e => {
-  const btn = e.target.closest('.btn-delete-history');
   const li = e.target.closest('li[data-i]');
   if (!li) return;
   const index = +li.dataset.i;
+  const item = reportHistory[index];
+  if (!item) return;
+
+  const btnFav = e.target.closest('.btn-fav-history');
+  const btnDel = e.target.closest('.btn-delete-history');
+
+  // --- ⭐ Избранное ---
+  if (btnFav) {
+    e.stopPropagation();
+    item.favorite = !item.favorite;
+    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+    renderHistory();
+    showToast(item.favorite 
+      ? `⭐ Отчёт "${item.name || 'Без названия'}" добавлен в избранное`
+      : `☆ Отчёт "${item.name || 'Без названия'}" удалён из избранного`);
+    return;
+  }
 
   // Если клик по кнопке удаления
-  if (btn) {
-    e.stopPropagation(); // предотвращаем открытие
-    const removed = reportHistory[index];
-
+  if (btnDel) {
+    e.stopPropagation();
     const confirmed = await showConfirm(
-    `Вы уверены, что хотите удалить отчёт "${removed.name || 'Без названия'}"?`,
-    "Удалить отчёт"
+      `Вы уверены, что хотите удалить отчёт "${item.name || 'Без названия'}"?`,
+      "Удалить отчёт"
     );
     if (!confirmed) return;
 
-    // Удаление
     reportHistory.splice(index, 1);
     localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
     renderHistory();
-    showToast(`Отчёт "${removed.name || 'Без названия'}" удалён`);
+    showToast(`🗑️ Отчёт "${item.name || 'Без названия'}" удалён`);
     return;
   }
 
   // Если клик по самому элементу — открыть отчёт
-  const item = reportHistory[index];
-  if (!item) return;
 
   state.schema = item.schema;
   schemaSel.value = item.schema;
@@ -982,14 +1036,18 @@ function showToast(message, duration = 3000) {
 
 // ---- Очистка истории ----
 const btnClearHistory = document.getElementById('btnClearHistory');
-btnClearHistory.addEventListener('click', () => {
+btnClearHistory.addEventListener('click', async () => {
   if (!reportHistory.length) {
     showToast('История уже пуста');
     return;
   }
 
-  // создаём мини-подтверждение без alert()
-  if (confirm('Удалить всю историю отчётов?')) {
+  const confirmed = await showConfirm(
+    'Удалить всю историю отчётов?',
+    'Очистить историю'
+  );
+  
+  if (confirmed) {
     reportHistory = [];
     localStorage.removeItem('reportHistory');
     renderHistory();
