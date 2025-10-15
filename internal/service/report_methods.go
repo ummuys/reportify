@@ -25,7 +25,7 @@ type repService struct {
 
 func NewReportService(logger *zerolog.Logger, db repository.ReportDB,
 	conv convert.ReportConvert, chc cache.ReportCache) ReportService {
-	return &repService{logger: logger, db: db, conv: conv}
+	return &repService{logger: logger, db: db, conv: conv, chc: chc}
 }
 
 // ЗАМЕЧАНИЯ
