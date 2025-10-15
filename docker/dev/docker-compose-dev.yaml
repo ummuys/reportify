@@ -16,6 +16,10 @@ services:
         condition: service_healthy
       db-userdata:
         condition: service_healthy
+      migration-userdata:
+        condition: service_completed_successfully
+
+      
     
     
 
@@ -37,8 +41,6 @@ services:
   cache:
     image: redis:7.2.11-alpine3.21
     container_name: cache
-    volumes:
-      - cache:/data
     ports:
         - "6379:6379"
     environment:
@@ -48,8 +50,8 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
 
   db-report:
     image: postgres:17
@@ -67,8 +69,8 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_RP_USER} -d ${PG_RP_DB}" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
     restart: unless-stopped
 
   db-userdata:
@@ -87,17 +89,17 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_UD_USER} -d ${PG_UD_DB}" ]
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 1s
+      retries: 10
     restart: unless-stopped
 
   migration-userdata:
     image: migrate/migrate
-    container_name: db-ud-migrate
+    container_name: migration-userdata
     environment:
      - ${DB_UD_URL}
     volumes:
-      - ./../assets/pgsql/userdata/migrations:/migrations
+      - ./../assets/db/userdata/migrations:/migrations
     command: ["-path", "/migrations", "-database", "${DB_UD_URL}", "up"]
     depends_on:
       db-userdata:
@@ -106,6 +108,5 @@ services:
   
 
 volumes:
-  cache:
   pg_rp_data:
   pg_ud_data:

@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"sq/internal/cache"
-	"sq/internal/convert"
-	"sq/internal/models"
-	"sq/internal/repository"
+	"strconv"
 	"strings"
+
+	"github.com/ummuys/reportify/internal/cache"
+	"github.com/ummuys/reportify/internal/convert"
+	"github.com/ummuys/reportify/internal/repository"
 
 	"github.com/rs/zerolog"
 )
@@ -57,7 +58,7 @@ func checkQuery(query string) error {
 	return nil
 }
 
-func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File) error {
+func (rs *repService) CreateReport(pCtx context.Context, user_id int64, sql string, f *os.File) error {
 	rs.logger.Debug().Str("evt", "call CreateReport")
 
 	if err := checkQuery(sql); err != nil {
@@ -74,60 +75,9 @@ func (rs *repService) CreateReport(pCtx context.Context, sql string, f *os.File)
 		return err
 	}
 
-	if err := rs.chc.SetQuery(pCtx, "good key", sql); err != nil {
+	if err := rs.chc.SetQuery(pCtx, strconv.FormatInt(user_id, 10), sql); err != nil {
 		rs.logger.Error().Err(err).Str("script", sql).Msg("failed to save last query")
 	}
 
 	return nil
-}
-
-func (rs *repService) GetSchemas(pCtx context.Context) (*models.ListSchemas, error) {
-	rs.logger.Debug().Str("evt", "call GetSchemas")
-	data, err := rs.db.GetSchemas(pCtx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ls models.ListSchemas
-	ls.Schemas = make([]models.Schema, 0, len(data))
-	for name, comm := range data {
-		ls.Schemas = append(ls.Schemas, models.Schema{Name: name, Comment: comm})
-	}
-	return &ls, nil
-}
-
-func (rs *repService) GetTables(pCtx context.Context, schemaName string) (*models.ListTables, error) {
-
-	rs.logger.Debug().Str("evt", "call GetTables")
-	data, err := rs.db.GetTables(pCtx, schemaName)
-	if err != nil {
-		return nil, err
-	}
-
-	var lt models.ListTables
-	lt.Tables = make([]models.Table, 0, len(data))
-	for name, comm := range data {
-		lt.Tables = append(lt.Tables, models.Table{Name: name, Comment: comm})
-	}
-	return &lt, nil
-}
-
-func (rs *repService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
-	rs.logger.Debug().Str("evt", "call GetTables")
-	data, err := rs.db.GetColumns(pCtx, schemaName, tableName)
-	if err != nil {
-		return nil, err
-	}
-	var lc models.ListColumns
-	lc.Columns = make([]models.Column, 0, len(data))
-	for name, comm := range data {
-		lc.Columns = append(lc.Columns, models.Column{Name: name, Comment: comm})
-	}
-	return &lc, nil
-}
-
-func (rs *repService) GetHashQuerys(pCtx context.Context, key string) ([]string, error) {
-	rs.logger.Debug().Str("evt", "call GetHashQuerys")
-	return rs.chc.GetQuerys(pCtx, key)
 }

@@ -1,18 +1,19 @@
 package di
 
 import (
-	"sq/internal/cache"
-	"sq/internal/config"
-	"sq/internal/convert"
-	"sq/internal/repository"
-	"sq/internal/secure"
-	"sq/internal/service"
-	"sq/internal/web/handlers"
+	"github.com/ummuys/reportify/internal/cache"
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/convert"
+	"github.com/ummuys/reportify/internal/repository"
+	"github.com/ummuys/reportify/internal/secure"
+	"github.com/ummuys/reportify/internal/service"
+	"github.com/ummuys/reportify/internal/web/handlers"
 )
 
 type Services struct {
-	ReportService service.ReportService
-	UserService   service.UserService
+	ReportService   service.ReportService
+	UserService     service.UserService
+	MetadataService service.MetadataService
 }
 
 type Repositorys struct {
@@ -27,8 +28,9 @@ type Tools struct {
 }
 
 type Handlers struct {
-	ReportHandler handlers.ReportHandler
-	AuthHandler   handlers.AuthHandler
+	ReportHandler   handlers.ReportHandler
+	AuthHandler     handlers.AuthHandler
+	MetadataHandler handlers.MetadataHandler
 }
 
 type Secure struct {

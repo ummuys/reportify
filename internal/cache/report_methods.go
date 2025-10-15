@@ -3,8 +3,9 @@ package cache
 import (
 	"context"
 	"fmt"
-	"sq/internal/config"
 	"time"
+
+	"github.com/ummuys/reportify/internal/config"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -43,8 +44,25 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	}, nil
 }
 
+func (rc *repCache) WarmUp(pCtx context.Context, queries map[string][]string) error {
+	rc.logger.Debug().Str("evt", "call WarmUp").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
+	defer cancel()
+
+	for key, values := range queries {
+		for _, val := range values {
+			err := rc.cli.LPush(ctx, key, val).Err()
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (rc *repCache) SetQuery(pCtx context.Context, key string, value any) error {
-	rc.logger.Debug().Str("evt", "call Set").Msg("")
+	rc.logger.Debug().Str("evt", "call SetQuery").Msg("")
 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
@@ -56,8 +74,8 @@ func (rc *repCache) SetQuery(pCtx context.Context, key string, value any) error 
 	return nil
 }
 
-func (rc *repCache) GetQuerys(pCtx context.Context, key string) ([]string, error) {
-	rc.logger.Debug().Str("evt", "call Get").Msg("")
+func (rc *repCache) GetQueries(pCtx context.Context, key string) ([]string, error) {
+	rc.logger.Debug().Str("evt", "call GetQueries").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
 
@@ -67,4 +85,25 @@ func (rc *repCache) GetQuerys(pCtx context.Context, key string) ([]string, error
 	}
 
 	return value, nil
+}
+
+func (rc *repCache) GetCacheQueries(pCtx context.Context) (map[string][]string, error) {
+	rc.logger.Debug().Str("evt", "call GetCashQueries").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
+	defer cancel()
+
+	keys, err := rc.cli.Keys(ctx, "*").Result()
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string][]string)
+
+	for _, k := range keys {
+		val, err := rc.cli.LRange(ctx, k, 0, -1).Result()
+		if err != nil {
+			return nil, err
+		}
+		m[k] = val
+	}
+	return m, nil
 }

@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
-	"sq/internal/errs"
-	"sq/internal/repository"
-	"sq/internal/secure"
+
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/repository"
+	"github.com/ummuys/reportify/internal/secure"
 
 	"github.com/rs/zerolog"
 )
@@ -39,22 +40,22 @@ func (u *uSrv) Create(pCtx context.Context, username, password string) error {
 	return nil
 }
 
-func (u *uSrv) CheckPass(pCtx context.Context, username, password string) error {
+func (u *uSrv) CheckPass(pCtx context.Context, username, password string) (int64, error) {
 	u.logger.Debug().Str("evt", "call CheckPass").Msg("")
 
 	err := u.db.Exists(pCtx, username)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	hashPass, err := u.db.GetPassword(pCtx, username)
+	user_id, hashPass, err := u.db.GetPassword(pCtx, username)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if !u.ph.ChechHash(password, hashPass) {
-		return errs.ErrBadData
+		return 0, errs.ErrInvalidCredentials
 	}
 
-	return nil
+	return user_id, nil
 }

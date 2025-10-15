@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"net/http"
-	"sq/internal/secure"
 	"strings"
+
+	"github.com/ummuys/reportify/internal/secure"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +26,9 @@ func Auth(tm secure.TokenManager) gin.HandlerFunc {
 			return
 		}
 
-		g.Set("username", claims["username"])
+		//ok
+		user_id := int64(claims["user_id"].(float64))
+		g.Set("user_id", user_id)
 		g.Next()
 	}
 }

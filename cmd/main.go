@@ -2,20 +2,25 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os/signal"
-	"sq/internal/di"
-	"sq/internal/web"
 	"sync"
 	"syscall"
+
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/di"
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/web"
 )
 
-// // ENVIRONMENT AND CONFIGS -- Не нужно для docker
-// err := godotenv.Load(".env.test")
-// if err != nil {
-// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
-// }
+// @title           github.com/ummuys/reportify API
+// @version         1.0
+// @description     API для отчетов
+// @host            localhost:1337
+// @BasePath       	/
+// @schemes         http
 
 func main() {
 
@@ -40,27 +45,51 @@ func main() {
 	hand := di.InitHandlers(tools, srv, sec)
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
-	//TO DELETE IN FUTURE
-	pass, _ := sec.PasswordHasher.Hash("admin")
-	err = repos.UserDB.CreateUser(mainCtx, "admin", pass)
+	// CREATE BASIC USER
+	appConf, err := config.ParseAppConfig()
 	if err != nil {
-		tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't load app config")
+	}
+	pass, err := sec.PasswordHasher.Hash(appConf.Password)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't hash the password")
+	} else {
+		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
+		if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
+			tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+		} else {
+			tools.Logger.AppLog.Info().Msg("basic user successfull init")
+		}
 	}
 
+	//Warn Up (Cache)
+	m, err := repos.UserDB.GetCacheQueries(mainCtx)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
+	}
+	err = repos.ReportCache.WarmUp(mainCtx, m)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't set querys in cache")
+	}
+	tools.Logger.DbLog.Info().Msg("cache successfully warmed up")
+
 	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
+	errsCh := make(chan error, 4)
+	srvOff := make(chan struct{})
 
-	errsCh := make(chan error, 2)
-
+	// Аккуратно выключаем после ctx.Done
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
 		<-mainCtx.Done()
+		defer server.Close()
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
-			_ = server.Close()
 			tools.Logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
 		}
+		srvOff <- struct{}{}
 	})
 
+	// Включаем сервер
 	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
 			errsCh <- err
@@ -68,10 +97,25 @@ func main() {
 		}
 	})
 
+	// Сохраняем кэш
+	wg.Go(func() {
+		<-srvOff
+		cache, err := repos.ReportCache.GetCacheQueries(context.Background())
+		if err != nil {
+			errsCh <- err
+		}
+
+		err = repos.UserDB.SetCacheQueries(context.Background(), cache)
+		if err != nil {
+			errsCh <- err
+		}
+	})
+
 	<-mainCtx.Done()
 	tools.Logger.AppLog.Info().Msg("turning down the server")
 	wg.Wait()
 	close(errsCh)
+	close(srvOff)
 	var hadErr bool
 
 	for err := range errsCh {

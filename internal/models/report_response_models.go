@@ -28,5 +28,9 @@ type Column struct {
 }
 
 type QueryList struct {
-	Querys []string `json:"querys"`
+	Queries []string `json:"queries"`
+}
+
+type EmptyResponse struct {
+	Message string `json:"msg"`
 }
