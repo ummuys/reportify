@@ -104,14 +104,12 @@ docker/
 
 logs/
   ...                    # Логи приложения
-
 ```
 
 ---
 
-<<<<<<< HEAD
-## Автор: Ummuys :)
-=======
+
+
 ## Авторы
 
 ### Ummuys - backend
@@ -119,4 +117,3 @@ logs/
 ### Ares-13 - frontend
 
 ### Sorokin - frontend
->>>>>>> backend
