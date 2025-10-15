@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	config "sq/internal/config/logger"
+	"github.com/ummuys/reportify/internal/config"
 
 	"github.com/rs/zerolog"
 )
@@ -36,13 +36,15 @@ func InitLogger(path string) (*config.Loggers, error) {
 
 	appLog := baseLog.With().Str("component", "app").Logger().Level(logLevels.AppLvl)
 	srvLog := baseLog.With().Str("component", "srv").Logger().Level(logLevels.SrvLvl)
+	svcLog := baseLog.With().Str("component", "svc").Logger().Level(logLevels.SvcLvl)
 	dbLog := baseLog.With().Str("component", "db").Logger().Level(logLevels.DbLvl)
-	cnvLog := baseLog.With().Str("component", "cnv").Logger().Level(logLevels.CnvLvl)
+	chcLog := baseLog.With().Str("component", "chc").Logger().Level(logLevels.ChcLvl)
 
 	return &config.Loggers{
 		AppLog: &appLog,
 		SrvLog: &srvLog,
 		DbLog:  &dbLog,
-		CnvLog: &cnvLog,
+		SvcLog: &svcLog,
+		ChcLog: &chcLog,
 	}, nil
 }

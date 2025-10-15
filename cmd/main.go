@@ -2,19 +2,25 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
-	"sq/internal/convert"
-	"sq/internal/logger"
-	"sq/internal/repository"
-	"sq/internal/service"
-	"sq/internal/web"
-	"sq/internal/web/handlers"
 	"sync"
 	"syscall"
+
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/di"
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/web"
 )
+
+// @title           github.com/ummuys/reportify API
+// @version         1.0
+// @description     API для отчетов
+// @host            localhost:1337
+// @BasePath       	/
+// @schemes         http
 
 func main() {
 
@@ -22,68 +28,106 @@ func main() {
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// // ENVIRONMENT AND CONFIGS
-	// err := godotenv.Load(".env.test")
-	// if err != nil {
-	// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
-	// }
-
-	// LOGGER
-	logger, err := logger.InitLogger(os.Getenv("LOGS_PATH"))
+	// INTERFACES
+	tools, err := di.InitTools()
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger.AppLog.Info().Str("msg", "loggers successfully set up").Msg("")
+	tools.Logger.AppLog.Info().Msg("Start the app")
 
-	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
+	repos, err := di.InitRepositorys(mainCtx, tools.Logger)
 	if err != nil {
-		logger.DbLog.Fatal().Err(err)
-		log.Fatal(err)
+		tools.Logger.AppLog.Fatal().Err(err).Msg("")
 	}
 
-	repConv := convert.NewReportConvert(logger.CnvLog)
+	sec := di.InitSecure()
+	srv := di.InitServices(repos, sec, tools)
+	hand := di.InitHandlers(tools, srv, sec)
+	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
 
-	// INTERFACE
-	repSrv := service.NewReportService(logger.SrvLog, repDB, repConv)
-	repHand := handlers.NewReportHandler(logger.SrvLog, repSrv)
-	server := web.CreateServer(mainCtx, repHand)
-	logger.AppLog.Info().Msg("Init interfaces: Service, RSLAPI, Handler")
+	// CREATE BASIC USER
+	appConf, err := config.ParseAppConfig()
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't load app config")
+	}
+	pass, err := sec.PasswordHasher.Hash(appConf.Password)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't hash the password")
+	} else {
+		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
+		if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
+			tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
+		} else {
+			tools.Logger.AppLog.Info().Msg("basic user successfull init")
+		}
+	}
 
-	errsCh := make(chan error, 2)
+	//Warn Up (Cache)
+	m, err := repos.UserDB.GetCacheQueries(mainCtx)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
+	}
+	err = repos.ReportCache.WarmUp(mainCtx, m)
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("can't set querys in cache")
+	}
+	tools.Logger.DbLog.Info().Msg("cache successfully warmed up")
 
+	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
+	errsCh := make(chan error, 4)
+	srvOff := make(chan struct{})
+
+	// Аккуратно выключаем после ctx.Done
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
 		<-mainCtx.Done()
+		defer server.Close()
 		if err := server.Shutdown(mainCtx); err != nil {
 			errsCh <- err
-			_ = server.Close()
-			logger.AppLog.Error().Err(fmt.Errorf("shutdown: %v", err))
+			tools.Logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
 		}
+		srvOff <- struct{}{}
 	})
 
+	// Включаем сервер
 	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
 			errsCh <- err
-			logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
+			tools.Logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
+		}
+	})
+
+	// Сохраняем кэш
+	wg.Go(func() {
+		<-srvOff
+		cache, err := repos.ReportCache.GetCacheQueries(context.Background())
+		if err != nil {
+			errsCh <- err
+		}
+
+		err = repos.UserDB.SetCacheQueries(context.Background(), cache)
+		if err != nil {
+			errsCh <- err
 		}
 	})
 
 	<-mainCtx.Done()
-	logger.AppLog.Info().Msg("turning down the server")
+	tools.Logger.AppLog.Info().Msg("turning down the server")
 	wg.Wait()
 	close(errsCh)
+	close(srvOff)
 	var hadErr bool
 
 	for err := range errsCh {
 		if err != nil {
 			hadErr = true
-			logger.AppLog.Error().Err(err).Send()
+			tools.Logger.AppLog.Error().Err(err).Send()
 		}
 	}
 
 	if hadErr {
-		logger.AppLog.Error().Msg("fatal shutdown")
+		tools.Logger.AppLog.Error().Msg("fatal shutdown")
 	} else {
-		logger.AppLog.Info().Msg("shutdown successful")
+		tools.Logger.AppLog.Info().Msg("shutdown successful")
 	}
 }
