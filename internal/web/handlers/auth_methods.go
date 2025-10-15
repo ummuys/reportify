@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"sq/internal/errs"
-	"sq/internal/models"
-	"sq/internal/secure"
-	"sq/internal/service"
+
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/models"
+	"github.com/ummuys/reportify/internal/secure"
+	"github.com/ummuys/reportify/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -23,6 +24,17 @@ func NewAuthHandler(logger *zerolog.Logger, tm secure.TokenManager, u service.Us
 	return &authHandler{logger: logger, tm: tm, u: u}
 }
 
+// UpdateAccessToken godoc
+// @Summary      Обновить access-токен по refresh-токену
+// @Description  Читает refresh_token из Cookie и выдает новый access-токен.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        Cookie  header  string  true  "Cookie: refresh_token=<REFRESH_TOKEN>"
+// @Success      200     {object} models.NewAccessToken  "Новый access-токен"
+// @Failure      401     {object} models.EmptyResponse   "Отсутствует/некорректный refresh-токен"
+// @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
+// @Router       /secure/access [get]
 func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		refreshToken, err := g.Cookie("refresh_token")
@@ -38,17 +50,29 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: "bad refresh token"})
 		}
 
-		accessToken, err := ah.tm.GenerateAccessToken(claims["user_id"].(int64))
+		access, err := ah.tm.GenerateAccessToken(claims["user_id"].(int64))
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusUnauthorized)
 		}
 
 		g.Set("msg", "access token is returned")
-		g.JSON(http.StatusOK, gin.H{"access_token": accessToken})
+		g.JSON(http.StatusOK, models.NewAccessToken{AccessToken: access})
 	}
 }
 
+// Authorization godoc
+// @Summary      Авторизация пользователя
+// @Description  Проверяет логин и пароль, выставляет refresh_token в Cookie и возвращает access-токен в ответе.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request  body   models.Auth  true  "Учетные данные пользователя"
+// @Success      200      {object}  models.NewAccessToken  "Успешная авторизация, access-токен в теле ответа"
+// @Failure      400      {object}  models.EmptyResponse   "Неверный формат запроса (bad request)"
+// @Failure      401      {object}  models.EmptyResponse   "Неверные учетные данные"
+// @Failure      500      {object}  models.EmptyResponse   "Внутренняя ошибка сервера"
+// @Router       /secure/auth [post]
 func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		var req models.Auth
@@ -87,6 +111,6 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 
 		g.Set("msg", "auth successful")
 		g.SetCookie("refresh_token", refresh, 3600*144, "/", "", false, true)
-		g.JSON(http.StatusOK, gin.H{"access_token": access})
+		g.JSON(http.StatusOK, models.NewAccessToken{AccessToken: access})
 	}
 }

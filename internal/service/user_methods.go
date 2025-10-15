@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
-	"sq/internal/errs"
-	"sq/internal/repository"
-	"sq/internal/secure"
+
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/repository"
+	"github.com/ummuys/reportify/internal/secure"
 
 	"github.com/rs/zerolog"
 )

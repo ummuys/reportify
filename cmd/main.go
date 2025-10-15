@@ -6,19 +6,21 @@ import (
 	"fmt"
 	"log"
 	"os/signal"
-	"sq/internal/config"
-	"sq/internal/di"
-	"sq/internal/errs"
-	"sq/internal/web"
 	"sync"
 	"syscall"
+
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/di"
+	"github.com/ummuys/reportify/internal/errs"
+	"github.com/ummuys/reportify/internal/web"
 )
 
-// // ENVIRONMENT AND CONFIGS -- Не нужно для docker
-// err := godotenv.Load(".env.test")
-// if err != nil {
-// 	log.Fatal(fmt.Errorf("can't load a env: %v", err))
-// }
+// @title           github.com/ummuys/reportify API
+// @version         1.0
+// @description     API для отчетов
+// @host            localhost:1337
+// @BasePath       	/
+// @schemes         http
 
 func main() {
 

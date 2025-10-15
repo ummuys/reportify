@@ -3,20 +3,22 @@ package di
 import (
 	"context"
 	"os"
-	"sq/internal/cache"
-	"sq/internal/config"
-	"sq/internal/convert"
-	"sq/internal/logger"
-	"sq/internal/repository"
-	"sq/internal/secure"
-	"sq/internal/service"
-	"sq/internal/web/handlers"
+
+	"github.com/ummuys/reportify/internal/cache"
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/convert"
+	"github.com/ummuys/reportify/internal/logger"
+	"github.com/ummuys/reportify/internal/repository"
+	"github.com/ummuys/reportify/internal/secure"
+	"github.com/ummuys/reportify/internal/service"
+	"github.com/ummuys/reportify/internal/web/handlers"
 )
 
 func InitServices(repos Repositorys, sec Secure, tools Tools) Services {
 	repSrv := service.NewReportService(tools.Logger.SvcLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
 	userSrv := service.NewUserService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
-	return Services{ReportService: repSrv, UserService: userSrv}
+	mdSrv := service.NewMetadataService(tools.Logger.SvcLog, repos.ReportDB, repos.ReportCache)
+	return Services{ReportService: repSrv, UserService: userSrv, MetadataService: mdSrv}
 }
 
 func InitTools() (Tools, error) {
@@ -31,7 +33,8 @@ func InitTools() (Tools, error) {
 func InitHandlers(tools Tools, serv Services, sec Secure) Handlers {
 	repHand := handlers.NewReportHandler(tools.Logger.SrvLog, serv.ReportService)
 	authHand := handlers.NewAuthHandler(tools.Logger.SrvLog, sec.TokenManager, serv.UserService)
-	return Handlers{ReportHandler: repHand, AuthHandler: authHand}
+	mdHand := handlers.NewMetadataHandler(tools.Logger.SrvLog, serv.MetadataService)
+	return Handlers{ReportHandler: repHand, AuthHandler: authHand, MetadataHandler: mdHand}
 }
 
 func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositorys, error) {

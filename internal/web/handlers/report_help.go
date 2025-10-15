@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sq/internal/models"
 	"time"
+
+	"github.com/ummuys/reportify/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

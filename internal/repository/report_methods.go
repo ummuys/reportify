@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
-	"sq/internal/config"
 	"time"
+
+	"github.com/ummuys/reportify/internal/config"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

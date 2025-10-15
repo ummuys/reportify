@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sq/internal/config"
-	"sq/internal/errs"
 	"time"
+
+	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/errs"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"

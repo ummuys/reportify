@@ -5,10 +5,11 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"sq/internal/di"
-	"sq/internal/web/middleware"
 
-	_ "sq/docs"
+	"github.com/ummuys/reportify/internal/di"
+	"github.com/ummuys/reportify/internal/web/middleware"
+
+	_ "github.com/ummuys/reportify/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,28 +21,35 @@ func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, sr
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
-	g.Use(cors.New(cors.Config{
+	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// MAIN
+	api := g.Group("/api/v1")
+	api.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://127.0.0.1:8088"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	g.Use(middleware.RequestLogger(tools.Logger.SrvLog)) // -- Логгирование любого запроса
-	g.Use(gin.Recovery())
-	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	api.Use(middleware.RequestLogger(tools.Logger.SrvLog)) // -- Логгирование любого запроса
+	api.Use(gin.Recovery())
 
 	// REPORT
-	rep := g.Group("")
+	rep := api.Group("")
 	rep.Use(middleware.Auth(sec.TokenManager)) // -- Проверка токена каждый раз, когда выполняется запрос
 	rep.POST(CreateReportPath, hand.ReportHandler.CreateReport(pCtx))
-	rep.GET(GetSchemasPath, hand.ReportHandler.GetSchemas(pCtx))
-	rep.GET(GetTablesPath, hand.ReportHandler.GetTables(pCtx))
-	rep.GET(GetColumnsPath, hand.ReportHandler.GetColumns(pCtx))
-	rep.GET(GetCacheQuerysPath, hand.ReportHandler.GetCacheQueries(pCtx))
+
+	// METADATA
+	md := api.Group("")
+	md.Use(middleware.Auth(sec.TokenManager))
+	md.GET(GetSchemasPath, hand.MetadataHandler.GetSchemas(pCtx))
+	md.GET(GetTablesPath, hand.MetadataHandler.GetTables(pCtx))
+	md.GET(GetColumnsPath, hand.MetadataHandler.GetColumns(pCtx))
+	md.GET(GetCacheQuerysPath, hand.MetadataHandler.GetCacheQueries(pCtx))
 
 	// SECURE
-	auth := g.Group("")
+	auth := api.Group("")
 	auth.POST(AuthPath, hand.AuthHandler.Authorization(pCtx))
 	auth.GET(GetAccessTokenPath, hand.AuthHandler.UpdateAccessToken(pCtx))
 

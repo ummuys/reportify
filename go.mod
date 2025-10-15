@@ -1,4 +1,4 @@
-module sq
+module github.com/ummuys/reportify
 
 go 1.25.0
 

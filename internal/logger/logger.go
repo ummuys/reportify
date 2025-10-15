@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"sq/internal/config"
+	"github.com/ummuys/reportify/internal/config"
 
 	"github.com/rs/zerolog"
 )

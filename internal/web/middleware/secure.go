@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"net/http"
-	"sq/internal/secure"
 	"strings"
+
+	"github.com/ummuys/reportify/internal/secure"
 
 	"github.com/gin-gonic/gin"
 )

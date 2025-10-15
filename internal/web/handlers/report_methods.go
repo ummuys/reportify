@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"sq/internal/models"
-	"sq/internal/service"
-	"strconv"
+
+	"github.com/ummuys/reportify/internal/models"
+	"github.com/ummuys/reportify/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -48,77 +48,5 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			g.Set("msg", "bad format")
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "format is required"})
 		}
-	}
-}
-
-func (rh *repHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-		rh.logger.Debug().Str("evt", "call GetSchemas")
-		data, err := rh.srv.GetSchemas(pCtx)
-		if err != nil {
-			g.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		g.Set("msg", "schema names are returned")
-		g.JSON(http.StatusOK, data)
-
-	}
-}
-
-func (rh *repHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-		rh.logger.Debug().Str("evt", "call GetTables")
-		schema := g.Query("schema")
-		if schema == "" {
-			g.Set("msg", "schema name: "+schema)
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "schema name is required"})
-			return
-		}
-
-		data, err := rh.srv.GetTables(pCtx, schema)
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		g.Set("msg", "table names are returned")
-		g.JSON(http.StatusOK, data)
-
-	}
-}
-
-func (rh *repHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-		rh.logger.Debug().Str("evt", "call GetColumns")
-		schema := g.Query("schema")
-		table := g.Query("table")
-		if schema == "" || table == "" {
-			g.Set("msg", "schema: "+schema+"; table: "+table)
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "schema and table names are required"})
-			return
-		}
-		data, err := rh.srv.GetColumns(pCtx, schema, table)
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		g.Set("msg", "column names are returned")
-		g.JSON(http.StatusOK, data)
-
-	}
-}
-
-func (rh *repHandler) GetCacheQueries(pCtx context.Context) gin.HandlerFunc {
-	return func(g *gin.Context) {
-		user_id := g.GetInt64("user_id")
-		queries, err := rh.srv.GetCacheQueries(pCtx, strconv.FormatInt(user_id, 10))
-		if err != nil {
-			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		g.Set("msg", "list Queries are returned")
-		g.JSON(http.StatusOK, models.QueryList{Queries: queries})
 	}
 }
