@@ -668,7 +668,7 @@ btnDownload.addEventListener('click', async () => {
     const { blob, filename } = await postReportAndGetBlob(); 
     saveBlob(blob, filename); 
   } catch (e) { 
-    alert('Не удалось сформировать отчёт: ' + (e.message || e)); 
+    await showAlert('Не удалось сформировать отчёт:\n' + (e.message || e), "Ошибка");
     console.error(e); 
   } finally { 
     btnDownload.textContent = originalText; 
@@ -687,7 +687,7 @@ btnPreview.addEventListener('click', async () => {
     (format === 'pdf' || format === 'csv') ? openBlob(blob) : saveBlob(blob, `preview.${format}`);
     saveHistoryEntry();
   } catch (e) { 
-    alert('Не удалось показать предпросмотр: ' + (e.message || e)); 
+    await showAlert('Не удалось показать предпросмотр:\n' + (e.message || e), "Ошибка");
     console.error(e); 
   }
 
@@ -699,7 +699,7 @@ btnPreview.addEventListener('click', async () => {
   console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
   
   if (!token) {
-    alert("Не найден access токен. Сначала авторизуйтесь.");
+    await showAlert("Не найден access токен. Сначала авторизуйтесь.", "Авторизация");
     return;
   }
   
@@ -780,7 +780,10 @@ historyList.addEventListener('click', async e => {
     e.stopPropagation(); // предотвращаем открытие
     const removed = reportHistory[index];
 
-    const confirmed = confirm(`Удалить отчёт "${removed.name || 'Без названия'}"?`);
+    const confirmed = await showConfirm(
+    `Вы уверены, что хотите удалить отчёт "${removed.name || 'Без названия'}"?`,
+    "Удалить отчёт"
+    );
     if (!confirmed) return;
 
     // Удаление
@@ -810,26 +813,24 @@ historyList.addEventListener('click', async e => {
     chk.checked = state.chosen.includes(chk.dataset.col);
   });
 
-  // Фильтры
+  // ---- ФИЛЬТРЫ ----
   const filtersContainer = document.getElementById('filtersContainer');
   filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
-  filtersContainer.appendChild(createFilterRow());
-  const filters = item.filters || [];
-  if (filters.length === 0) {
-    filtersContainer.appendChild(createFilterRow());
-  } else {
+  const filters = item.filters?.filter(f => f.field || f.value) || [];
+  if (filters.length) {
     filters.forEach(f => filtersContainer.appendChild(createFilterRow(f)));
+  } else {
+    filtersContainer.appendChild(createFilterRow());
   }
 
-  // Сортировки
+  // ---- СОРТИРОВКИ ----
   const sortContainer = document.getElementById('sortContainer');
   sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
-  sortContainer.appendChild(createSortRow());
-  const sorts = item.sorts || [];
-  if (sorts.length === 0) {
-    sortContainer.appendChild(createSortRow());
-  } else {
+  const sorts = item.sorts?.filter(s => s.field) || [];
+  if (sorts.length) {
     sorts.forEach(s => sortContainer.appendChild(createSortRow(s)));
+  } else {
+    sortContainer.appendChild(createSortRow());
   }
 
   // Прочие поля
@@ -995,3 +996,52 @@ btnClearHistory.addEventListener('click', () => {
     showToast('История успешно удалена');
   }
 });
+
+// --- Кастомное подтверждение ---
+function showConfirm(message, title = "Подтверждение") {
+  return new Promise(resolve => {
+    const modal = document.getElementById('confirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const btnYes = document.getElementById('confirmYes');
+    const btnNo = document.getElementById('confirmNo');
+
+    document.querySelector('.modal-title').textContent = title;
+    msgEl.textContent = message;
+    modal.style.display = 'flex';
+
+    const close = (result) => {
+      modal.style.display = 'none';
+      btnYes.removeEventListener('click', yesHandler);
+      btnNo.removeEventListener('click', noHandler);
+      resolve(result);
+    };
+
+    const yesHandler = () => close(true);
+    const noHandler = () => close(false);
+
+    btnYes.addEventListener('click', yesHandler);
+    btnNo.addEventListener('click', noHandler);
+  });
+}
+
+// --- Кастомный alert ---
+function showAlert(message, title = "Сообщение") {
+  return new Promise(resolve => {
+    const modal = document.getElementById('alertModal');
+    const msgEl = document.getElementById('alertMessage');
+    const titleEl = document.getElementById('alertTitle');
+    const btnOk = document.getElementById('alertOk');
+
+    msgEl.textContent = message;
+    titleEl.textContent = title;
+    modal.style.display = 'flex';
+
+    const close = () => {
+      modal.style.display = 'none';
+      btnOk.removeEventListener('click', close);
+      resolve();
+    };
+
+    btnOk.addEventListener('click', close);
+  });
+}

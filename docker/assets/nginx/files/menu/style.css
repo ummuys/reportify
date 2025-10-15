@@ -6,7 +6,7 @@
     --drop: hsla(0, 0%, 100%, 1); 
     --drop-hover:hsla(0, 0%, 87%, 1);
     --accent: hsla(221, 83%, 53%, 1);
-    --green: hsla(150, 69%, 55%, 1);
+    --green: hsla(150, 69%, 55%, .8);
     --err: hsla(0, 100%, 75%, 1);
 }
 
@@ -202,8 +202,13 @@ select option:checked {
     border: 0;
 } 
 
+.btn-primary:hover {
+    background: hsla(150, 69%, 55%, 1);
+}
+
 .btn-primary:disabled {
     opacity: .5;
+    cursor: default;
 }
 
 .chips {
@@ -562,4 +567,60 @@ input.invalid, textarea.invalid {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* --- Модальное окно подтверждения --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 24px 28px;
+  min-width: 300px;
+  max-width: 420px;
+  color: var(--text);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  animation: slideUp 0.25s ease;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-message {
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 18px;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
