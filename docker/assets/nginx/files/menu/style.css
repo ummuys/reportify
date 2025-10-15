@@ -563,3 +563,50 @@ input.invalid, textarea.invalid {
   flex-direction: column;
   gap: 10px;
 }
+
+/* ВОТ ЭТО Я ДОБАВИЛ, ЧЕКНИ КАК-НИБУДЬ НИКИТОСИК БРАТОСИК */
+
+
+/* === Центрированный контент при фиксированном сайдбаре === */
+:root{
+  --sidebar-w: 320px;           /* ширина левого сайдбара */
+  --content-max: 1200px;        /* потолок ширины контента (не растягиваемся) */
+  --content-pad-x: clamp(16px, 2vw, 32px);
+}
+
+/* сохраняем твою фикс. ширину, но берём её из переменной */
+.sidebar{
+  width: var(--sidebar-w);
+}
+
+/* БАЗА: контейнер занимает всё оставшееся место справа от сайдбара */
+.container{
+  /* сброс прежних значений */
+  margin: 0;
+  padding: 20px var(--content-pad-x);
+  /* занимаем остаток ширины окна */
+  width: calc(100vw - var(--sidebar-w));
+  max-width: var(--content-max);
+  /* по умолчанию — просто примыкаем к сайдбару */
+  margin-left: var(--sidebar-w);
+}
+
+/* БОЛЬШИЕ ЭКРАНЫ: центрируем контейнер в «остатке» справа от сайдбара */
+@media (min-width: 1400px){
+  .container{
+    /* магия: отступ слева = ширина сайдбара + половина «лишнего» справа */
+    margin-left: calc(
+      var(--sidebar-w) + max(0px, (100vw - var(--sidebar-w) - var(--content-max)) / 2)
+    );
+    /* ширина остаётся = min(остаток, content-max) */
+    width: min(calc(100vw - var(--sidebar-w)), var(--content-max));
+  }
+}
+
+/* По желанию: чуть увеличим потолок на ультра-широких — контент остаётся центрированным */
+@media (min-width: 1920px){
+  :root{ --content-max: 1280px; }
+}
+@media (min-width: 2560px){
+  :root{ --content-max: 1440px; }
+}
