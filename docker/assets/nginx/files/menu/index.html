@@ -10,8 +10,27 @@
   <script src="main.js" defer></script>
 </head>
 <body>
-  <div class="layout">
+  <header class="header">
+  <div class="header-left">
+    <img src="../img/pgups_logo.png" alt="Логотип" class="logo">
+  </div>
 
+  <div class="dropdown">
+    <button class="dropdown-btn">Меню</button>
+    <div class="dropdown-content">
+      <p>Пока хуй его пойми</p>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button class="burger" id="burgerBtn">☰</button>
+    <div class="burger-menu" id="burgerMenu">
+      <a href="#" id="profileLink">Профиль</a>
+    </div>
+  </div>
+</header>
+
+  <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-header">
         <h2>История отчётов</h2>

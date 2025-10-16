@@ -1103,3 +1103,19 @@ function showAlert(message, title = "Сообщение") {
     btnOk.addEventListener('click', close);
   });
 }
+
+// ---- HEADER ----
+const burgerBtn = document.getElementById('burgerBtn');
+const burgerMenu = document.getElementById('burgerMenu');
+
+burgerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  burgerMenu.classList.toggle('show');
+});
+
+// Закрывать меню при клике вне
+document.addEventListener('click', (e) => {
+  if (!burgerMenu.contains(e.target) && e.target !== burgerBtn) {
+    burgerMenu.classList.remove('show');
+  }
+});
