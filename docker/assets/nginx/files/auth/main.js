@@ -84,8 +84,7 @@ async function doLogin() {
     }
 
     saveAccess(token);
-    // ✅ После успешного входа — сразу переходим в меню
-    window.location.assign(config.MAIN_MENU);
+    // ✅ После успешного входа — сразу переходим в меню     window.location.assign(config.MAIN_MENU);
   } catch (e) {
     showError("Ошибка сети");
   } finally {

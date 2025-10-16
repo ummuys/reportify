@@ -4,9 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ummuys/reportify/internal/secure"
-
 	"github.com/gin-gonic/gin"
+	"github.com/ummuys/reportify/internal/secure"
 )
 
 func Auth(tm secure.TokenManager) gin.HandlerFunc {
@@ -26,7 +25,6 @@ func Auth(tm secure.TokenManager) gin.HandlerFunc {
 			return
 		}
 
-		//ok
 		user_id := int64(claims["user_id"].(float64))
 		g.Set("user_id", user_id)
 		g.Next()

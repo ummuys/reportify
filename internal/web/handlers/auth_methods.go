@@ -56,7 +56,7 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 			g.AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		g.Set("msg", "access token is returned")
+		g.Set("msg", "access token is updated")
 		g.JSON(http.StatusOK, models.NewAccessToken{AccessToken: access})
 	}
 }
