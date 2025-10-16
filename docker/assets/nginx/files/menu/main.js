@@ -486,35 +486,47 @@ function pickFilename(headers, fallback) {
 }
 
 async function postReportAndGetBlob() {
-    // В начале postReportAndGetBlob добавьте:
-  const format = (state.format || 'PDF').toLowerCase();
+  // формат берём из state (PDF / CSV / …)
+  const format = (state.format || 'PDF').toLowerCase(); // 'pdf' | 'csv' | ...
   const url = `${API_BASE}/api/v1/report/${format}`;
-  const payload = { sql: sqlText.value.trim() };
-  
+  const payload = { sql: sqlText.value.trim(), csv_sep: ',',};
   const token = localStorage.getItem("access_token_v1") || "";
-  
-  // Для отчетов используем отдельный fetch с правильными заголовками
+
+  // Подбираем Accept под формат
+  const acceptByFormat = {
+    pdf: 'application/pdf',
+    csv: 'text/csv',
+  };
+  const accept = acceptByFormat[format] || '*/*';
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': token ? "Bearer " + token : "",
-      'Accept': '*/*'
+      'Accept': accept
     },
     credentials: 'include',
     body: JSON.stringify(payload)
   });
-  
+
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
     throw new Error(`HTTP ${res.status} ${res.statusText}${txt ? ' — ' + txt : ''}`);
   }
-  
+
+  // Получаем бинарный ответ
   const blob = await res.blob();
-  const filename = pickFilename(res.headers, `report.${format}`);
+
+  // Имя файла: сначала Content-Disposition, затемfallback по формату
+  const fallbackNameByFormat = {
+    pdf: 'report.pdf',
+    csv: 'report.csv',
+  };
+  const filename = pickFilename(res.headers, fallbackNameByFormat[format] || `report.${format}`);
+
   return { blob, filename, format };
 }
-
 function saveBlob(blob, filename) {
   const a = document.createElement('a'); 
   const url = URL.createObjectURL(blob);

@@ -74,6 +74,7 @@ func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any,
 		return nil, nil, err
 	}
 	defer rows.Close()
+
 	fds := rows.FieldDescriptions()
 	headers := make([]string, len(fds))
 	for i := range fds {

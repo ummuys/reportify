@@ -11,15 +11,14 @@ import (
 )
 
 func InitLogger(path string) (*config.Loggers, error) {
-
 	zerolog.TimestampFunc = func() time.Time { return time.Now().UTC() }
 	zerolog.DurationFieldUnit = time.Millisecond
 	zerolog.DurationFieldInteger = true
-	zerolog.TimeFieldFormat = time.RFC3339Nano
+	const consoleTimeFormat = "02 Jan 06 15:04 MST"
 
 	cw := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
-		TimeFormat: time.RFC3339Nano,
+		TimeFormat: consoleTimeFormat,
 	}
 
 	//STD-OUT
