@@ -6,7 +6,7 @@ type ReportConvert interface {
 	ToPDF(headers []string, data [][]any, f *os.File) error
 	// ToXLXS()
 	// ToJSON()
-	// ToCSV()
+	ToCSV(headers []string, data [][]any, f *os.File, sep rune) error
 	// ToMD()
 
 	//Maybe

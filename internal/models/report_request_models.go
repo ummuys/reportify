@@ -1,5 +1,11 @@
 package models
 
-type CreateReport struct {
-	Sql string `json:"sql"`
+type RawReportParams struct {
+	Sql    string `json:"sql"`
+	CSVSep string `json:"csv_sep"`
+}
+
+type ReportParams struct {
+	Sql    string
+	CSVSep rune
 }

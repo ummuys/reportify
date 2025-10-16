@@ -25,7 +25,7 @@ func (tm *tokMan) GenerateRefreshToken(user_id int64) (string, error) {
 func (tm *tokMan) GenerateAccessToken(user_id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
-		"exp":     time.Now().Add(time.Second * 30).Unix(), // Срок действия — 24 часа
+		"exp":     time.Now().Add(time.Hour * 2).Unix(), // Срок действия — 2 часа
 	}
 	access := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return access.SignedString([]byte(secret_access))

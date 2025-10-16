@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 
@@ -14,6 +15,39 @@ type repConv struct {
 
 func NewReportConvert(logger *zerolog.Logger) ReportConvert {
 	return &repConv{logger: logger}
+}
+
+func (rc *repConv) ToCSV(headers []string, rows [][]any, f *os.File, sep rune) error {
+	rc.logger.Debug().Str("env", "call toCSV").Msg("")
+	if len(headers) == 0 {
+		return fmt.Errorf("empty headers")
+	}
+
+	w := csv.NewWriter(f)
+	if sep != ' ' {
+		w.Comma = sep
+	}
+	defer w.Flush()
+
+	if err := w.Write(headers); err != nil {
+		return fmt.Errorf("write headers: %w", err)
+	}
+
+	for _, row := range rows {
+		strs := make([]string, len(row))
+		for i, r := range row {
+			strs[i] = fmt.Sprint(r)
+		}
+		if err := w.Write(strs); err != nil {
+			return fmt.Errorf("write row: %w", err)
+		}
+	}
+
+	if err := w.Error(); err != nil {
+		return fmt.Errorf("csv writer error: %w", err)
+	}
+
+	return nil
 }
 
 func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
