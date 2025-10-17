@@ -141,6 +141,17 @@ func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
+// DeleteUserQueries godoc
+// @Summary      Удалить сохранённые запросы пользователя
+// @Description  Очищает кэш SQL-запросов для текущего пользователя (user_id берётся из контекста).
+// @Tags         metadata
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  models.EmptyResponse  "Запросы пользователя удалены"
+// @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
+// @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
+// @Router       /cache [delete]
 func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		user_id := g.GetInt64("user_id")
