@@ -54,8 +54,8 @@ prod-update-app:
 	-docker compose -f $(PROD_COMPOSE) up -d app
 
 prod-update-front:
-	-docker restart nginx
-	
+	-docker compose -f $(PROD_COMPOSE) down nginx
+	-docker compose -f $(PROD_COMPOSE) up -d nginx
 
 check_app_logs:
 	-docker logs app

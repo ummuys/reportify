@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/ummuys/reportify/internal/errs"
@@ -48,12 +49,16 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: "bad refresh token"})
+			return
 		}
 
-		access, err := ah.tm.GenerateAccessToken(claims["user_id"].(int64))
+		userID := int64(claims["user_id"].(float64))
+
+		access, err := ah.tm.GenerateAccessToken(userID)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusUnauthorized)
+			return
 		}
 
 		g.Set("msg", "access token is updated")
@@ -111,6 +116,7 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 
 		g.Set("msg", "auth successful")
 		g.SetCookie("refresh_token", refresh, 3600*144, "/", "", false, true)
+		fmt.Println(refresh)
 		g.JSON(http.StatusOK, models.NewAccessToken{AccessToken: access})
 	}
 }

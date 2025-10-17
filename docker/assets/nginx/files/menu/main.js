@@ -3,39 +3,74 @@ const API_BASE = "http://127.0.0.1:8088";
 
 // ---- утилиты -----------------------------------------------------------
 // универсальный fetch с токеном
-async function fetchWithToken(url, options = {}) {
+// ---- утилиты -----------------------------------------------------------
+// универсальный fetch с токеном + автообновление токена при 401
+async function fetchWithToken(url, options = {}, _retry = false) {
   const token = localStorage.getItem("access_token_v1") || "";
-      // В начале fetchWithToken добавьте:
+
   console.log("🔐 Fetch with token:", url);
   console.log("   Token present:", !!token);
   console.log("   Headers:", { 
-      ...options.headers, 
-      Authorization: token ? "Bearer [PRESENT]" : "[MISSING]" 
+    ...options.headers, 
+    Authorization: token ? "Bearer [PRESENT]" : "[MISSING]" 
   });
-  options.headers = options.headers || {};
+
+  options = { ...options };
+  options.headers = { ...(options.headers || {}) };
+
+  // стандартные заголовки
   options.headers["Accept"] = options.headers["Accept"] || "application/json";
   if (token) options.headers["Authorization"] = "Bearer " + token;
   options.credentials = 'include';
-  
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error(res.status + " " + res.statusText);
-  
-  // Проверяем Content-Type для определения типа ответа
+
+  // 1-й запрос
+  let res = await fetch(url, options);
+
+  // === авто-рефреш на 401 ===
+  if (res.status === 401 && !_retry) {
+    console.warn('Got 401, trying to refresh access token...');
+    const ref = await refreshAccessToken();
+    if (ref.ok && ref.token) {
+      // подменяем заголовок и повторяем запрос ОДИН раз
+      const newOpts = { ...options, headers: { ...options.headers, Authorization: 'Bearer ' + ref.token } };
+      res = await fetch(url, newOpts);
+    } else if (ref.unauthorized) {
+      // показать confirm и при согласии — редирект
+      const goLogin = await showAlert(
+        'Сессия истекла. Нужно снова авторизоваться',
+        'Требуется авторизация'
+      );
+      window.location.assign(API_BASE);
+      throw new Error('Не авторизовано (401)');
+    } else {
+      // другая ошибка рефреша — пробрасываем как есть
+      throw new Error(ref.error?.message || 'Не удалось обновить токен');
+    }
+  }
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(res.status + " " + res.statusText + (txt ? ' — ' + txt : ''));
+  }
+
+  // Определяем, что вернуть
   const contentType = res.headers.get('content-type') || '';
-  
-  // Для бинарных данных (PDF, CSV) возвращаем Response как есть
-  if (contentType.includes('application/pdf') || 
-      contentType.includes('text/csv') || 
-      contentType.includes('application/octet-stream')) {
+
+  // Для бинарных форматов — отдаём сам Response (как и раньше)
+  if (
+    contentType.includes('application/pdf') ||
+    contentType.includes('text/csv') ||
+    contentType.includes('application/octet-stream')
+  ) {
     return res;
   }
-  
+
   // Для JSON пытаемся распарсить
   const txt = await res.text();
-  try { 
-    return JSON.parse(txt); 
-  } catch { 
-    return txt; 
+  try {
+    return JSON.parse(txt);
+  } catch {
+    return txt;
   }
 }
 
@@ -499,7 +534,7 @@ async function postReportAndGetBlob() {
   };
   const accept = acceptByFormat[format] || '*/*';
 
-  const res = await fetch(url, {
+  const res = await fetchWithToken(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -714,7 +749,8 @@ btnPreview.addEventListener('click', async () => {
   console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
   
   if (!token) {
-    await showAlert("Не найден access токен. Сначала авторизуйтесь.", "Авторизация");
+    await showAlert("Сначала авторизуйтесь.", "Авторизация");
+    window.location.assign(API_BASE);
     return;
   }
   
@@ -1132,3 +1168,43 @@ document.addEventListener('click', (e) => {
     burgerMenu.classList.remove('show');
   }
 });
+
+
+
+// ---- refresh access token (по cookie refresh_token) ----
+async function refreshAccessToken() {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/secure/access`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include', // важно: чтобы ушёл refresh cookie
+    });
+
+    // если сам рефреш вернул 401 — считаем, что сессия истекла
+    if (res.status === 401) {
+      clearAccessToken();
+      return { ok: false, unauthorized: true };
+    }
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Refresh failed: ${res.status} ${res.statusText}${txt ? ' — ' + txt : ''}`);
+    }
+
+    const data = await res.json().catch(() => ({}));
+    const newToken = data?.access_token || data?.accessToken || '';
+    if (!newToken) {
+      throw new Error('Refresh failed: access_token is empty');
+    }
+
+    // сохраняем новый токен
+    localStorage.setItem('access_token_v1', newToken);
+    return { ok: true, token: newToken };
+  } catch (e) {
+    console.error('refreshAccessToken error:', e);
+    return { ok: false, unauthorized: false, error: e };
+  }
+}
+
+function clearAccessToken() {
+  try { localStorage.removeItem('access_token_v1'); } catch {}
+}
