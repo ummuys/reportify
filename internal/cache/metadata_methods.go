@@ -44,7 +44,7 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	}, nil
 }
 
-func (rc *repCache) WarmUp(pCtx context.Context, queries map[string][]string) error {
+func (rc *repCache) Init(pCtx context.Context, queries map[string][]string) error {
 	rc.logger.Debug().Str("evt", "call WarmUp").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
@@ -53,7 +53,7 @@ func (rc *repCache) WarmUp(pCtx context.Context, queries map[string][]string) er
 		for _, val := range values {
 			err := rc.cli.LPush(ctx, key, val).Err()
 			if err != nil {
-				return err
+				return fmt.Errorf("can't add a query (warnUp): %v", err)
 			}
 		}
 	}
@@ -61,34 +61,34 @@ func (rc *repCache) WarmUp(pCtx context.Context, queries map[string][]string) er
 	return nil
 }
 
-func (rc *repCache) SetQuery(pCtx context.Context, key string, value any) error {
-	rc.logger.Debug().Str("evt", "call SetQuery").Msg("")
+func (rc *repCache) Set(pCtx context.Context, key string, value any) error {
+	rc.logger.Debug().Str("evt", "call Set").Msg("")
 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
 
 	err := rc.cli.LPush(ctx, key, value).Err()
 	if err != nil {
-		return err
+		return fmt.Errorf("can't add a query: %v", err)
 	}
 	return nil
 }
 
-func (rc *repCache) GetQueries(pCtx context.Context, key string) ([]string, error) {
-	rc.logger.Debug().Str("evt", "call GetQueries").Msg("")
+func (rc *repCache) Get(pCtx context.Context, key string) ([]string, error) {
+	rc.logger.Debug().Str("evt", "call Get").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
 
 	value, err := rc.cli.LRange(ctx, key, 0, -1).Result()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't get a value: %v", err)
 	}
 
 	return value, nil
 }
 
-func (rc *repCache) GetCacheQueries(pCtx context.Context) (map[string][]string, error) {
-	rc.logger.Debug().Str("evt", "call GetCashQueries").Msg("")
+func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
+	rc.logger.Debug().Str("evt", "call GetAll").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
 	defer cancel()
 
@@ -101,9 +101,33 @@ func (rc *repCache) GetCacheQueries(pCtx context.Context) (map[string][]string, 
 	for _, k := range keys {
 		val, err := rc.cli.LRange(ctx, k, 0, -1).Result()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("can't get a value: %v", err)
 		}
 		m[k] = val
 	}
 	return m, nil
+}
+
+func (rc *repCache) Delete(pCtx context.Context, key string, value any) error {
+	rc.logger.Debug().Str("evt", "call Delete").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
+	defer cancel()
+
+	if _, err := rc.cli.LRem(ctx, key, 0, value).Result(); err != nil {
+		return fmt.Errorf("can't delete a value: %v", err)
+	}
+
+	return nil
+}
+
+func (rc *repCache) DeleteAll(pCtx context.Context, key string) error {
+	rc.logger.Debug().Str("evt", "call DeleteAll").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
+	defer cancel()
+
+	if _, err := rc.cli.Del(ctx, key).Result(); err != nil {
+		return fmt.Errorf("can't delete all values: %v", err)
+	}
+
+	return nil
 }

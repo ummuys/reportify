@@ -64,8 +64,8 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 
 }
 
-func (r *rDB) ExecQuery(pCtx context.Context, script string) ([]string, [][]any, error) {
-	r.logger.Debug().Str("evt", "ExecQuery").Str("Query", script).Msg("")
+func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]any, error) {
+	r.logger.Debug().Str("evt", "CreateReport").Str("Query", script).Msg("")
 	qCtx, cancel := context.WithTimeout(pCtx, time.Second*180)
 	defer cancel()
 

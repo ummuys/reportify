@@ -65,7 +65,12 @@ func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableN
 	return &lc, nil
 }
 
-func (mds *mdService) GetCacheQueries(pCtx context.Context, key string) ([]string, error) {
-	mds.logger.Debug().Str("evt", "call GetHashQueries")
-	return mds.chc.GetQueries(pCtx, key)
+func (mds *mdService) GetQueries(pCtx context.Context, key string) ([]string, error) {
+	mds.logger.Debug().Str("evt", "call GetUserQueries")
+	return mds.chc.Get(pCtx, key)
+}
+
+func (mds *mdService) DeleteAllQueries(pCtx context.Context, key string) error {
+	mds.logger.Debug().Str("evt", "call DeleteUserQueries")
+	return mds.chc.DeleteAll(pCtx, key)
 }

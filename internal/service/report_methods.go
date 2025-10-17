@@ -28,7 +28,7 @@ func NewReportService(logger *zerolog.Logger, db repository.ReportDB,
 func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params models.ReportParams, f *os.File, format string) error {
 	rs.logger.Debug().Str("evt", "call CreateReport")
 
-	headers, rows, err := rs.db.ExecQuery(pCtx, params.Sql)
+	headers, rows, err := rs.db.CreateReport(pCtx, params.Sql)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		}
 	}
 
-	if err := rs.chc.SetQuery(pCtx, strconv.FormatInt(user_id, 10), params.Sql); err != nil {
+	if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), params.Sql); err != nil {
 		rs.logger.Error().Err(err).Msg("failed to save last query")
 	}
 

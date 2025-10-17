@@ -116,7 +116,7 @@ func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 	}
 }
 
-// GetCacheQueries godoc
+// GetQueries godoc
 // @Summary      Получить сохранённые запросы пользователя
 // @Description  Возвращает кэшированный список SQL-запросов для текущего пользователя (берётся по user_id из контекста).
 // @Tags         metadata
@@ -127,16 +127,30 @@ func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401  {object}  models.EmptyResponse    "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse    "Внутренняя ошибка сервера"
 // @Router       /cache [get]
-func (mdh *mdHandler) GetCacheQueries(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		user_id := g.GetInt64("user_id")
-		queries, err := mdh.srv.GetCacheQueries(pCtx, strconv.FormatInt(user_id, 10))
+		queries, err := mdh.srv.GetQueries(pCtx, strconv.FormatInt(user_id, 10))
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		g.Set("msg", "list Queries are returned")
+		g.Set("msg", "user queries are returned")
 		g.JSON(http.StatusOK, models.QueryList{Queries: queries})
+	}
+}
+
+func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
+	return func(g *gin.Context) {
+		user_id := g.GetInt64("user_id")
+		if err := mdh.srv.DeleteAllQueries(pCtx, strconv.FormatInt(user_id, 10)); err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		msg := "user queries are deleted"
+		g.Set("msg", msg)
+		g.JSON(http.StatusOK, models.EmptyResponse{Message: msg})
 	}
 }

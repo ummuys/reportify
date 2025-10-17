@@ -120,14 +120,57 @@ func (u *uDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) e
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
 
+	allID := `select user_id from identity.users`
+	rows, err := u.pool.Query(ctx, allID)
+	if err != nil {
+		return fmt.Errorf("can't get all user_id: %v", err)
+	}
+	defer rows.Close()
+
+	usersID := make([]string, 0, 64)
+	for rows.Next() {
+		var uid string
+		if err := rows.Scan(&uid); err != nil {
+			return fmt.Errorf("scan user_id: %w", err)
+		}
+		usersID = append(usersID, uid)
+	}
+
+	if rows.Err() != nil {
+		return fmt.Errorf("rows err: %w", err)
+	}
+
+	tx, err := u.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
 	b := &pgx.Batch{}
+
+	for _, uid := range usersID {
+		val, ok := cache[uid]
+		if !ok {
+			b.Queue(qSetCacheQuery, uid, []string{})
+		} else {
+			b.Queue(qSetCacheQuery, uid, val)
+		}
+
+	}
+
 	br := u.pool.SendBatch(ctx, b)
 	defer br.Close()
-	for range cache {
+
+	for range usersID {
 		if _, err := br.Exec(); err != nil {
-			return err
+			return fmt.Errorf("batch err: %v", err)
 		}
 	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit err: %v", err)
+	}
+
 	return nil
 }
 

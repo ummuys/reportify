@@ -67,7 +67,7 @@ func main() {
 	if err != nil {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
 	}
-	err = repos.ReportCache.WarmUp(mainCtx, m)
+	err = repos.ReportCache.Init(mainCtx, m)
 	if err != nil {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("can't set querys in cache")
 	}
@@ -100,7 +100,7 @@ func main() {
 	// Сохраняем кэш
 	wg.Go(func() {
 		<-srvOff
-		cache, err := repos.ReportCache.GetCacheQueries(context.Background())
+		cache, err := repos.ReportCache.GetAll(context.Background())
 		if err != nil {
 			errsCh <- err
 		}
