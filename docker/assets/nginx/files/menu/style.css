@@ -42,7 +42,119 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 30px 20px 350px;
+    padding: 80px 30px 20px 350px;
+}
+
+/* ---------- HEADER ---------- */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 1000; /* выше sidebar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  background: hsla(167, 22%, 71%, 0.8);
+  border-bottom: 1px solid hsla(167, 22%, 71%, .4);
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); 
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+  margin: 5px;
+  border-radius: 5px;
+}
+
+.header:hover {
+  background: hsla(167, 22%, 71%, 0.7);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.16);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  height: 36px;
+  display: block;
+}
+
+.dropdown {
+  position: relative;
+  margin-left: 240px;
+}
+
+.dropdown-btn {
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
+  border-radius: 10px;
+  padding: 8px 120px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.dropdown-btn:hover {
+    background: hsla(150, 69%, 55%, 1);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 115%;
+  left: 0;                /* привязано к кнопке, а сама кнопка уже отступлена */
+  background: var(--bg);
+  border: 1px solid hsla(167, 22%, 71%, .6);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 8px 16px;
+  min-width: 300px;       /* сделаем длиннее */
+  z-index: 1100;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.burger {
+  font-size: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.burger-menu {
+  display: none;
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid hsla(167, 22%, 71%, .6);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  padding: 10px 14px;
+  min-width: 140px;
+}
+
+.burger-menu a {
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+  padding: 6px 0;
+}
+
+.burger-menu.show {
+  display: block;
 }
 
 h1 {
@@ -71,6 +183,7 @@ p.lead {
     border: 1px solid rgba(255,255,255,.08);
     border-radius: 16px;
     padding: 20px;
+    box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.12); 
 }
 
 .panel h3 {
@@ -284,15 +397,15 @@ textarea.sql {
 
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 60px; /* теперь начинается под header */
   left: 0;
-  height: 100vh;
+  height: calc(100vh - 60px); /* уменьшаем высоту, чтобы не залезала под header */
   width: 320px;
   background: hsla(167, 22%, 71%, .2);
   border-right: 1px solid hsla(167, 22%, 71%, .4);
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  z-index: 900; /* ниже шапки */
 }
 
 /* Красивый скролл для WebKit-браузеров */
@@ -371,6 +484,7 @@ textarea.sql {
   padding: 16px 20px;
   border-bottom: 1px solid hsla(167, 22%, 71%, .4);
   z-index: 10;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12); 
 }
 
 .sidebar-actions {
@@ -503,7 +617,7 @@ textarea.sql {
   font-size: 22px;
   opacity: 0;
   cursor: pointer;
-  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease;
   line-height: 1;
   padding: 0;
 }
@@ -518,7 +632,6 @@ textarea.sql {
 
 .btn-fav-history:hover {
   color: gold;
-  transform: scale(1.1);
 }
 
 #historyList {
