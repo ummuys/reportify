@@ -57,12 +57,14 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 24px;
-  background: hsla(167, 22%, 71%, 0.6);
+  background: hsla(167, 22%, 71%, 0.8);
   border-bottom: 1px solid hsla(167, 22%, 71%, .4);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
   box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); 
   transition: box-shadow 0.3s ease, background 0.3s ease;
+  margin: 5px;
+  border-radius: 5px;
 }
 
 .header:hover {
@@ -83,12 +85,12 @@ body {
 
 .dropdown {
   position: relative;
-  margin-left: 240px;   /* <-- ключевой сдвиг: кнопка начнётся после sidebar */
+  margin-left: 240px;
 }
 
 .dropdown-btn {
-  background: hsla(167, 22%, 71%, .8);
-  border: 1px solid hsla(167, 22%, 71%, 1);
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
   border-radius: 10px;
   padding: 8px 120px;
   font-size: 15px;
@@ -96,7 +98,7 @@ body {
 }
 
 .dropdown-btn:hover {
-    background: hsla(167, 22%, 71%, 1);
+    background: hsla(150, 69%, 55%, 1);
 }
 
 .dropdown-content {
@@ -181,6 +183,7 @@ p.lead {
     border: 1px solid rgba(255,255,255,.08);
     border-radius: 16px;
     padding: 20px;
+    box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.12); 
 }
 
 .panel h3 {
@@ -481,6 +484,7 @@ textarea.sql {
   padding: 16px 20px;
   border-bottom: 1px solid hsla(167, 22%, 71%, .4);
   z-index: 10;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12); 
 }
 
 .sidebar-actions {

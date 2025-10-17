@@ -527,6 +527,7 @@ async function postReportAndGetBlob() {
 
   return { blob, filename, format };
 }
+
 function saveBlob(blob, filename) {
   const a = document.createElement('a'); 
   const url = URL.createObjectURL(blob);
