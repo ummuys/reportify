@@ -9,7 +9,7 @@ import (
 	"github.com/ummuys/reportify/internal/di"
 	"github.com/ummuys/reportify/internal/web/middleware"
 
-	_ "github.com/ummuys/reportify/docs"
+	// _ "github.com/ummuys/reportify/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

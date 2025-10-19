@@ -4,7 +4,7 @@ import "os"
 
 type ReportConvert interface {
 	ToPDF(headers []string, data [][]any, f *os.File) error
-	// ToXLXS()
+	ToXLSX(headers []string, data [][]any, f *os.File) error
 	// ToJSON()
 	ToCSV(headers []string, data [][]any, f *os.File, sep rune) error
 	// ToMD()
