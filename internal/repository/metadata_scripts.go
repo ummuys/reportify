@@ -44,3 +44,10 @@ WHERE n.nspname NOT IN ('pg_toast', 'pg_catalog', 'information_schema')
 ORDER BY n.oid;  
 	`
 )
+
+const (
+	qSetCacheQuery = `
+  INSERT INTO identity.queries VALUES($1, $2)
+  ON CONFLICT (user_id) DO UPDATE SET list = EXCLUDED.list`
+	qGetCacheQuery = `SELECT * FROM identity.queries`
+)

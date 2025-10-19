@@ -20,6 +20,7 @@ type Repositorys struct {
 	ReportDB    repository.ReportDB
 	ReportCache cache.ReportCache
 	UserDB      repository.UserDB
+	MetadataDB  repository.MetadataDB
 }
 
 type Tools struct {

@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -19,12 +18,12 @@ func ParseAppConfig() (AppConfig, error) {
 		sErr = append(sErr, fmt.Sprintf("invalid env for %s", env))
 	}
 
-	un, err := parseStr(os.Getenv("BASE_USERNAME"))
+	un, err := parseStr("BASE_USERNAME")
 	if err != nil {
 		add("base_username")
 	}
 
-	pw, err := parseStr(os.Getenv("BASE_PASSWORD"))
+	pw, err := parseStr("BASE_PASSWORD")
 	if err != nil {
 		add("base_password")
 	}

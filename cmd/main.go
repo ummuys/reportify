@@ -63,7 +63,7 @@ func main() {
 	}
 
 	//Warn Up (Cache)
-	m, err := repos.UserDB.GetCacheQueries(mainCtx)
+	m, err := repos.MetadataDB.GetCacheQueries(mainCtx)
 	if err != nil {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
 	}
@@ -105,7 +105,7 @@ func main() {
 			errsCh <- err
 		}
 
-		err = repos.UserDB.SetCacheQueries(context.Background(), cache)
+		err = repos.MetadataDB.SetCacheQueries(context.Background(), cache)
 		if err != nil {
 			errsCh <- err
 		}

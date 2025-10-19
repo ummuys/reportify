@@ -11,11 +11,11 @@ import (
 
 type mdService struct {
 	logger *zerolog.Logger
-	db     repository.ReportDB
+	db     repository.MetadataDB
 	chc    cache.ReportCache
 }
 
-func NewMetadataService(logger *zerolog.Logger, db repository.ReportDB, chc cache.ReportCache) MetadataService {
+func NewMetadataService(logger *zerolog.Logger, db repository.MetadataDB, chc cache.ReportCache) MetadataService {
 	return &mdService{logger: logger, db: db, chc: chc}
 }
 
