@@ -5,7 +5,6 @@ class Loader {
 	}
 
 	init() {
-		// Создаем маску если её нет
 		if (!this.mask) {
 			this.mask = document.createElement('div')
 			this.mask.className = 'loader-mask'
