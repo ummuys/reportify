@@ -636,18 +636,45 @@ btnPreview.addEventListener('click', async () => {
 
 // ---- старт ----
 (async function init() {
+  // Показываем лоадер в самом начале
+  loader.show();
+
   const token = localStorage.getItem("access_token_v1") || "";
   console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
 
   if (!token) {
     await showAlert("Не найден access токен. Сначала авторизуйтесь.", "Авторизация");
+    loader.hide(); // Скрываем лоадер, если нет токена
     return;
   }
 
   try {
+    // Ждём, пока загрузятся все начальные данные (схемы)
     await loadSchemas();
   } catch (e) {
     console.error("Ошибка при загрузке схем:", e);
+  } finally {
+    // Этот блок выполнится в любом случае: и при успехе, и при ошибке.
+    // Это идеальное место, чтобы скрыть лоадер.
+    loader.hide();
+
+    // Ждём завершения анимации скрытия лоадера (600 мс)
+    setTimeout(() => {
+      // И только теперь запускаем анимацию печати
+      new Typed('.typed-text', {
+        strings: ['Конструктор отчёта'],
+        typeSpeed: 40,
+        startDelay: 0,
+        loop: false,
+        showCursor: true,
+        cursorChar: '|',
+        onComplete: self => {
+          if (self.cursor) {
+            self.cursor.style.display = 'none';
+          }
+        },
+      });
+    }, 500); // Задержка равна времени анимации в loader.css
   }
 })();
 
