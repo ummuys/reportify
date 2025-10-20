@@ -1,267 +1,136 @@
-"use strict";
-
-/* ============================================================================
-   Конфиг
-   ========================================================================== */
+// ---- настройки ----
 const API_BASE = "http://127.0.0.1:8088";
 
-// Если появится input с id="csvSep", он будет использован, иначе падаем на ','
-const DEFAULT_CSV_SEP = ",";
+// ---- утилиты -----------------------------------------------------------
+// универсальный fetch с токеном (обновлённая версия)
+// — добавлена поддержка бинарных ответов XLSX/ZIP/без content-type
+// — по бинарю возвращаем Response как есть, по JSON — распарсенный объект/строку
+async function fetchWithToken(url, options = {}) {
+  const token = localStorage.getItem("access_token_v1") || "";
 
-// Максимальные длины полей
-const NAME_MAX_LEN = 128;
-const COMMENT_MAX_LEN = 256;
+  options = { ...options };
+  options.headers = { ...(options.headers || {}) };
+  const requestedAccept = String(
+    options.headers["Accept"] || options.headers["accept"] || "application/json"
+  ).toLowerCase();
 
-// Системные схемы, скрываем по-умолчанию
-const SYSTEM_SCHEMAS = new Set([
-  "information_schema", "pg_catalog", "pg_toast", "pg_temp_1", "pg_toast_temp_1"
-]);
+  if (!options.headers["Accept"] && !options.headers["accept"]) {
+    options.headers["Accept"] = "application/json";
+  }
+  if (token) options.headers["Authorization"] = "Bearer " + token;
+  options.credentials = "include";
 
-// Поддерживаемые форматы отчётов
-const SUPPORTED_FORMATS = ["pdf", "csv", "xlsx"];
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`${res.status} ${res.statusText}${txt ? " — " + txt : ""}`);
+  }
 
-// MIME по формату
-const MIME_BY_FORMAT = {
-  pdf:  "application/pdf",
-  csv:  "text/csv",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
+  const ct = (res.headers.get("content-type") || "").toLowerCase();
 
-// Фолбэк-имя файла по формату
-const FILENAME_BY_FORMAT = {
-  pdf:  "report.pdf",
-  csv:  "report.csv",
-  xlsx: "report.xlsx",
-};
+  // если мы ЯВНО запросили бинарь — отдаём Response как есть
+  const isBinaryRequested =
+    requestedAccept.includes("application/pdf") ||
+    requestedAccept.includes("text/csv") ||
+    requestedAccept.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    requestedAccept.includes("application/zip") ||
+    requestedAccept.includes("application/octet-stream");
 
-/* ============================================================================
-   Глобальные элементы UI (ожидаются в разметке)
-   ========================================================================== */
-const $ = (id) => document.getElementById(id);
+  if (isBinaryRequested) return res;
 
-const schemaSel       = $("schemaSelect");
-const tableSel        = $("tableSelect");
-const list            = $("columnsList");
-const btnAll          = $("btnAll");
-const btnClear        = $("btnClear");
-const btnDownload     = $("btnDownload");
-const btnPreview      = $("btnPreview");
-const chosenCounter   = $("chosenCounter");
-const sortField       = $("sortField");
-const sortDir         = $("sortDir");
-const sqlText         = $("sqlText");
-const limitInput      = $("limitInput");
-const limitError      = $("limitError");
-const reportName      = $("reportName");
-const reportComment   = $("reportComment");
-const nameCounter     = $("nameCounter");
-const commentCounter  = $("commentCounter");
-const sortContainer   = $("sortContainer");
-const filtersContainer= $("filtersContainer");
-const btnAddSort      = $("btnAddSort");
-const btnClearHistory = $("btnClearHistory");
-const historyList     = $("historyList");
-const favFilterBtn    = $("btnFavFilter");
-const toastEl         = $("toast");
+  // если по факту пришёл бинарь (или сервер не указал content-type) — тоже отдаём Response
+  const isBinaryResponse =
+    ct.includes("application/pdf") ||
+    ct.includes("text/csv") ||
+    ct.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    ct.includes("application/zip") ||
+    ct.includes("application/octet-stream") ||
+    (!ct && requestedAccept !== "application/json");
 
-const burgerBtn       = $("burgerBtn");
-const burgerMenu      = $("burgerMenu");
+  if (isBinaryResponse) return res;
 
-// Наличие глобального loader с методами show/hide допускается, но не обязателен.
-const loader = (typeof window.loader === "object" && window.loader) || {
-  show(){}, hide(){}
-};
-
-/* ============================================================================
-   Состояние
-   ========================================================================== */
-let state = {
-  schemas: [],
-  tables:  [],
-  columns: [],
-  schema: "",
-  table:  "",
-  chosen: [],
-  format: "PDF",         // чипы могут устанавливать "PDF"|"CSV"|"XLSX" (регистр не важен)
-};
-
-let reportHistory = JSON.parse(localStorage.getItem("reportHistory") || "[]");
-let showOnlyFavorites = false;
-let toastTimeout;
-
-/* ============================================================================
-   Утилиты (строки/DOM/форматы)
-   ========================================================================== */
-function ident(s) { return '"' + String(s).replace(/"/g, '""') + '"'; }
-
-function labelOf(obj) {
-  const c = (obj.comment || "").trim();
-  return c || (obj.name || "");
+  // иначе читаем как текст/JSON
+  const txt = await res.text();
+  try { return JSON.parse(txt); } catch { return txt; }
 }
 
+// старый getJSON теперь использует fetchWithToken
+async function getJSON(url) {
+  return fetchWithToken(url);
+}
+
+function el(id){return document.getElementById(id)}
+function ident(s){ return '"' + String(s).replace(/"/g,'""') + '"'; }
+
+// отображение: если есть комментарий — он, иначе оригинал
+function labelOf(obj) {
+  const c = (obj.comment || "").trim();
+  return c ? c : (obj.name || "");
+}
 function titleOf(obj) {
   const c = (obj.comment || "").trim();
   const n = obj.name || "";
   return c && c !== n ? `${n} — ${c}` : n;
 }
 
-function contentDispositionFilename(headers, fallback) {
-  const cd = headers.get("Content-Disposition") || headers.get("content-disposition") || "";
-  // RFC 5987
-  let m = cd.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
-  if (m && m[1]) {
-    let v = m[1].trim().replace(/^"(.*)"$/, "$1");
-    try { return decodeURIComponent(v); } catch { return v; }
-  }
-  // filename="..."
-  m = cd.match(/filename="?([^"]+)"?/i);
-  if (m && m[1]) return m[1];
-  return fallback;
-}
-
-function getCsvSep() {
-  const el = $("csvSep");
-  const v = (el && el.value) ? el.value : DEFAULT_CSV_SEP;
-  return String(v)[0] || DEFAULT_CSV_SEP; // берём один символ
-}
-
-/* ============================================================================
-   Работа с токеном / запросами
-   ========================================================================== */
-function clearAccessToken() {
-  try { localStorage.removeItem("access_token_v1"); } catch {}
-}
-
-async function refreshAccessToken() {
-  try {
-    const res = await fetch(`${API_BASE}/api/v1/secure/access`, {
-      method: "GET",
-      headers: { "Accept": "application/json" },
-      credentials: "include",
-    });
-
-    if (res.status === 401) {
-      clearAccessToken();
-      return { ok: false, unauthorized: true };
-    }
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`Refresh failed: ${res.status} ${res.statusText}${txt ? " — " + txt : ""}`);
-    }
-
-    const data = await res.json().catch(() => ({}));
-    const newToken = data?.access_token || data?.accessToken || "";
-    if (!newToken) throw new Error("Refresh failed: access_token is empty");
-
-    localStorage.setItem("access_token_v1", newToken);
-    return { ok: true, token: newToken };
-  } catch (e) {
-    console.error("refreshAccessToken error:", e);
-    return { ok: false, unauthorized: false, error: e };
-  }
-}
-
-async function fetchWithToken(url, options = {}, _retry = false) {
-  const token = localStorage.getItem("access_token_v1") || "";
-
-  options = { ...options };
-  options.headers = { ...(options.headers || {}) };
-  options.credentials = "include";
-
-  // по умолчанию ждём JSON, но запомним, что запросили в Accept
-  const requestedAccept = String(options.headers["Accept"] || options.headers["accept"] || "application/json").toLowerCase();
-  if (!options.headers["Accept"] && !options.headers["accept"]) {
-    options.headers["Accept"] = "application/json";
-  }
-  if (token) options.headers["Authorization"] = "Bearer " + token;
-
-  let res = await fetch(url, options);
-
-  // авто-рефреш при 401
-  if (res.status === 401 && !_retry) {
-    const ref = await refreshAccessToken();
-    if (ref.ok && ref.token) {
-      const newOpts = { ...options, headers: { ...options.headers, Authorization: "Bearer " + ref.token } };
-      res = await fetch(url, newOpts);
-    } else if (ref.unauthorized) {
-      await showAlert("Сессия истекла. Нужно снова авторизоваться", "Требуется авторизация");
-      window.location.assign(API_BASE);
-      throw new Error("Не авторизовано (401)");
-    } else {
-      throw new Error(ref.error?.message || "Не удалось обновить токен");
-    }
-  }
-
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`${res.status} ${res.statusText}${txt ? " — " + txt : ""}`);
-  }
-
-  // Если явно попросили бинарный ответ — всегда возвращаем Response как есть,
-  // даже если сервер странно выставил/забыл Content-Type.
-  const isBinaryRequested =
-    requestedAccept.includes("application/pdf") ||
-    requestedAccept.includes("text/csv") ||
-    requestedAccept.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
-    requestedAccept.includes("application/octet-stream") ||
-    requestedAccept.includes("application/zip");
-
-  if (isBinaryRequested) {
-    return res;
-  }
-
-  // Иначе определяем по фактическому content-type
-  const ct = (res.headers.get("content-type") || "").toLowerCase();
-  const isBinaryResponse =
-    ct.includes("application/pdf") ||
-    ct.includes("text/csv") ||
-    ct.includes("application/octet-stream") ||
-    ct.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
-    ct.includes("application/zip") ||
-    // иногда бекенд шлёт Excel как generic stream
-    (!ct && requestedAccept !== "application/json");
-
-  if (isBinaryResponse) {
-    return res;
-  }
-
-  // Пытаемся распарсить JSON; если не вышло — возвращаем текст
-  const raw = await res.text();
-  try { return JSON.parse(raw); } catch { return raw; }
-}
-
-
-async function getJSON(url) { return fetchWithToken(url); }
-
-/* ============================================================================
-   Парсеры под новый бэкенд
-   ========================================================================== */
-function parseSchemas(payload) {
+// парсеры под новый бэкенд
+function parseSchemas(payload){
   const items = payload?.schemas ?? [];
   return items.map(x => ({
     name: x.schema_name ?? x.name ?? "",
     comment: x.schema_comm ?? x.comment ?? ""
-  })).filter(x => x.name);
+  })).filter(x=>x.name);
 }
-function parseTables(payload) {
+function parseTables(payload){
   const items = payload?.tables ?? [];
   return items.map(x => ({
     name: x.table_name ?? x.name ?? "",
     comment: x.table_comm ?? x.comment ?? ""
-  })).filter(x => x.name);
+  })).filter(x=>x.name);
 }
-function parseColumns(payload) {
+function parseColumns(payload){
   const items = payload?.columns ?? [];
   return items.map(x => ({
     name: x.column_name ?? x.name ?? "",
     comment: x.column_comm ?? x.comment ?? "",
     type: x.data_type ?? ""
-  })).filter(x => x.name);
+  })).filter(x=>x.name);
 }
 
-/* ============================================================================
-   Генерация SQL
-   ========================================================================== */
+// -----------------------------------------------------------------------
+
+const schemaSel = el("schemaSelect");
+const tableSel  = el("tableSelect");
+const list = el("columnsList");
+const btnAll = el("btnAll");
+const btnClear = el("btnClear");
+const btnDownload = el("btnDownload");
+const chosenCounter = el("chosenCounter");
+const sortField = el("sortField");
+const sortDir   = el("sortDir");
+const sqlText   = el("sqlText");
+const limitInput = el("limitInput");
+const limitError = el("limitError");
+const reportName = el("reportName");
+const reportComment = el("reportComment");
+const nameCounter = el("nameCounter");
+const commentCounter = el("commentCounter");
+const sortContainer = document.getElementById('sortContainer');
+const filtersContainer = document.getElementById('filtersContainer');
+const btnAddSort = document.getElementById('btnAddSort');
+const btnClearSort = document.getElementById('btnClearSort'); // на будущее, если нужен
+
+let showOnlyFavorites = false;
+
+let state = {
+  schemas: [], tables: [], columns: [],
+  schema: "", table: "", chosen: [],
+  format: "PDF"
+};
+
+const SYSTEM_SCHEMAS = new Set(["information_schema","pg_catalog","pg_toast","pg_temp_1","pg_toast_temp_1"]);
+
+// генератор SQL
 function buildSQL() {
   if (!state.schema || !state.table || !state.chosen.length) {
     sqlText.value = "";
@@ -278,24 +147,31 @@ function buildSQL() {
   const from = `${ident(state.schema)}.${ident(state.table)}`;
 
   // WHERE
+  const filterRows = document.querySelectorAll('.filter-row');
   const whereParts = [];
-  document.querySelectorAll(".filter-row").forEach(row => {
-    const field = row.querySelector(".filterField")?.value;
-    const cond  = row.querySelector(".filterCondition")?.value;
-    const value = (row.querySelector(".filterValue")?.value || "").trim();
+  filterRows.forEach(row => {
+    const fieldEl = row.querySelector('.filterField');
+    const condEl = row.querySelector('.filterCondition');
+    const valueEl = row.querySelector('.filterValue');
+    if (!fieldEl || !condEl || !valueEl) return;
+
+    const field = fieldEl.value;
+    const cond = condEl.value;
+    const value = valueEl.value.trim();
     if (!field || !value) return;
 
     const colMeta = state.columns.find(c => c.name === field) || {};
+
     let sqlCond;
     switch (cond) {
-      case "eq":  sqlCond = `${ident(field)} = '${value}'`; break;
-      case "neq": sqlCond = `${ident(field)} <> '${value}'`; break;
-      case "gt":  sqlCond = `${ident(field)} > '${value}'`; break;
-      case "lt":  sqlCond = `${ident(field)} < '${value}'`; break;
-      case "gte": sqlCond = `${ident(field)} >= '${value}'`; break;
-      case "lte": sqlCond = `${ident(field)} <= '${value}'`; break;
-      case "contains":
-        if (colMeta.type && colMeta.type.toLowerCase().includes("char")) {
+      case 'eq':  sqlCond = `${ident(field)} = '${value}'`; break;
+      case 'neq': sqlCond = `${ident(field)} <> '${value}'`; break;
+      case 'gt':  sqlCond = `${ident(field)} > '${value}'`; break;
+      case 'lt':  sqlCond = `${ident(field)} < '${value}'`; break;
+      case 'gte': sqlCond = `${ident(field)} >= '${value}'`; break;
+      case 'lte': sqlCond = `${ident(field)} <= '${value}'`; break;
+      case 'contains':
+        if (colMeta.type && colMeta.type.toLowerCase().includes('char')) {
           sqlCond = `${ident(field)} ILIKE '%${value}%'`;
         } else {
           sqlCond = `${ident(field)}::text ILIKE '%${value}%'`;
@@ -305,16 +181,22 @@ function buildSQL() {
     }
     whereParts.push(sqlCond);
   });
-  const whereClause = whereParts.length ? `\nWHERE ${whereParts.join("\n  AND ")}` : "";
 
-  // ORDER BY (из динамических строк)
+  const whereClause = whereParts.length ? `\nWHERE ${whereParts.join('\n  AND ')}` : "";
+
+  // ORDER BY
+  const sortRows = document.querySelectorAll('.sort-row');
   const orderParts = [];
-  document.querySelectorAll(".sort-row").forEach(row => {
-    const field = row.querySelector(".sortField")?.value;
-    const dir   = row.querySelector(".sortDir")?.value || "ASC";
+  sortRows.forEach(row => {
+    const fieldEl = row.querySelector('.sortField');
+    const dirEl = row.querySelector('.sortDir');
+    if (!fieldEl || !dirEl) return;
+
+    const field = fieldEl.value;
+    const dir = dirEl.value || 'ASC';
     if (field) orderParts.push(`${ident(field)} ${dir}`);
   });
-  const orderClause = orderParts.length ? `\nORDER BY ${orderParts.join(", ")}` : "";
+  const orderClause = orderParts.length ? `\nORDER BY ${orderParts.join(', ')}` : "";
 
   // LIMIT
   const limitVal = limitInput.value.trim();
@@ -323,128 +205,70 @@ function buildSQL() {
   sqlText.value = `SELECT ${cols}\nFROM ${from}${whereClause}${orderClause}${limitClause};`;
 }
 
-/* ============================================================================
-   Динамические строки фильтров/сортировок
-   ========================================================================== */
-function createFilterRow(f = {}) {
-  const row = document.createElement("div");
-  row.className = "row row-3 filter-row";
+// --- ДЕЛЕГИРОВАНИЕ ФИЛЬТРОВ ---
+filtersContainer.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-remove');
+  if (!btn) return;
 
-  const selField = document.createElement("select");
-  selField.className = "filterField";
-  const fieldOptions = state.columns.length
-    ? state.columns.map(c => `<option value="${c.name}" ${c.name === (f.field||"") ? "selected" : ""}>${labelOf(c)}</option>`).join("")
-    : '<option value="">(Нет полей)</option>';
-  selField.innerHTML = `<option value="">Поле</option>${fieldOptions}`;
-  row.appendChild(selField);
+  const row = btn.closest('.filter-row');
+  if (!row) return;
 
-  const selCond = document.createElement("select");
-  selCond.className = "filterCondition";
-  selCond.innerHTML = `
-    <option value="eq"  ${f.cond === "eq"  ? "selected" : ""}>Равно</option>
-    <option value="neq" ${f.cond === "neq" ? "selected" : ""}>Не равно</option>
-    <option value="gt"  ${f.cond === "gt"  ? "selected" : ""}>Больше</option>
-    <option value="lt"  ${f.cond === "lt"  ? "selected" : ""}>Меньше</option>
-    <option value="gte" ${f.cond === "gte" ? "selected" : ""}>Больше или равно</option>
-    <option value="lte" ${f.cond === "lte" ? "selected" : ""}>Меньше или равно</option>
-    <option value="contains" ${f.cond === "contains" ? "selected" : ""}>Содержит</option>`;
-  row.appendChild(selCond);
+  const allRows = filtersContainer.querySelectorAll('.filter-row');
+  const remainingRows = Array.from(allRows).filter(r => r !== row);
 
-  const inp = document.createElement("input");
-  inp.type = "text";
-  inp.className = "filterValue";
-  inp.placeholder = "Значение";
-  inp.value = f.value || "";
-  row.appendChild(inp);
-
-  const btnRem = document.createElement("button");
-  btnRem.type = "button";
-  btnRem.className = "btn-remove btn btn-ghost";
-  btnRem.textContent = "✕";
-  row.appendChild(btnRem);
-
-  btnRem.addEventListener("click", () => {
-    const all = document.querySelectorAll(".filter-row");
-    if (all.length === 1) {
-      selField.value = "";
-      selCond.value = "eq";
-      inp.value = "";
-    } else {
-      row.remove();
-    }
-    buildSQL();
-  });
-
-  [selField, selCond, inp].forEach(elm => elm.addEventListener("input", buildSQL));
-  return row;
-}
-
-function createSortRow(data = {}) {
-  const row = document.createElement("div");
-  row.className = "row row-3 sort-row";
-
-  const selField = document.createElement("select");
-  selField.className = "sortField";
-  selField.innerHTML = `<option value="">Поле</option>` +
-    state.columns.map(c => `<option value="${c.name}" ${c.name === (data.field||"") ? "selected" : ""}>${labelOf(c)}</option>`).join("");
-  row.appendChild(selField);
-
-  const selDir = document.createElement("select");
-  selDir.className = "sortDir";
-  selDir.innerHTML = `
-    <option value="ASC" ${data.dir === "ASC" ? "selected" : ""}>По возрастанию</option>
-    <option value="DESC" ${data.dir === "DESC" ? "selected" : ""}>По убыванию</option>`;
-  row.appendChild(selDir);
-
-  const btnRem = document.createElement("button");
-  btnRem.type = "button";
-  btnRem.className = "btn-remove btn btn-ghost";
-  btnRem.textContent = "✕";
-  row.appendChild(btnRem);
-
-  selField.addEventListener("change", buildSQL);
-  selDir.addEventListener("change", buildSQL);
-  btnRem.addEventListener("click", () => {
-    const all = document.querySelectorAll(".sort-row");
-    if (all.length === 1) {
-      selField.value = "";
-      selDir.value = "ASC";
-    } else {
-      row.remove();
-    }
-    buildSQL();
-  });
-
-  return row;
-}
-
-/* ============================================================================
-   Кнопки/валидация/счётчики
-   ========================================================================== */
-function updateNameCounter() {
-  const len = reportName.value.length;
-  if (nameCounter) nameCounter.textContent = `${len} / ${NAME_MAX_LEN} символов`;
-  reportName.classList.toggle("limit-reached", len >= NAME_MAX_LEN);
-}
-function updateCommentCounter() {
-  const len = reportComment.value.length;
-  if (commentCounter) commentCounter.textContent = `${len} / ${COMMENT_MAX_LEN} символов`;
-  reportComment.classList.toggle("limit-reached", len >= COMMENT_MAX_LEN);
-}
-
-function updateButtons() {
-  if (chosenCounter) {
-    chosenCounter.textContent =
-      `Выбрано: ${state.chosen.length} / ${state.columns.length}` +
-      (state.chosen.length === state.columns.length && state.columns.length ? " (все)" : "");
-    chosenCounter.style.display = state.columns.length ? "" : "none";
+  if (remainingRows.length === 0) {
+    row.querySelector('.filterField').value = '';
+    row.querySelector('.filterCondition').value = 'eq';
+    row.querySelector('.filterValue').value = '';
+    showToast('Фильтр очищен');
+  } else {
+    row.remove();
+    showToast('Фильтр удалён');
   }
+  buildSQL();
+});
 
-  const hasSchema  = !!state.schema;
-  const hasTable   = !!state.table;
-  const hasCols    = !!state.chosen.length;
-  const hasSQL     = !!sqlText.value.trim();
-  const hasName    = !!reportName.value.trim();
+// --- ДЕЛЕГИРОВАНИЕ СОРТИРОВОК ---
+sortContainer.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-remove');
+  if (!btn) return;
+
+  const row = btn.closest('.sort-row');
+  if (!row) return;
+
+  const allRows = sortContainer.querySelectorAll('.sort-row');
+  const remainingRows = Array.from(allRows).filter(r => r !== row);
+
+  if (remainingRows.length === 0) {
+    row.querySelector('.sortField').value = '';
+    row.querySelector('.sortDir').value = 'ASC';
+    showToast('Сортировка очищена');
+  } else {
+    row.remove();
+    showToast('Уровень сортировки удалён');
+  }
+  buildSQL();
+});
+
+// Добавить уровень сортировки
+btnAddSort.addEventListener('click', () => {
+  const row = createSortRow();
+  sortContainer.appendChild(row);
+  buildSQL();
+  showToast('Добавлен уровень сортировки');
+});
+
+function updateButtons(){
+  chosenCounter.textContent =
+    `Выбрано: ${state.chosen.length} / ${state.columns.length}` +
+    (state.chosen.length === state.columns.length && state.columns.length ? " (все)" : "");
+  chosenCounter.style.display = state.columns.length ? "" : "none";
+
+  const hasSchema = !!state.schema;
+  const hasTable = !!state.table;
+  const hasCols = !!state.chosen.length;
+  const hasSQL = !!sqlText.value.trim();
+  const hasName = !!reportName.value.trim();
   const hasComment = !!reportComment.value.trim();
 
   reportName.classList.toggle("invalid", !hasName);
@@ -452,82 +276,14 @@ function updateButtons() {
 
   const ready = hasSchema && hasTable && hasCols && hasSQL && hasName && hasComment;
 
-  if (btnDownload) btnDownload.disabled = !ready;
-  if (btnAddSort)  btnAddSort.disabled  = state.columns.length === 0;
+  btnDownload.disabled = !ready;
+  btnAddSort.disabled = state.columns.length === 0;
 }
 
-/* ============================================================================
-   Тост/модалки
-   ========================================================================== */
-function showToast(message, duration = 3000) {
-  if (!toastEl) return;
-  clearTimeout(toastTimeout);
-  toastEl.classList.remove("show");
-  toastEl.textContent = message;
-  void toastEl.offsetWidth; // перезапуск анимации
-  toastEl.classList.add("show");
-  toastTimeout = setTimeout(() => toastEl.classList.remove("show"), duration);
-}
-
-function showConfirm(message, title = "Подтверждение") {
-  return new Promise(resolve => {
-    const modal = $("confirmModal");
-    const msgEl = $("confirmMessage");
-    const btnYes = $("confirmYes");
-    const btnNo  = $("confirmNo");
-    const titleEl = modal?.querySelector(".modal-title");
-
-    if (!modal || !msgEl || !btnYes || !btnNo) return resolve(confirm(message));
-
-    if (titleEl) titleEl.textContent = title;
-    msgEl.textContent = message;
-    modal.style.display = "flex";
-
-    const close = (result) => {
-      modal.style.display = "none";
-      btnYes.removeEventListener("click", yesHandler);
-      btnNo.removeEventListener("click", noHandler);
-      resolve(result);
-    };
-    const yesHandler = () => close(true);
-    const noHandler  = () => close(false);
-
-    btnYes.addEventListener("click", yesHandler);
-    btnNo.addEventListener("click", noHandler);
-  });
-}
-
-function showAlert(message, title = "Сообщение") {
-  return new Promise(resolve => {
-    const modal   = $("alertModal");
-    const msgEl   = $("alertMessage");
-    const titleEl = $("alertTitle");
-    const btnOk   = $("alertOk");
-
-    if (!modal || !msgEl || !btnOk || !titleEl) {
-      alert(`${title ? title + ":\n" : ""}${message}`);
-      return resolve();
-    }
-
-    msgEl.textContent = message;
-    titleEl.textContent = title;
-    modal.style.display = "flex";
-
-    const close = () => {
-      modal.style.display = "none";
-      btnOk.removeEventListener("click", close);
-      resolve();
-    };
-    btnOk.addEventListener("click", close);
-  });
-}
-
-/* ============================================================================
-   Загрузка данных (schemas/tables/columns)
-   ========================================================================== */
+// загрузка схем
 async function loadSchemas() {
   try {
-    loader.show();
+    if (typeof loader?.show === "function") loader.show();
     const data = await getJSON(`${API_BASE}/api/v1/db/schemas`);
     state.schemas = parseSchemas(data);
 
@@ -537,58 +293,55 @@ async function loadSchemas() {
     const opt = s => `<option value="${s.name}" title="${titleOf(s)}">${labelOf(s)}</option>`;
 
     let html = `<option value="">Выберите схему</option>`;
-    if (user.length) html += `<optgroup label="Пользовательские">${user.map(opt).join("")}</optgroup>`;
-    if (sys.length)  html += `<optgroup label="Системные">${sys.map(opt).join("")}</optgroup>`;
-
+    if (user.length) html += `<optgroup label="Пользовательские">${user.map(opt).join('')}</optgroup>`;
+    if (sys.length)  html += `<optgroup label="Системные">${sys.map(opt).join('')}</optgroup>`;
     schemaSel.innerHTML = html;
-    $("schemaError")?.style && ( $("schemaError").style.display = "none" );
+
+    el('schemaError').style.display = 'none';
   } catch (e) {
     schemaSel.innerHTML = `<option value="">Ошибка загрузки</option>`;
-    const err = $("schemaError");
-    if (err) {
-      err.textContent = "Не удалось получить список схем с /api/v1/db/schemas. " + (e.message||e);
-      err.style.display = "";
-    }
+    el('schemaError').textContent =
+      'Не удалось получить список схем с /api/v1/db/schemas. ' + (e.message || e);
+    el('schemaError').style.display = '';
   } finally {
-    loader.hide();
+    if (typeof loader?.hide === "function") loader.hide();
   }
 }
 
-async function loadTables(schema) {
+// загрузка таблиц
+async function loadTables(schema){
   tableSel.disabled = true;
   tableSel.innerHTML = `<option value="">Загрузка...</option>`;
   try {
     const data = await getJSON(`${API_BASE}/api/v1/db/tables?schema=${encodeURIComponent(schema)}`);
     state.tables = parseTables(data);
 
-    const opt = t => `<option value="${t.name}" title="${titleOf(t)}">${labelOf(t)}</option>`;
+    const opt = (t)=>`<option value="${t.name}" title="${titleOf(t)}">${labelOf(t)}</option>`;
     tableSel.innerHTML = `<option value="">Выберите таблицу</option>` + state.tables.map(opt).join("");
+
     tableSel.disabled = false;
-    $("tableError")?.style && ( $("tableError").style.display = "none" );
-  } catch (e) {
+    el("tableError").style.display="none";
+  } catch(e) {
     tableSel.innerHTML = `<option value="">Ошибка загрузки</option>`;
-    const err = $("tableError");
-    if (err) {
-      err.textContent = "Не удалось получить список таблиц с /api/v1/db/tables. " + (e.message||e);
-      err.style.display = "";
-    }
+    el("tableError").textContent = "Не удалось получить список таблиц с /api/v1/db/tables. " + (e.message||e);
+    el("tableError").style.display="";
   }
 }
 
-function refreshFilterFieldOptions() {
-  document.querySelectorAll(".filter-row .filterField").forEach(sel => {
+function updateFilterFields() {
+  document.querySelectorAll('.filter-row .filterField').forEach(sel => {
     const current = sel.value;
-    sel.innerHTML =
-      `<option value="">Поле</option>` +
-      state.columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join("");
+    sel.innerHTML = `<option value="">Поле</option>` +
+      state.columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join('');
   });
 }
 
+// загрузка колонок
 async function loadColumns(schema, table) {
   list.innerHTML = "";
   btnAll.disabled = btnClear.disabled = true;
   btnDownload.disabled = true;
-  chosenCounter && (chosenCounter.style.display = "none");
+  chosenCounter.style.display = "none";
   state.chosen = [];
   sortField.innerHTML = `<option value="">Поле</option>`;
   sqlText.value = "";
@@ -597,6 +350,7 @@ async function loadColumns(schema, table) {
     const data = await getJSON(`${API_BASE}/api/v1/db/columns?schema=${encodeURIComponent(schema)}&table=${encodeURIComponent(table)}`);
     state.columns = parseColumns(data);
 
+    // чекбоксы колонок: подпись = комментарий или имя
     list.innerHTML = state.columns.map(c => `
       <label class="item" title="${titleOf(c)}">
         <input type="checkbox" data-col="${c.name}" />
@@ -604,88 +358,90 @@ async function loadColumns(schema, table) {
       </label>
     `).join("");
 
+    // кнопки и сортировка
     btnAll.disabled = btnClear.disabled = state.columns.length === 0;
     sortField.innerHTML =
       `<option value="">Поле</option>` +
       state.columns.map(c => `<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
 
-    $("columnsError") && ( $("columnsError").style.display = "none" );
+    el("columnsError").style.display = "none";
     updateButtons();
-
-    // обновление селектов в уже добавленных сортировках
-    document.querySelectorAll(".sortField").forEach(sel => {
+    // обновляем поля в сортировках
+    document.querySelectorAll('.sortField').forEach(sel => {
       const current = sel.value;
       sel.innerHTML = `<option value="">Поле</option>` +
-        state.columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join("");
+        state.columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join('');
     });
-
-    refreshFilterFieldOptions();
+    updateFilterFields();
   } catch (e) {
-    const err = $("columnsError");
-    if (err) {
-      err.textContent = "Не удалось получить столбцы с /api/v1/db/columns. " + (e.message || e);
-      err.style.display = "";
-    }
+    el("columnsError").textContent = "Не удалось получить столбцы с /api/v1/db/columns. " + (e.message || e);
+    el("columnsError").style.display = "";
   }
 
-  // сбросить и оставить одну строку сортировки
-  sortContainer.querySelectorAll(".sort-row").forEach(r => r.remove());
-  sortContainer.appendChild(createSortRow()); // одна строка по умолчанию
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
+  sortContainer.appendChild(createSortRow()); // создаём 1 строку по умолчанию
 }
 
-/* ============================================================================
-   Формирование и скачивание отчёта
-   ========================================================================== */
-function normalizeFormat(f) {
-  const fmt = String(f || "pdf").trim().toLowerCase();
-  if (!SUPPORTED_FORMATS.includes(fmt)) {
-    throw new Error(`Неподдерживаемый формат: ${fmt}`);
+// ---- отправка отчёта ----
+function pickFilename(headers, fallback) {
+  const cd = headers.get('Content-Disposition') || headers.get('content-disposition') || '';
+  let m = cd.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
+  if (m && m[1]) {
+    try { return decodeURIComponent(m[1].replace(/(^"|"$)/g, '')); } catch {}
+    return m[1].replace(/(^"|"$)/g, '');
   }
-  return fmt;
+  m = cd.match(/filename="?([^"]+)"?/i);
+  if (m && m[1]) return m[1];
+  return fallback;
 }
 
-function normalizeFormat(f) {
-  const fmt = String(f || "pdf").trim().toLowerCase();
-  if (!["pdf","csv","xlsx"].includes(fmt)) throw new Error(`Неподдерживаемый формат: ${fmt}`);
-  return fmt;
-}
-
+// Формирование и получение отчёта (pdf/csv/xlsx/json)
 async function postReportAndGetBlob() {
-  const format = normalizeFormat(state.format);
+  const format = (state.format || "PDF").toLowerCase(); // 'pdf' | 'csv' | 'xlsx' | 'json'
   const url = `${API_BASE}/api/v1/report/${format}`;
-  const payload = { sql: sqlText.value.trim(), csv_sep: getCsvSep() };
+  const payload = { sql: sqlText.value.trim(), csv_sep: "," };
 
-  const accept = MIME_BY_FORMAT[format] || "*/*";
+  const acceptByFormat = {
+    pdf:  "application/pdf",
+    csv:  "text/csv",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/zip",
+    json: "application/json",
+  };
+  const accept = acceptByFormat[format] || "*/*";
 
-  // ВАЖНО: не ставим Authorization вручную — fetchWithToken сам добавит.
   const res = await fetchWithToken(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": accept
-    },
-    body: JSON.stringify(payload)
+    headers: { "Content-Type": "application/json", "Accept": accept },
+    body: JSON.stringify(payload),
   });
 
-  // На этом этапе fetchWithToken ДОЛЖЕН вернуть Response для бинарей
+  // JSON: fetchWithToken вернёт уже объект/строку (не Response)
+  if (format === "json") {
+    const jsonObj = (res && typeof res === "string") ? JSON.parse(res) : res;
+    const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: "application/json" });
+    return { blob, filename: "report.json", format: "json", json: jsonObj };
+  }
+
+  // PDF/CSV/XLSX: res — Response с бинарём
   if (!(res && typeof res.blob === "function")) {
-    // Сервер, видимо, прислал JSON/текст. Покажем, что именно.
     const details = typeof res === "string" ? res : JSON.stringify(res);
-    throw new Error(`Ожидался файл (${format}), но сервер вернул не-бинарный ответ: ${details?.slice?.(0, 300) || ""}`);
+    throw new Error(`Ожидался бинарный ответ (${format}), но пришёл не-бинарный: ${details?.slice?.(0,300) || ""}`);
   }
 
   const blob = await res.blob();
-  const filename = contentDispositionFilename(
-    res.headers,
-    FILENAME_BY_FORMAT[format] || `report.${format}`
-  );
+
+  const fallbackNameByFormat = {
+    pdf:  "report.pdf",
+    csv:  "report.csv",
+    xlsx: "report.xlsx",
+  };
+  const filename = pickFilename(res.headers, fallbackNameByFormat[format] || `report.${format}`);
 
   return { blob, filename, format };
 }
 
-
 function saveBlob(blob, filename) {
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   const url = URL.createObjectURL(blob);
   a.href = url;
   a.download = filename;
@@ -697,22 +453,253 @@ function saveBlob(blob, filename) {
 
 function openBlob(blob) {
   const url = URL.createObjectURL(blob);
-  window.open(url, "_blank");
+  window.open(url, '_blank');
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-/* ============================================================================
-   История
-   ========================================================================== */
+// ---- события ----
+schemaSel.addEventListener("change", () => {
+  state.schema = schemaSel.value;
+  state.table = "";
+  state.columns = [];
+  state.chosen = [];
+
+  // очищаем UI колонок
+  tableSel.innerHTML = `<option value="">Выберите таблицу</option>`;
+  list.innerHTML = "";
+  sqlText.value = "";
+
+  // очищаем фильтры
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
+  filtersContainer.appendChild(createFilterRow());
+
+  // очищаем сортировки
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
+  sortContainer.appendChild(createSortRow());
+
+  // сброс сортировки/лимита
+  sortField.value = "";
+  sortDir.value = "ASC";
+  limitInput.value = "";
+
+  if (state.schema) {
+    loadTables(state.schema);
+  }
+  updateButtons();
+});
+
+tableSel.addEventListener("change", () => {
+  state.table = tableSel.value;
+  state.columns = [];
+  state.chosen = [];
+
+  list.innerHTML = "";
+  sqlText.value = "";
+
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
+  filtersContainer.appendChild(createFilterRow());
+
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
+  sortContainer.appendChild(createSortRow());
+
+  sortField.value = "";
+  sortDir.value = "ASC";
+  limitInput.value = "";
+
+  if (state.schema && state.table) {
+    loadColumns(state.schema, state.table);
+  }
+  updateButtons();
+});
+
+list.addEventListener("change", (e) => {
+  if (e.target.type === "checkbox") {
+    const col = e.target.dataset.col;
+    if (e.target.checked) {
+      if (!state.chosen.includes(col)) state.chosen.push(col);
+    } else {
+      state.chosen = state.chosen.filter(x => x !== col);
+    }
+    buildSQL();
+    updateButtons();
+  }
+});
+
+sortField.addEventListener("change", () => { 
+  buildSQL(); 
+  updateButtons(); 
+});
+sortDir.addEventListener("change", () => { 
+  buildSQL(); 
+  updateButtons(); 
+});
+
+limitInput.addEventListener("input", ()=> {
+  const val = limitInput.value.trim();
+  const num = Number(val);
+
+  if (val && (!Number.isInteger(num) || num <= 0)) {
+    limitError.style.display = "block";
+    limitInput.classList.add("invalid");
+  } else {
+    limitError.style.display = "none";
+    limitInput.classList.remove("invalid");
+    buildSQL();
+    updateButtons();
+  }
+});
+
+reportName.addEventListener('input', () => {
+  if (reportName.value.length > 128) {
+    reportName.value = reportName.value.slice(0, 128);
+    showToast('Название не может превышать 128 символов');
+  }
+  const len = reportName.value.length;
+  nameCounter.textContent = `${len} / 128 символов`;
+  nameCounter.classList.toggle("limit-reached", len >= 128);
+  updateButtons();
+});
+
+reportComment.addEventListener('input', () => {
+  // авто-высота + ограничение
+  reportComment.style.height = 'auto';
+  reportComment.style.height = reportComment.scrollHeight + 'px';
+  if (reportComment.value.length > 256) {
+    reportComment.value = reportComment.value.slice(0, 256);
+    showToast('Комментарий не может превышать 256 символов');
+  }
+  const len = reportComment.value.length;
+  commentCounter.textContent = `${len} / 256 символов`;
+  commentCounter.classList.toggle("limit-reached", len >= 256);
+  updateButtons();
+});
+
+btnAll.addEventListener("click", () => {
+  state.chosen = state.columns.map(c => c.name);
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+  buildSQL();
+  updateButtons();
+});
+
+btnClear.addEventListener("click", () => {
+  state.chosen = [];
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  buildSQL();
+  updateButtons();
+});
+
+document.querySelectorAll(".chip").forEach(ch => {
+  ch.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
+    ch.classList.add("active");
+    state.format = ch.dataset.format || "PDF";
+  });
+});
+
+const btnPreview = el('btnPreview');
+
+btnDownload.addEventListener('click', async () => {
+  if (!reportName.value.trim()) { showToast('Введите название отчёта'); return; }
+  if (!reportComment.value.trim()) { showToast('Введите комментарий к отчёту'); return; }
+  if (!sqlText.value.trim()) { showToast('SQL пустой'); return; }
+
+  const originalText = btnDownload.textContent;
+  btnDownload.disabled = true;
+  btnDownload.textContent = 'Готовим...';
+
+  try {
+    const { blob, filename } = await postReportAndGetBlob();
+    saveBlob(blob, filename);
+  } catch (e) {
+    await showAlert('Не удалось сформировать отчёт:\n' + (e.message || e), "Ошибка");
+    console.error(e);
+  } finally {
+    btnDownload.textContent = originalText;
+    updateButtons();
+  }
+});
+
+btnPreview.addEventListener('click', async () => {
+  if (!reportName.value.trim()) { showToast('Введите название отчёта'); return; }
+  if (!reportComment.value.trim()) { showToast('Введите комментарий к отчёту'); return; }
+  if (!sqlText.value.trim()) { showToast('SQL пустой'); return; }
+
+  try {
+    const { blob, format } = await postReportAndGetBlob();
+    (format === 'pdf' || format === 'csv') ? openBlob(blob) : saveBlob(blob, `preview.${format}`);
+    saveHistoryEntry();
+  } catch (e) {
+    await showAlert('Не удалось показать предпросмотр:\n' + (e.message || e), "Ошибка");
+    console.error(e);
+  }
+});
+
+// ---- старт ----
+(async function init() {
+  const token = localStorage.getItem("access_token_v1") || "";
+  console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
+
+  if (!token) {
+    await showAlert("Не найден access токен. Сначала авторизуйтесь.", "Авторизация");
+    return;
+  }
+
+  try {
+    await loadSchemas();
+  } catch (e) {
+    console.error("Ошибка при загрузке схем:", e);
+  }
+})();
+
+// ---- История отчётов ----
+const historyList = document.getElementById('historyList');
+let reportHistory = JSON.parse(localStorage.getItem('reportHistory') || "[]");
+
+function saveHistoryEntry() {
+  const filters = Array.from(document.querySelectorAll('.filter-row')).map(row => ({
+    field: row.querySelector('.filterField').value || "",
+    cond:  row.querySelector('.filterCondition').value || "eq",
+    value: row.querySelector('.filterValue').value || ""
+  }));
+
+  const sorts = Array.from(document.querySelectorAll('.sort-row')).map(row => ({
+    field: row.querySelector('.sortField').value,
+    dir: row.querySelector('.sortDir').value
+  }));
+
+  const entry = {
+    schema: state.schema,
+    table: state.table,
+    chosen: [...state.chosen],
+    sortField: sortField.value || "",
+    sortDir: sortDir.value || "ASC",
+    limit: limitInput.value.trim() || "",
+    name: reportName.value.trim() || "Без названия",
+    comment: reportComment.value.trim() || "",
+    filters,
+    sorts,
+    favorite: false,
+    time: new Date().toLocaleString()
+  };
+
+  reportHistory.unshift(entry);
+  if (reportHistory.length > 10) reportHistory = reportHistory.slice(0, 10);
+  localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+  renderHistory();
+}
+
 function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  const favBtn = document.getElementById('btnFavFilter');
   if (!historyList) return;
+
   let visibleReports = [...reportHistory];
 
   if (showOnlyFavorites) {
     visibleReports = visibleReports.filter(r => r.favorite);
-    favFilterBtn && favFilterBtn.classList.add("active");
+    if (favBtn) favBtn.classList.add('active');
   } else {
-    favFilterBtn && favFilterBtn.classList.remove("active");
+    if (favBtn) favBtn.classList.remove('active');
   }
 
   visibleReports.sort((a, b) => (b.favorite === true) - (a.favorite === true));
@@ -731,7 +718,7 @@ function renderHistory() {
             <div class="history-title">${r.name || "Без названия"}</div>
             <div class="history-controls">
               <button class="btn-delete-history" title="Удалить отчёт">✕</button>
-              <button class="btn-fav-history ${r.favorite ? "active" : ""}" title="Избранное">★</button>
+              <button class="btn-fav-history ${r.favorite ? 'active' : ''}" title="Избранное">★</button>
             </div>
           </div>
           ${r.comment ? `<div class="history-comment">${r.comment}</div>` : ""}
@@ -739,246 +726,53 @@ function renderHistory() {
           <small>${r.time}</small>
         </div>
       </li>`;
-  }).join("");
+  }).join('');
 }
 
-function saveHistoryEntry() {
-  const filters = Array.from(document.querySelectorAll(".filter-row")).map(row => ({
-    field: row.querySelector(".filterField")?.value || "",
-    cond:  row.querySelector(".filterCondition")?.value || "eq",
-    value: row.querySelector(".filterValue")?.value || ""
-  }));
-
-  const sorts = Array.from(document.querySelectorAll(".sort-row")).map(row => ({
-    field: row.querySelector(".sortField")?.value || "",
-    dir:   row.querySelector(".sortDir")?.value || "ASC",
-  }));
-
-  const entry = {
-    schema:  state.schema,
-    table:   state.table,
-    chosen:  [...state.chosen],
-    sortField: sortField.value || "",
-    sortDir:   sortDir.value || "ASC",
-    limit:  limitInput.value.trim() || "",
-    name:   reportName.value.trim() || "Без названия",
-    comment: reportComment.value.trim() || "",
-    filters, sorts,
-    favorite: false,
-    time: new Date().toLocaleString(),
-  };
-
-  reportHistory.unshift(entry);
-  if (reportHistory.length > 10) reportHistory = reportHistory.slice(0, 10);
-  localStorage.setItem("reportHistory", JSON.stringify(reportHistory));
-  renderHistory();
-}
-
-/* ============================================================================
-   Слушатели UI
-   ========================================================================== */
-// Добавление уровня сортировки
-btnAddSort?.addEventListener("click", () => {
-  sortContainer.appendChild(createSortRow());
-  buildSQL();
-  showToast("Добавлен уровень сортировки");
-});
-
-// Валидация длины и счётчики
-reportName?.addEventListener("input", () => {
-  if (reportName.value.length > NAME_MAX_LEN) {
-    reportName.value = reportName.value.slice(0, NAME_MAX_LEN);
-    showToast(`Название не может превышать ${NAME_MAX_LEN} символов`);
-  }
-  updateNameCounter();
-  updateButtons();
-});
-
-reportComment?.addEventListener("input", () => {
-  // авто-высота
-  reportComment.style.height = "auto";
-  reportComment.style.height = reportComment.scrollHeight + "px";
-
-  if (reportComment.value.length > COMMENT_MAX_LEN) {
-    reportComment.value = reportComment.value.slice(0, COMMENT_MAX_LEN);
-    showToast(`Комментарий не может превышать ${COMMENT_MAX_LEN} символов`);
-  }
-  updateCommentCounter();
-  updateButtons();
-});
-
-// Смена схемы
-schemaSel?.addEventListener("change", () => {
-  state.schema  = schemaSel.value;
-  state.table   = "";
-  state.columns = [];
-  state.chosen  = [];
-
-  tableSel.innerHTML = `<option value="">Выберите таблицу</option>`;
-  list.innerHTML = "";
-  sqlText.value = "";
-
-  // фильтры
-  filtersContainer.querySelectorAll(".filter-row").forEach(r => r.remove());
-  filtersContainer.appendChild(createFilterRow());
-
-  // сортировки
-  sortContainer.querySelectorAll(".sort-row").forEach(r => r.remove());
-  sortContainer.appendChild(createSortRow());
-
-  sortField.value = "";
-  sortDir.value   = "ASC";
-  limitInput.value = "";
-
-  if (state.schema) loadTables(state.schema);
-  updateButtons();
-});
-
-// Смена таблицы
-tableSel?.addEventListener("change", () => {
-  state.table   = tableSel.value;
-  state.columns = [];
-  state.chosen  = [];
-
-  list.innerHTML = "";
-  sqlText.value  = "";
-
-  filtersContainer.querySelectorAll(".filter-row").forEach(r => r.remove());
-  filtersContainer.appendChild(createFilterRow());
-
-  sortContainer.querySelectorAll(".sort-row").forEach(r => r.remove());
-  sortContainer.appendChild(createSortRow());
-
-  sortField.value = "";
-  sortDir.value   = "ASC";
-  limitInput.value = "";
-
-  if (state.schema && state.table) loadColumns(state.schema, state.table);
-  updateButtons();
-});
-
-// Чекбоксы колонок
-list?.addEventListener("change", (e) => {
-  if (e.target.type === "checkbox") {
-    const col = e.target.dataset.col;
-    if (e.target.checked) {
-      if (!state.chosen.includes(col)) state.chosen.push(col);
-    } else {
-      state.chosen = state.chosen.filter(x => x !== col);
-    }
-    buildSQL();
-    updateButtons();
-  }
-});
-
-// Ручные селекты сортировки (если используются статические)
-sortField?.addEventListener("change", () => { buildSQL(); updateButtons(); });
-sortDir?.addEventListener("change", () => { buildSQL(); updateButtons(); });
-
-// LIMIT
-limitInput?.addEventListener("input", () => {
-  const val = limitInput.value.trim();
-  const num = Number(val);
-  if (val && (!Number.isInteger(num) || num <= 0)) {
-    limitError.style.display = "block";
-    limitInput.classList.add("invalid");
-  } else {
-    limitError.style.display = "none";
-    limitInput.classList.remove("invalid");
-    buildSQL();
-    updateButtons();
-  }
-});
-
-// Выбор формата чипами
-document.querySelectorAll(".chip").forEach(ch => {
-  ch.addEventListener("click", () => {
-    document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
-    ch.classList.add("active");
-    state.format = (ch.dataset.format || "PDF"); // "PDF"|"CSV"|"XLSX"
+const favFilterBtn = document.getElementById('btnFavFilter');
+if (favFilterBtn) {
+  favFilterBtn.addEventListener('click', () => {
+    showOnlyFavorites = !showOnlyFavorites;
+    renderHistory();
+    showToast(showOnlyFavorites
+      ? 'Показаны только ⭐ избранные отчёты'
+      : 'Показаны все отчёты');
   });
-});
+}
 
-// Скачивание
-btnDownload?.addEventListener("click", async () => {
-  if (!reportName.value.trim())    { showToast("Введите название отчёта"); return; }
-  if (!reportComment.value.trim()) { showToast("Введите комментарий к отчёту"); return; }
-  if (!sqlText.value.trim())       { showToast("SQL пустой"); return; }
-
-  const originalText = btnDownload.textContent;
-  btnDownload.disabled = true;
-  btnDownload.textContent = "Готовим...";
-
-  try {
-    const { blob, filename } = await postReportAndGetBlob();
-    saveBlob(blob, filename);
-    saveHistoryEntry();
-  } catch (e) {
-    await showAlert("Не удалось сформировать отчёт:\n" + (e.message || e), "Ошибка");
-    console.error(e);
-  } finally {
-    btnDownload.textContent = originalText;
-    updateButtons();
-  }
-});
-
-// Предпросмотр
-btnPreview?.addEventListener("click", async () => {
-  if (!reportName.value.trim())    { showToast("Введите название отчёта"); return; }
-  if (!reportComment.value.trim()) { showToast("Введите комментарий к отчёту"); return; }
-  if (!sqlText.value.trim())       { showToast("SQL пустой"); return; }
-
-  try {
-    const { blob, format } = await postReportAndGetBlob();
-    (format === "pdf" || format === "csv") ? openBlob(blob) : saveBlob(blob, `preview.${format}`);
-    saveHistoryEntry();
-  } catch (e) {
-    await showAlert("Не удалось показать предпросмотр:\n" + (e.message || e), "Ошибка");
-    console.error(e);
-  }
-});
-
-// Фильтр избранного
-favFilterBtn?.addEventListener("click", () => {
-  showOnlyFavorites = !showOnlyFavorites;
-  renderHistory();
-  showToast(showOnlyFavorites ? "Показаны только ⭐ избранные отчёты" : "Показаны все отчёты");
-});
-
-// Клик по истории
-historyList?.addEventListener("click", async e => {
-  const li = e.target.closest("li[data-i]");
+historyList.addEventListener('click', async e => {
+  const li = e.target.closest('li[data-i]');
   if (!li) return;
   const index = +li.dataset.i;
   const item = reportHistory[index];
   if (!item) return;
 
-  const btnFav = e.target.closest(".btn-fav-history");
-  const btnDel = e.target.closest(".btn-delete-history");
+  const btnFav = e.target.closest('.btn-fav-history');
+  const btnDel = e.target.closest('.btn-delete-history');
 
   if (btnFav) {
     e.stopPropagation();
     item.favorite = !item.favorite;
-    localStorage.setItem("reportHistory", JSON.stringify(reportHistory));
+    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
     renderHistory();
     showToast(item.favorite
-      ? `⭐ Отчёт "${item.name || "Без названия"}" добавлен в избранное`
-      : `☆ Отчёт "${item.name || "Без названия"}" удалён из избранного`);
+      ? `⭐ Отчёт "${item.name || 'Без названия'}" добавлен в избранное`
+      : `☆ Отчёт "${item.name || 'Без названия'}" удалён из избранного`);
     return;
   }
 
   if (btnDel) {
     e.stopPropagation();
     const confirmed = await showConfirm(
-      `Вы уверены, что хотите удалить отчёт "${item.name || "Без названия"}"?`,
+      `Вы уверены, что хотите удалить отчёт "${item.name || 'Без названия'}"?`,
       "Удалить отчёт"
     );
     if (!confirmed) return;
 
     reportHistory.splice(index, 1);
-    localStorage.setItem("reportHistory", JSON.stringify(reportHistory));
+    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
     renderHistory();
-    showToast(`🗑️ Отчёт "${item.name || "Без названия"}" удалён`);
+    showToast(`🗑️ Отчёт "${item.name || 'Без названия'}" удалён`);
     return;
   }
 
@@ -998,8 +792,8 @@ historyList?.addEventListener("click", async e => {
     chk.checked = state.chosen.includes(chk.dataset.col);
   });
 
-  // фильтры
-  filtersContainer.querySelectorAll(".filter-row").forEach(r => r.remove());
+  // Фильтры
+  filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
   const filters = item.filters?.filter(f => f.field || f.value) || [];
   if (filters.length) {
     filters.forEach(f => filtersContainer.appendChild(createFilterRow(f)));
@@ -1007,8 +801,8 @@ historyList?.addEventListener("click", async e => {
     filtersContainer.appendChild(createFilterRow());
   }
 
-  // сортировки
-  sortContainer.querySelectorAll(".sort-row").forEach(r => r.remove());
+  // Сортировки
+  sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
   const sorts = item.sorts?.filter(s => s.field) || [];
   if (sorts.length) {
     sorts.forEach(s => sortContainer.appendChild(createSortRow(s)));
@@ -1016,117 +810,352 @@ historyList?.addEventListener("click", async e => {
     sortContainer.appendChild(createSortRow());
   }
 
-  reportName.value    = item.name || "";
+  // Прочие поля
+  reportName.value = item.name || "";
   reportComment.value = item.comment || "";
-  sortField.value     = item.sortField || "";
-  sortDir.value       = item.sortDir || "ASC";
-  limitInput.value    = item.limit || "";
+  sortField.value = item.sortField || "";
+  sortDir.value = item.sortDir || "ASC";
+  limitInput.value = item.limit || "";
 
-  reportComment.style.height = "auto";
-  reportComment.style.height = reportComment.scrollHeight + "px";
+  reportComment.style.height = 'auto';
+  reportComment.style.height = reportComment.scrollHeight + 'px';
 
   buildSQL();
-  updateNameCounter();
-  updateCommentCounter();
+  nameCounter.textContent = `${reportName.value.length} / 128 символов`;
+  commentCounter.textContent = `${reportComment.value.length} / 256 символов`;
   updateButtons();
 
-  showToast(`Загружен отчёт: ${item.name || (item.schema + "." + item.table)}`);
+  showToast(`Загружен отчёт: ${item.name || (item.schema + '.' + item.table)}`);
 });
 
-// Очистка истории
-btnClearHistory?.addEventListener("click", async () => {
-  if (!reportHistory.length) { showToast("История уже пуста"); return; }
-  const confirmed = await showConfirm("Удалить всю историю отчётов?", "Очистить историю");
-  if (!confirmed) return;
-  reportHistory = [];
-  localStorage.removeItem("reportHistory");
-  renderHistory();
-  showToast("История успешно удалена");
-});
+renderHistory();
 
-// Удаление элементов в фильтрах/сортировках делегированно (кнопка ✕)
-filtersContainer?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-remove");
-  if (!btn) return;
-  const row = btn.closest(".filter-row");
-  if (!row) return;
+// helper: создаёт .filter-row; arg f = { field, cond, value } (все опционально)
+function createFilterRow(f = {}) {
+  const row = document.createElement('div');
+  row.className = 'row row-3 filter-row';
 
-  const allRows = filtersContainer.querySelectorAll(".filter-row");
-  const remaining = Array.from(allRows).filter(r => r !== row);
+  const selField = document.createElement('select');
+  selField.className = 'filterField';
 
-  if (remaining.length === 0) {
-    row.querySelector(".filterField").value = "";
-    row.querySelector(".filterCondition").value = "eq";
-    row.querySelector(".filterValue").value = "";
-    showToast("Фильтр очищен");
-  } else {
-    row.remove();
-    showToast("Фильтр удалён");
-  }
-  buildSQL();
-});
+  const fieldOptions = state.columns.length
+    ? state.columns.map(c => `<option value="${c.name}" ${c.name === (f.field||'') ? 'selected' : ''}>${labelOf(c)}</option>`).join('')
+    : '<option value="">(Нет полей)</option>';
 
-sortContainer?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-remove");
-  if (!btn) return;
-  const row = btn.closest(".sort-row");
-  if (!row) return;
+  selField.innerHTML = `<option value="">Поле</option>${fieldOptions}`;
+  row.appendChild(selField);
 
-  const allRows = sortContainer.querySelectorAll(".sort-row");
-  const remaining = Array.from(allRows).filter(r => r !== row);
+  const selCond = document.createElement('select');
+  selCond.className = 'filterCondition';
+  selCond.innerHTML = `
+    <option value="eq" ${f.cond === 'eq' ? 'selected' : ''}>Равно</option>
+    <option value="neq" ${f.cond === 'neq' ? 'selected' : ''}>Не равно</option>
+    <option value="gt" ${f.cond === 'gt' ? 'selected' : ''}>Больше</option>
+    <option value="lt" ${f.cond === 'lt' ? 'selected' : ''}>Меньше</option>
+    <option value="gte" ${f.cond === 'gte' ? 'selected' : ''}>Больше или равно</option>
+    <option value="lte" ${f.cond === 'lte' ? 'selected' : ''}>Меньше или равно</option>
+    <option value="contains" ${f.cond === 'contains' ? 'selected' : ''}>Содержит</option>
+  `;
+  row.appendChild(selCond);
 
-  if (remaining.length === 0) {
-    row.querySelector(".sortField").value = "";
-    row.querySelector(".sortDir").value = "ASC";
-    showToast("Сортировка очищена");
-  } else {
-    row.remove();
-    showToast("Уровень сортировки удалён");
-  }
-  buildSQL();
-});
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'filterValue';
+  inp.placeholder = 'Значение';
+  inp.value = f.value || '';
+  row.appendChild(inp);
 
-// Бургер-меню
-burgerBtn?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  burgerMenu?.classList.toggle("show");
-});
-document.addEventListener("click", (e) => {
-  if (!burgerMenu) return;
-  if (!burgerMenu.contains(e.target) && e.target !== burgerBtn) {
-    burgerMenu.classList.remove("show");
-  }
-});
+  const btnRem = document.createElement('button');
+  btnRem.type = 'button';
+  btnRem.className = 'btn-remove btn btn-ghost';
+  btnRem.textContent = '✕';
+  row.appendChild(btnRem);
 
-/* ============================================================================
-   Инициализация
-   ========================================================================== */
-(async function init() {
-  const token = localStorage.getItem("access_token_v1") || "";
-  if (!token) {
-    await showAlert("Сначала авторизуйтесь.", "Авторизация");
-    window.location.assign(API_BASE);
+  btnRem.addEventListener('click', () => {
+    const all = document.querySelectorAll('.filter-row');
+    if (all.length === 1) {
+      selField.value = '';
+      selCond.value = 'eq';
+      inp.value = '';
+    } else {
+      row.remove();
+    }
+    buildSQL();
+  });
+
+  [selField, selCond, inp].forEach(elm => elm.addEventListener('input', buildSQL));
+  return row;
+}
+
+// Создание строки сортировки
+function createSortRow(data = {}) {
+  const row = document.createElement('div');
+  row.className = 'row row-3 sort-row';
+
+  const selField = document.createElement('select');
+  selField.className = 'sortField';
+  selField.innerHTML = `<option value="">Поле</option>` +
+    state.columns.map(c => `<option value="${c.name}" ${c.name === (data.field || "") ? "selected" : ""}>${labelOf(c)}</option>`).join('');
+  row.appendChild(selField);
+
+  const selDir = document.createElement('select');
+  selDir.className = 'sortDir';
+  selDir.innerHTML = `
+    <option value="ASC" ${data.dir === "ASC" ? "selected" : ""}>По возрастанию</option>
+    <option value="DESC" ${data.dir === "DESC" ? "selected" : ""}>По убыванию</option>`;
+  row.appendChild(selDir);
+
+  const btnRem = document.createElement('button');
+  btnRem.type = 'button';
+  btnRem.className = 'btn-remove btn btn-ghost';
+  btnRem.textContent = '✕';
+  row.appendChild(btnRem);
+
+  selField.addEventListener('change', buildSQL);
+  selDir.addEventListener('change', buildSQL);
+  btnRem.addEventListener('click', () => {
+    const all = document.querySelectorAll('.sort-row');
+    if (all.length === 1) {
+      selField.value = "";
+      selDir.value = "ASC";
+    } else {
+      row.remove();
+    }
+    buildSQL();
+  });
+
+  return row;
+}
+
+let toastTimeout;
+
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById('toast');
+  if (!toast) {
+    console.warn('Toast element not found');
     return;
   }
 
-  // начальные строки фильтров/сортировок
-  if (filtersContainer && !filtersContainer.querySelector(".filter-row")) {
-    filtersContainer.appendChild(createFilterRow());
+  clearTimeout(toastTimeout);
+  toast.classList.remove('show');
+
+  toast.textContent = message;
+
+  void toast.offsetWidth;
+
+  toast.classList.add('show');
+
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
+}
+
+// ---- Очистка истории ----
+const btnClearHistory = document.getElementById('btnClearHistory');
+if (btnClearHistory) {
+  btnClearHistory.addEventListener('click', async () => {
+    if (!reportHistory.length) {
+      showToast('История уже пуста');
+      return;
+    }
+
+    const confirmed = await showConfirm(
+      'Удалить всю историю отчётов?',
+      'Очистить историю'
+    );
+
+    if (confirmed) {
+      reportHistory = [];
+      localStorage.removeItem('reportHistory');
+      renderHistory();
+      showToast('История успешно удалена');
+    }
+  });
+}
+
+// --- Кастомное подтверждение ---
+function showConfirm(message, title = "Подтверждение") {
+  return new Promise(resolve => {
+    const modal = document.getElementById('confirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const btnYes = document.getElementById('confirmYes');
+    const btnNo = document.getElementById('confirmNo');
+
+    document.querySelector('.modal-title').textContent = title;
+    msgEl.textContent = message;
+    modal.style.display = 'flex';
+
+    const close = (result) => {
+      modal.style.display = 'none';
+      btnYes.removeEventListener('click', yesHandler);
+      btnNo.removeEventListener('click', noHandler);
+      resolve(result);
+    };
+
+    const yesHandler = () => close(true);
+    const noHandler = () => close(false);
+
+    btnYes.addEventListener('click', yesHandler);
+    btnNo.addEventListener('click', noHandler);
+  });
+}
+
+// --- Кастомный alert ---
+function showAlert(message, title = "Сообщение") {
+  return new Promise(resolve => {
+    const modal = document.getElementById('alertModal');
+    const msgEl = document.getElementById('alertMessage');
+    const titleEl = document.getElementById('alertTitle');
+    const btnOk = document.getElementById('alertOk');
+
+    msgEl.textContent = message;
+    titleEl.textContent = title;
+    modal.style.display = 'flex';
+
+    const close = () => {
+      modal.style.display = 'none';
+      btnOk.removeEventListener('click', close);
+      resolve();
+    };
+
+    btnOk.addEventListener('click', close);
+  });
+}
+
+// ---- HEADER ----
+const burgerBtn = document.getElementById('burgerBtn');
+const burgerMenu = document.getElementById('burgerMenu');
+
+if (burgerBtn && burgerMenu) {
+  burgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    burgerMenu.classList.toggle('show');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!burgerMenu.contains(e.target) && e.target !== burgerBtn) {
+      burgerMenu.classList.remove('show');
+    }
+  });
+}
+
+
+// === NEW: базовый путь и endpoint обновления токена ===
+const BASE_PATH = API_BASE; // куда возвращать пользователя при фейле
+const GET_ACCESS_TOKEN_PATH = `${API_BASE}/api/v1/secure/access`;
+
+// === NEW: запрос нового access-токена по cookies (refresh) ===
+async function requestNewAccessToken() {
+  // важно: НЕ слать старый Authorization, только cookies
+  const res = await fetch(GET_ACCESS_TOKEN_PATH, {
+    method: "GET",
+    credentials: "include",
+    headers: { "Accept": "application/json" }
+  });
+
+  if (res.status === 401) {
+    // refresh недействителен
+    return { ok: false, reason: "unauthorized" };
   }
-  if (sortContainer && !sortContainer.querySelector(".sort-row")) {
-    sortContainer.appendChild(createSortRow());
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    return { ok: false, reason: `${res.status} ${res.statusText}${txt ? " — " + txt : ""}` };
   }
 
+  // достаём токен из JSON (поддержим разные ключи на всякий)
+  let token = "";
   try {
-    await loadSchemas();
-  } catch (e) {
-    console.error("Ошибка при загрузке схем:", e);
+    const data = await res.json();
+    token = data.access_token || data.token || data.access || "";
+  } catch {
+    // иногда сервер может вернуть чистую строку
+    const txt = await res.text().catch(() => "");
+    token = txt.trim();
   }
 
-  // Счётчики
-  updateNameCounter();
-  updateCommentCounter();
+  if (token) {
+    localStorage.setItem("access_token_v1", token);
+    return { ok: true, token };
+  }
+  return { ok: false, reason: "empty_token" };
+}
 
-  // История
-  renderHistory();
-})();
+// === CHANGED: универсальный fetch с авто-рефрешом токена и редиректом на BASE_PATH ===
+async function fetchWithToken(url, options = {}) {
+  // функция-обёртка для реального запроса (чтобы легче было повторить)
+  const doFetch = async () => {
+    const token = localStorage.getItem("access_token_v1") || "";
+    const opts = { ...options };
+    opts.headers = { ...(opts.headers || {}) };
+
+    // Accept: по умолчанию json
+    const requestedAccept = String(
+      opts.headers["Accept"] || opts.headers["accept"] || "application/json"
+    ).toLowerCase();
+    if (!opts.headers["Accept"] && !opts.headers["accept"]) {
+      opts.headers["Accept"] = "application/json";
+    }
+
+    if (token) opts.headers["Authorization"] = "Bearer " + token;
+    opts.credentials = "include";
+    const res = await fetch(url, opts);
+    return { res, requestedAccept };
+  };
+
+  // 1-я попытка
+  let { res, requestedAccept } = await doFetch();
+
+  // Если 401 — пробуем обновить токен и повторить ровно один раз
+  if (res.status === 401) {
+    const refresh = await requestNewAccessToken();
+    if (refresh.ok) {
+      ({ res, requestedAccept } = await doFetch());
+    }
+  }
+
+  // После возможного ретрая — если всё ещё 401, уведомляем и уводим на BASE_PATH
+  if (res.status === 401) {
+    try {
+      await showAlert("Сессия истекла. Пожалуйста, войдите снова.", "Авторизация");
+    } catch {}
+    // очищаем токен на всякий случай и возвращаем на basepath
+    localStorage.removeItem("access_token_v1");
+    // используем assign, чтобы не оставлять «битую» страницу в истории
+    location.assign(BASE_PATH);
+    // бросаем ошибку, чтобы текущий поток не продолжался
+    throw new Error("401 Unauthorized — redirect to login");
+  }
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`${res.status} ${res.statusText}${txt ? " — " + txt : ""}`);
+  }
+
+  const ct = (res.headers.get("content-type") || "").toLowerCase();
+
+  // если мы ЯВНО запросили бинарь — отдаём Response как есть
+  const isBinaryRequested =
+    requestedAccept.includes("application/pdf") ||
+    requestedAccept.includes("text/csv") ||
+    requestedAccept.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    requestedAccept.includes("application/zip") ||
+    requestedAccept.includes("application/octet-stream");
+
+  if (isBinaryRequested) return res;
+
+  // если по факту пришёл бинарь (или сервер не указал content-type) — тоже отдаём Response
+  const isBinaryResponse =
+    ct.includes("application/pdf") ||
+    ct.includes("text/csv") ||
+    ct.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    ct.includes("application/zip") ||
+    ct.includes("application/octet-stream") ||
+    (!ct && requestedAccept !== "application/json");
+
+  if (isBinaryResponse) return res;
+
+  // иначе читаем как текст/JSON
+  const txt = await res.text();
+  try { return JSON.parse(txt); } catch { return txt; }
+}
+

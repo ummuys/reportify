@@ -68,8 +68,8 @@ services:
       - pg_rp_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_RP_USER} -d ${PG_RP_DB}" ]
-      interval: 30s
-      timeout: 1s
+      interval: 2s
+      timeout: 2s
       retries: 10
     restart: unless-stopped
 
@@ -88,8 +88,8 @@ services:
       - pg_ud_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${PG_UD_USER} -d ${PG_UD_DB}" ]
-      interval: 30s
-      timeout: 1s
+      interval: 2s
+      timeout: 2s
       retries: 10
     restart: unless-stopped
 
