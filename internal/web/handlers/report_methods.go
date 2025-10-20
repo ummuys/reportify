@@ -105,6 +105,8 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			g.Header("Content-Type", "text/csv")
 		case "xlxs":
 			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		case "json":
+			g.Header("Content-Type", "application/json")
 		}
 		g.Status(200)
 		g.Set("msg", "report successful created")

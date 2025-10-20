@@ -2,6 +2,7 @@ package convert
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -16,6 +17,26 @@ type repConv struct {
 
 func NewReportConvert(logger *zerolog.Logger) ReportConvert {
 	return &repConv{logger: logger}
+}
+
+func (rc *repConv) ToJSON(headers []string, data [][]any, f *os.File) error {
+	rc.logger.Debug().Str("env", "call toJSON").Msg("")
+
+	res := make([]map[string]any, len(data))
+	for i, row := range data {
+		m := make(map[string]any)
+		for j, d := range row {
+			m[headers[j]] = d
+		}
+		res[i] = m
+	}
+
+	if err := json.NewEncoder(f).Encode(res); err != nil {
+		rc.logger.Debug().Str("msg", "fatal create JSON").Msg("")
+		return fmt.Errorf("can't save in JSON file: %v", err)
+	}
+
+	return nil
 }
 
 func (rc *repConv) ToXLSX(headers []string, data [][]any, f *os.File) error {
@@ -66,7 +87,7 @@ func (rc *repConv) ToXLSX(headers []string, data [][]any, f *os.File) error {
 
 	if err := fx.Write(f); err != nil {
 		rc.logger.Debug().Str("msg", "fatal create XLSX").Msg("")
-		return fmt.Errorf("can't save in file: %v", err)
+		return fmt.Errorf("can't save in XLSX file: %v", err)
 	}
 
 	rc.logger.Debug().Str("msg", "successful create XLSX").Msg("")

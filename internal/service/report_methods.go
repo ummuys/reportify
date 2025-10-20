@@ -40,6 +40,8 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		err = rs.conv.ToCSV(headers, rows, f, params.CSVSep)
 	case "xlsx":
 		err = rs.conv.ToXLSX(headers, rows, f)
+	case "json":
+		err = rs.conv.ToJSON(headers, rows, f)
 	}
 
 	if err != nil {
