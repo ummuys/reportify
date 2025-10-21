@@ -61,14 +61,14 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		tmpName := "report-*." + format
+		tmpName := fmt.Sprintf("report-*.%s", format)
 		f, err := os.CreateTemp("", tmpName)
 		if err != nil {
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
 			return
 		}
-
 		defer os.Remove(f.Name())
+
 		u := g.GetInt64("user_id")
 		err = rh.srv.CreateReport(pCtx, u, param, f, format)
 		if err != nil {
@@ -87,11 +87,14 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		}
 
 		st, err := os.Stat(f.Name())
-		if err != nil || st.Size() == 0 {
-			rh.logger.Error().Msg("empty report")
+		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: "empty report"})
 			return
+		}
+
+		if st.Size() == 0 {
+			rh.logger.Error().Msg("empty report")
 		}
 
 		rh.logger.Info().Int64("file_size", st.Size()).Msg("report created and sent")
@@ -100,6 +103,10 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			g.Header("Content-Type", "application/pdf")
 		case "csv":
 			g.Header("Content-Type", "text/csv")
+		case "xlxs":
+			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		case "json":
+			g.Header("Content-Type", "application/json")
 		}
 		g.Status(200)
 		g.Set("msg", "report successful created")

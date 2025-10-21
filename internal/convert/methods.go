@@ -2,11 +2,13 @@ package convert
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/phpdave11/gofpdf"
 	"github.com/rs/zerolog"
+	"github.com/xuri/excelize/v2"
 )
 
 type repConv struct {
@@ -15,6 +17,81 @@ type repConv struct {
 
 func NewReportConvert(logger *zerolog.Logger) ReportConvert {
 	return &repConv{logger: logger}
+}
+
+func (rc *repConv) ToJSON(headers []string, data [][]any, f *os.File) error {
+	rc.logger.Debug().Str("env", "call toJSON").Msg("")
+
+	res := make([]map[string]any, len(data))
+	for i, row := range data {
+		m := make(map[string]any)
+		for j, d := range row {
+			m[headers[j]] = d
+		}
+		res[i] = m
+	}
+
+	if err := json.NewEncoder(f).Encode(res); err != nil {
+		rc.logger.Debug().Str("msg", "fatal create JSON").Msg("")
+		return fmt.Errorf("can't save in JSON file: %v", err)
+	}
+
+	return nil
+}
+
+func (rc *repConv) ToXLSX(headers []string, data [][]any, f *os.File) error {
+	rc.logger.Debug().Str("env", "call toXLSX").Msg("")
+
+	fx := excelize.NewFile()
+	defer func() {
+		if err := fx.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	sheet := "Sheet1"
+
+	idx, err := fx.NewSheet(sheet)
+	if err != nil {
+		return err
+	}
+
+	_, err = fx.GetSheetIndex(sheet)
+	if err != nil {
+		return fmt.Errorf("get new sheet: %w", err)
+	}
+
+	for col, head := range headers {
+		cell, err := excelize.CoordinatesToCellName(col+1, 1)
+		if err != nil {
+			return fmt.Errorf("can't conv int -> cell: %v", err)
+		}
+		if err := fx.SetCellValue(sheet, cell, head); err != nil {
+			return err
+		}
+	}
+
+	for row, record := range data {
+		for col, val := range record {
+			cell, err := excelize.CoordinatesToCellName(col+1, row+2)
+			if err != nil {
+				return fmt.Errorf("can't conv int -> cell: %v", err)
+			}
+			if err := fx.SetCellValue(sheet, cell, val); err != nil {
+				return err
+			}
+		}
+	}
+
+	fx.SetActiveSheet(idx)
+
+	if err := fx.Write(f); err != nil {
+		rc.logger.Debug().Str("msg", "fatal create XLSX").Msg("")
+		return fmt.Errorf("can't save in XLSX file: %v", err)
+	}
+
+	rc.logger.Debug().Str("msg", "successful create XLSX").Msg("")
+	return nil
 }
 
 func (rc *repConv) ToCSV(headers []string, rows [][]any, f *os.File, sep rune) error {
@@ -44,9 +121,11 @@ func (rc *repConv) ToCSV(headers []string, rows [][]any, f *os.File, sep rune) e
 	}
 
 	if err := w.Error(); err != nil {
+		rc.logger.Debug().Str("msg", "fatal create CSV").Msg("")
 		return fmt.Errorf("csv writer error: %w", err)
 	}
 
+	rc.logger.Debug().Str("msg", "successful create CSV").Msg("")
 	return nil
 }
 
@@ -309,7 +388,7 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 	}
 
 	if err := pdf.Output(f); err != nil {
-		rc.logger.Debug().Str("msg", "err to create PDF").Msg("")
+		rc.logger.Debug().Str("msg", "fatal to create PDF").Msg("")
 		return err
 	}
 	rc.logger.Debug().Str("msg", "successful create PDF").Msg("")

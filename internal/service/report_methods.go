@@ -36,14 +36,16 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 	switch format {
 	case "pdf":
 		err = rs.conv.ToPDF(headers, rows, f)
-		if err != nil {
-			return err
-		}
 	case "csv":
-		err := rs.conv.ToCSV(headers, rows, f, params.CSVSep)
-		if err != nil {
-			return err
-		}
+		err = rs.conv.ToCSV(headers, rows, f, params.CSVSep)
+	case "xlsx":
+		err = rs.conv.ToXLSX(headers, rows, f)
+	case "json":
+		err = rs.conv.ToJSON(headers, rows, f)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), params.Sql); err != nil {

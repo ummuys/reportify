@@ -17,7 +17,7 @@ import (
 func InitServices(repos Repositorys, sec Secure, tools Tools) Services {
 	repSrv := service.NewReportService(tools.Logger.SvcLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
 	userSrv := service.NewUserService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
-	mdSrv := service.NewMetadataService(tools.Logger.SvcLog, repos.ReportDB, repos.ReportCache)
+	mdSrv := service.NewMetadataService(tools.Logger.SvcLog, repos.MetadataDB, repos.ReportCache)
 	return Services{ReportService: repSrv, UserService: userSrv, MetadataService: mdSrv}
 }
 
@@ -47,11 +47,17 @@ func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositor
 		return Repositorys{}, err
 	}
 
-	udDB, err := repository.NewUserDB(mainCtx, logger.DbLog)
+	uDB, err := repository.NewUserDB(mainCtx, logger.DbLog)
 	if err != nil {
 		return Repositorys{}, err
 	}
-	return Repositorys{ReportDB: repDB, ReportCache: repChc, UserDB: udDB}, nil
+
+	mdDB, err := repository.NewMetadataDB(mainCtx, logger.DbLog)
+	if err != nil {
+		return Repositorys{}, err
+	}
+
+	return Repositorys{ReportDB: repDB, ReportCache: repChc, UserDB: uDB, MetadataDB: mdDB}, nil
 }
 
 func InitSecure() Secure {

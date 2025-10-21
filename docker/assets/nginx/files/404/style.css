@@ -1,0 +1,45 @@
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:
+    radial-gradient(circle at 30% 20%, #e7f7f4, #fdfdfd 60%),
+    radial-gradient(circle at 70% 80%, #e8efff, #ffffff 60%);
+  color: #222;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  width: 360px;
+  padding: 32px 40px;
+  text-align: center;
+}
+
+.card h1 {
+  margin: 0 0 12px 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.card p {
+  margin: 0 0 28px 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.btn {
+  display: inline-block;
+  background: #22b36d;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+.btn:hover { background: #1d9b5e; }

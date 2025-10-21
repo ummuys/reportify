@@ -3,132 +3,66 @@ package config
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
+	"time"
 )
 
 type DBConfig struct {
 	Addr                  string
 	MinConn               int32
 	MaxConn               int32
-	MaxConnLifetime       int // SECOND
-	MaxConnLifetimeJitter int // SECOND
-	MaxConnIdleTime       int // SECOND
-	HealthCheckPeriod     int // SECOND
+	MaxConnLifetime       time.Duration
+	MaxConnLifetimeJitter time.Duration
+	MaxConnIdleTime       time.Duration
+	HealthCheckPeriod     time.Duration
 }
 
-func ParseRepDBeEnv() (DBConfig, error) {
-	var sErr []string
-
-	add := func(env string) {
-		sErr = append(sErr, fmt.Sprintf("invalid env for %s", env))
+func parseDBEnv(prefix string) (DBConfig, error) {
+	var errs []string
+	add := func(err error) {
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
 	}
 
-	addr, err := parseStr(os.Getenv("DB_RP_ADDR"))
-	if err != nil {
-		add("db_rp_addr")
-	}
+	addr, err := parseStr(prefix + "_ADDR")
+	add(err)
 
-	minConn, err := parseInt(os.Getenv("DB_RP_MIN_CONN"), true)
-	if err != nil {
-		add("db_rp_min_conn")
-	}
+	minConn, err := parseInt(prefix+"_MIN_CONN", true)
+	add(err)
 
-	maxConn, err := parseInt(os.Getenv("DB_RP_MAX_CONN"), false)
-	if err != nil {
-		add("db_rp_max_conn")
-	}
+	maxConn, err := parseInt(prefix+"_MAX_CONN", false)
+	add(err)
 
-	mclt, err := parseInt(os.Getenv("DB_RP_MAX_CONN_LIFETIME"), false)
-	if err != nil {
-		add("db_rp_max_conn_lifetime")
-	}
+	mclt, err := parseInt(prefix+"_MAX_CONN_LIFETIME", false)
+	add(err)
 
-	mcltj, err := parseInt(os.Getenv("DB_RP_MAX_CONN_LIFETIME_JITTER"), true)
-	if err != nil {
-		add("db_rp_max_conn_lifetime_jitter")
-	}
+	mcltj, err := parseInt(prefix+"_MAX_CONN_LIFETIME_JITTER", true)
+	add(err)
 
-	mcit, err := parseInt(os.Getenv("DB_RP_MAX_CONN_IDLE_TIME"), true)
-	if err != nil {
-		add("db_rp_max_conn_idle_time")
-	}
+	mcit, err := parseInt(prefix+"_MAX_CONN_IDLE_TIME", true)
+	add(err)
 
-	hcp, err := parseInt(os.Getenv("DB_RP_HEALTH_CHECK_PERIOD"), false)
-	if err != nil {
-		add("db_rp_max_conn_idle_time")
-	}
+	hcp, err := parseInt(prefix+"_HEALTH_CHECK_PERIOD", false)
+	add(err)
 
-	if len(sErr) > 0 {
-		msg := strings.Join(sErr, ", ")
-		return DBConfig{}, errors.New(msg)
+	if len(errs) > 0 {
+		return DBConfig{}, errors.New(strings.Join(errs, ", "))
+	}
+	if maxConn > 0 && minConn > 0 && int32(maxConn) < int32(minConn) {
+		return DBConfig{}, fmt.Errorf("max_conn must be >= min_conn")
 	}
 
 	return DBConfig{
 		Addr:                  addr,
 		MinConn:               int32(minConn),
 		MaxConn:               int32(maxConn),
-		MaxConnLifetime:       mclt,
-		MaxConnLifetimeJitter: mcltj,
-		MaxConnIdleTime:       mcit,
-		HealthCheckPeriod:     hcp,
+		MaxConnLifetime:       time.Duration(mclt) * time.Second,
+		MaxConnLifetimeJitter: time.Duration(mcltj) * time.Second,
+		MaxConnIdleTime:       time.Duration(mcit) * time.Second,
+		HealthCheckPeriod:     time.Duration(hcp) * time.Second,
 	}, nil
 }
 
-func ParseUDDBeEnv() (DBConfig, error) {
-	var sErr []string
-
-	add := func(env string) {
-		sErr = append(sErr, fmt.Sprintf("invalid env for %s", env))
-	}
-
-	addr, err := parseStr(os.Getenv("DB_UD_ADDR"))
-	if err != nil {
-		add("db_ud_addr")
-	}
-
-	minConn, err := parseInt(os.Getenv("DB_UD_MIN_CONN"), true)
-	if err != nil {
-		add("db_ud_min_conn")
-	}
-
-	maxConn, err := parseInt(os.Getenv("DB_UD_MAX_CONN"), false)
-	if err != nil {
-		add("db_ud_max_conn")
-	}
-
-	mclt, err := parseInt(os.Getenv("DB_UD_MAX_CONN_LIFETIME"), false)
-	if err != nil {
-		add("db_ud_max_conn_lifetime")
-	}
-
-	mcltj, err := parseInt(os.Getenv("DB_UD_MAX_CONN_LIFETIME_JITTER"), true)
-	if err != nil {
-		add("db_ud_max_conn_lifetime_jitter")
-	}
-
-	mcit, err := parseInt(os.Getenv("DB_UD_MAX_CONN_IDLE_TIME"), true)
-	if err != nil {
-		add("db_ud_max_conn_idle_time")
-	}
-
-	hcp, err := parseInt(os.Getenv("DB_UD_HEALTH_CHECK_PERIOD"), false)
-	if err != nil {
-		add("db_ud_max_conn_idle_time")
-	}
-
-	if len(sErr) > 0 {
-		msg := strings.Join(sErr, ", ")
-		return DBConfig{}, errors.New(msg)
-	}
-
-	return DBConfig{
-		Addr:                  addr,
-		MinConn:               int32(minConn),
-		MaxConn:               int32(maxConn),
-		MaxConnLifetime:       mclt,
-		MaxConnLifetimeJitter: mcltj,
-		MaxConnIdleTime:       mcit,
-		HealthCheckPeriod:     hcp,
-	}, nil
-}
+func ParseReportDBEnv() (DBConfig, error) { return parseDBEnv("DB_RP") }
+func ParseUserDBEnv() (DBConfig, error)   { return parseDBEnv("DB_UD") }

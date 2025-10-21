@@ -22,7 +22,7 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
 	defer cancel()
 
-	config, err := config.ParseRepCacheEnv()
+	config, err := config.ParseReportCacheEnv()
 	if err != nil {
 		return nil, err
 	}

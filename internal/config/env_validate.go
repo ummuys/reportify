@@ -2,12 +2,14 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/rs/zerolog"
 )
 
-func parseStr(env string) (string, error) {
+func parseStr(path string) (string, error) {
+	env := os.Getenv(path)
 	if env == "" {
 		return "", fmt.Errorf("empty")
 	}
@@ -15,12 +17,13 @@ func parseStr(env string) (string, error) {
 	return env, nil
 }
 
-func parseLevel(levelStr string) (zerolog.Level, error) {
-	if levelStr == "" {
+func parseLevel(path string) (zerolog.Level, error) {
+	env := os.Getenv(path)
+	if env == "" {
 		return 0, fmt.Errorf("empty")
 	}
 
-	level, err := zerolog.ParseLevel(levelStr)
+	level, err := zerolog.ParseLevel(env)
 	if err != nil {
 		return 0, err
 	}
@@ -28,7 +31,8 @@ func parseLevel(levelStr string) (zerolog.Level, error) {
 	return level, nil
 }
 
-func parseInt(env string, canBeZero bool) (int, error) {
+func parseInt(path string, canBeZero bool) (int, error) {
+	env := os.Getenv(path)
 	intEnv, err := strconv.Atoi(env)
 	if err != nil {
 		return 0, fmt.Errorf("")

@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -14,29 +13,29 @@ type RepCacheConfig struct {
 	Exp      int
 }
 
-func ParseRepCacheEnv() (RepCacheConfig, error) {
+func ParseReportCacheEnv() (RepCacheConfig, error) {
 	var sErr []string
 
 	add := func(env string) {
 		sErr = append(sErr, fmt.Sprintf("invalid env for %s", env))
 	}
 
-	addr, err := parseStr(os.Getenv("CACHE_ADDR"))
+	addr, err := parseStr("CACHE_ADDR")
 	if err != nil {
 		add("cache_addr")
 	}
 
-	pass, err := parseStr(os.Getenv("CACHE_PASSWORD"))
+	pass, err := parseStr("CACHE_PASSWORD")
 	if err != nil {
 		add("cache_password")
 	}
 
-	db, err := parseInt(os.Getenv("CACHE_DB"), true)
+	db, err := parseInt("CACHE_DB", true)
 	if err != nil {
 		add("cache_db")
 	}
 
-	exp, err := parseInt(os.Getenv("CACHE_EXPIRE_TIME"), true)
+	exp, err := parseInt("CACHE_EXPIRE_TIME", true)
 	if err != nil {
 		add("cache_db")
 	}
