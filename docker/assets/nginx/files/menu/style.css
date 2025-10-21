@@ -79,7 +79,7 @@ body {
 }
 
 .logo {
-  height: 36px;
+  height: 55px;
   display: block;
 }
 
@@ -95,6 +95,10 @@ body {
   padding: 8px 120px;
   font-size: 15px;
   cursor: pointer;
+}
+
+.header-right > .burger {
+    padding: 0;
 }
 
 .dropdown-btn:hover {
@@ -123,7 +127,17 @@ body {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+.about-btn {
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
+  width: 150px;
+  border-radius: 10px;
+  padding: 10px 2px;
+  font-size: 15px;
+  cursor: pointer;
 }
 
 .burger {
@@ -178,8 +192,14 @@ p.lead {
     }
 }
 
+@media(max-width: 860px) {
+    .dropdown {
+        margin: auto;
+    }
+}
+
 .panel {
-    background-color: var(--panel);
+    background-image: linear-gradient(135deg, hsla(167, 22%, 71%, .5), hsla(167, 22%, 71%, .6));
     border: 1px solid rgba(255,255,255,.08);
     border-radius: 16px;
     padding: 20px;
@@ -397,15 +417,15 @@ textarea.sql {
 
 .sidebar {
   position: fixed;
-  top: 60px; /* теперь начинается под header */
+  top: 60px; /* начинается под header */
   left: 0;
-  height: calc(100vh - 60px); /* уменьшаем высоту, чтобы не залезала под header */
+  height: calc(100vh - 60px);
   width: 320px;
   background: hsla(167, 22%, 71%, .2);
   border-right: 1px solid hsla(167, 22%, 71%, .4);
   display: flex;
   flex-direction: column;
-  z-index: 900; /* ниже шапки */
+  z-index: 900; 
 }
 
 /* Красивый скролл для WebKit-браузеров */
