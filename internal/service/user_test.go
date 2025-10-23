@@ -120,7 +120,7 @@ func TestUser_CheckPass_Success(t *testing.T) {
 
 	db.On("Exists", mock.Anything, username).Return(nil).Once()
 	db.On("GetPassword", mock.Anything, username).Return(uid, storedHash, nil).Once()
-	ph.On("ChechHash", raw, storedHash).Return(true).Once()
+	ph.On("CheckHash", raw, storedHash).Return(true).Once()
 
 	gotUID, err := s.CheckPass(ctx, username, raw)
 	require.NoError(t, err)
@@ -145,7 +145,7 @@ func TestUser_CheckPass_ExistsError(t *testing.T) {
 	require.ErrorIs(t, err, someErr)
 
 	db.AssertNotCalled(t, "GetPassword", mock.Anything, mock.Anything)
-	ph.AssertNotCalled(t, "ChechHash", mock.Anything, mock.Anything)
+	ph.AssertNotCalled(t, "CheckHash", mock.Anything, mock.Anything)
 
 	db.AssertExpectations(t)
 }
@@ -165,7 +165,7 @@ func TestUser_CheckPass_GetPasswordError(t *testing.T) {
 	require.Zero(t, uid)
 	require.ErrorIs(t, err, someErr)
 
-	ph.AssertNotCalled(t, "ChechHash", mock.Anything, mock.Anything)
+	ph.AssertNotCalled(t, "CheckHash", mock.Anything, mock.Anything)
 
 	db.AssertExpectations(t)
 }
@@ -181,7 +181,7 @@ func TestUser_CheckPass_InvalidPassword(t *testing.T) {
 
 	db.On("Exists", mock.Anything, username).Return(nil).Once()
 	db.On("GetPassword", mock.Anything, username).Return(uid, storedHash, nil).Once()
-	ph.On("ChechHash", raw, storedHash).Return(false).Once()
+	ph.On("CheckHash", raw, storedHash).Return(false).Once()
 
 	gotUID, err := s.CheckPass(ctx, username, raw)
 	require.Zero(t, gotUID)
