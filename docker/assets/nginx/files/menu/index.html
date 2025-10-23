@@ -158,6 +158,15 @@
             <button class="chip" data-format="CSV">CSV</button>
             <button class="chip" data-format="JSON">JSON</button>
           </div>
+
+          <div id="csvOptions" class="csv-options" style="display:none; margin-top:10px;">
+            <label for="csvSeparator" class="small">Разделитель CSV:</label>
+            <select id="csvSeparator">
+              <option value=",">Запятая (,)</option>
+              <option value=";">Точка с запятой (;)</option>
+              <option value="|">Вертикальная черта (|)</option>
+            </select>
+          </div>
         </div>
 
         <div class="panel">

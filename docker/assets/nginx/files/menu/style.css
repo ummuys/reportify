@@ -40,7 +40,8 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    /* max-width: 1200px; */
+    width: 85vw;
     margin: 0 auto;
     padding: 80px 30px 20px 350px;
 }
@@ -192,10 +193,21 @@ p.lead {
     }
 }
 
-@media(max-width: 860px) {
-    .dropdown {
-        margin: auto;
-    }
+/* --- Адаптивность dropdown --- */
+@media (max-width: 1100px) {
+  .dropdown {
+    margin-left: 120px; 
+  }
+}
+
+@media (max-width: 700px) {
+  .dropdown {
+    margin-left: 60px;
+  }
+
+   .dropdown-btn {
+    padding: 8px 40px;
+  } 
 }
 
 .panel {
@@ -343,10 +355,18 @@ select option:checked {
     cursor: default;
 }
 
+.btn-primary:disabled:hover {
+    background: var(--green);
+}
+
 .chips {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(90px, 1fr));
+    gap: 10px;
+    justify-content: center; 
+    justify-items: center;   
+    margin: 0 auto;          
+    max-width: 500px;  
 }
 
 .chip {
@@ -356,10 +376,25 @@ select option:checked {
     font-size: 13px;
     background: hsla(167, 22%, 71%, .4);
     cursor: pointer;
+    text-align: center;
+    width: 100%;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+@media (max-width: 600px) {
+  .chips {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
 }
 
 .chip.active {
     background: hsla(167, 22%, 71%, 1);
+    font-weight: 550;
+}
+
+.chip:hover {
+  background: hsla(167, 22%, 71%, .7);
+  transform: scale(1.03);
 }
 
 .list {
@@ -417,15 +452,62 @@ textarea.sql {
 
 .sidebar {
   position: fixed;
-  top: 60px; /* начинается под header */
+  top: 60px;
   left: 0;
   height: calc(100vh - 60px);
   width: 320px;
+  min-width: 240px;
   background: hsla(167, 22%, 71%, .2);
   border-right: 1px solid hsla(167, 22%, 71%, .4);
   display: flex;
   flex-direction: column;
-  z-index: 900; 
+  z-index: 900;
+  transition: width 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+  .sidebar {
+    width: 260px;
+  }
+  .container {
+    padding-left: 280px;
+  }
+}
+
+/* На экранах до 800px — ещё меньше */
+@media (max-width: 800px) {
+  .sidebar {
+    width: 200px;
+  }
+  .container {
+    padding-left: 220px;
+  }
+  .sidebar h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 650px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 220px;
+    position: fixed;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .container {
+    padding-left: 20px;
+  }
+
+  /* Кнопка "Меню" делает панель видимой */
+  .dropdown-btn {
+    display: inline-block;
+  }
 }
 
 /* Красивый скролл для WebKit-браузеров */
@@ -828,4 +910,31 @@ input.invalid, textarea.invalid {
 @keyframes slideUp {
   from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+.csv-options {
+  animation: fadeIn .4s ease;
+}
+
+.btn-preview.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-preview.disabled:hover {
+    background: hsla(167, 22%, 71%, .8);
+}
+
+.btn.disabled,
+.btn.is-disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: auto; /* оставляем кликабельность, чтобы можно было показать toast */
+  filter: grayscale(.03);
+}
+
+.btn.disabled:hover,
+.btn.is-disabled:hover {
+  transform: none;
+  background: inherit;
 }
