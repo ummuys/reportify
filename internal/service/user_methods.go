@@ -11,9 +11,9 @@ import (
 )
 
 type uSrv struct {
-	logger *zerolog.Logger
-	db     repository.UserDB
-	ph     secure.PasswordHasher
+	logger *zerolog.Logger       //
+	db     repository.UserDB     // mocks.MockUDB
+	ph     secure.PasswordHasher // mocks.MockHasher
 }
 
 func NewUserService(logger *zerolog.Logger, db repository.UserDB, ph secure.PasswordHasher) UserService {

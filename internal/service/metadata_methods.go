@@ -11,8 +11,8 @@ import (
 
 type mdService struct {
 	logger *zerolog.Logger
-	db     repository.MetadataDB
-	chc    cache.ReportCache
+	db     repository.MetadataDB // mocks.MockMDDB
+	chc    cache.ReportCache     // mocks.MockRepCache
 }
 
 func NewMetadataService(logger *zerolog.Logger, db repository.MetadataDB, chc cache.ReportCache) MetadataService {

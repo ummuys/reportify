@@ -4,6 +4,7 @@ PROD_COMPOSE=prod/docker-compose-prod.yaml
 
 # 			DEV			# 
 
+
 dev-start:
 	-docker compose -f $(DEV_COMPOSE) up -d
 
@@ -66,3 +67,9 @@ delete_all_volumes:
 	-docker volume rm prod_pg_ud_data
 	-docker volume rm dev_pg_ud_data
 	-docker volume rm dev_pg_rp_data
+
+
+
+# TESTING
+srv-test:
+	@gotestsum --format=github-actions ./../internal/service
