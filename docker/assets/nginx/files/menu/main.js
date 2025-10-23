@@ -117,6 +117,7 @@ const nameCounter = el("nameCounter");
 const commentCounter = el("commentCounter");
 const sortContainer = document.getElementById('sortContainer');
 const filtersContainer = document.getElementById('filtersContainer');
+const btnAddFilter = document.getElementById('btnAddFilter');
 const btnAddSort = document.getElementById('btnAddSort');
 const btnClearSort = document.getElementById('btnClearSort'); // на будущее, если нужен
 
@@ -205,6 +206,33 @@ function buildSQL() {
   sqlText.value = `SELECT ${cols}\nFROM ${from}${whereClause}${orderClause}${limitClause};`;
 }
 
+if (btnAddSort) btnAddSort.removeAttribute('disabled');
+if (btnAddFilter) btnAddFilter.removeAttribute('disabled');
+
+if (btnAddFilter) {
+  btnAddFilter.addEventListener('click', () => {
+    if (!state.table) {
+      showToast('Сначала выберите таблицу 📋');
+      return;
+    }
+    filtersContainer.appendChild(createFilterRow());
+    buildSQL();
+    showToast('Добавлен фильтр');
+  });
+}
+
+// Добавить уровень сортировки
+btnAddSort.addEventListener('click', () => {
+  if (!state.table) {
+    showToast('Сначала выберите таблицу 📋');
+    return;
+  }
+  const row = createSortRow();
+  sortContainer.appendChild(row);
+  buildSQL();
+  showToast('Добавлен уровень сортировки');
+});
+
 // --- ДЕЛЕГИРОВАНИЕ ФИЛЬТРОВ ---
 filtersContainer.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-remove');
@@ -250,14 +278,6 @@ sortContainer.addEventListener('click', (e) => {
   buildSQL();
 });
 
-// Добавить уровень сортировки
-btnAddSort.addEventListener('click', () => {
-  const row = createSortRow();
-  sortContainer.appendChild(row);
-  buildSQL();
-  showToast('Добавлен уровень сортировки');
-});
-
 function updateButtons(){
   chosenCounter.textContent =
     `Выбрано: ${state.chosen.length} / ${state.columns.length}` +
@@ -276,9 +296,23 @@ function updateButtons(){
 
   const ready = hasSchema && hasTable && hasCols && hasSQL && hasName && hasComment;
 
+  // Оставляем стандартную логику для скачивания (это реально блокирует поведение)
   btnDownload.disabled = !ready;
-  btnAddSort.disabled = state.columns.length === 0;
+
+  // Для кнопок "Добавить сортировку" и "Добавить фильтр" — используем класс/aria, а не disabled,
+  // чтобы кликать и показывать toast когда они недоступны.
+  const controlsDisabled = state.columns.length === 0;
+
+  if (btnAddSort) {
+    btnAddSort.classList.toggle('is-disabled', controlsDisabled);
+    btnAddSort.setAttribute('aria-disabled', String(controlsDisabled));
+  }
+  if (btnAddFilter) {
+    btnAddFilter.classList.toggle('is-disabled', controlsDisabled);
+    btnAddFilter.setAttribute('aria-disabled', String(controlsDisabled));
+  }
 }
+
 
 // загрузка схем
 async function loadSchemas() {
@@ -399,7 +433,8 @@ function pickFilename(headers, fallback) {
 async function postReportAndGetBlob() {
   const format = (state.format || "PDF").toLowerCase(); // 'pdf' | 'csv' | 'xlsx' | 'json'
   const url = `${API_BASE}/api/v1/report/${format}`;
-  const payload = { sql: sqlText.value.trim(), csv_sep: "," };
+  const sep = document.getElementById('csvSeparator')?.value || ",";
+  const payload = { sql: sqlText.value.trim(), csv_sep: sep };
 
   const acceptByFormat = {
     pdf:  "application/pdf",
@@ -588,11 +623,25 @@ btnClear.addEventListener("click", () => {
   updateButtons();
 });
 
+const csvOptions = el('csvOptions');
+const csvSeparator = el('csvSeparator');
+
 document.querySelectorAll(".chip").forEach(ch => {
   ch.addEventListener("click", () => {
     document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
     ch.classList.add("active");
     state.format = ch.dataset.format || "PDF";
+
+    // Если выбран CSV — показать выбор разделителя и заблокировать предпросмотр
+    if (state.format === "CSV") {
+      csvOptions.style.display = "block";
+      btnPreview.disabled = true;
+      btnPreview.classList.add("disabled");
+    } else {
+      csvOptions.style.display = "none";
+      btnPreview.disabled = false;
+      btnPreview.classList.remove("disabled");
+    }
   });
 });
 

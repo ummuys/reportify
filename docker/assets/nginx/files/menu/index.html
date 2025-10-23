@@ -12,7 +12,7 @@
 <body>
   <header class="header">
   <div class="header-left">
-    <img src="../img/pgups_logo.png" alt="Логотип" class="logo">
+    <img src="../img/pgups_logo2.png" alt="Логотип" class="logo">
   </div>
 
   <div class="dropdown">
@@ -23,6 +23,7 @@
   </div>
 
   <div class="header-right">
+    <button class="about-btn" id="aboutBtn">О нас</button>
     <button class="burger" id="burgerBtn">☰</button>
     <div class="burger-menu" id="burgerMenu">
       <a href="#" id="profileLink">Профиль</a>
@@ -156,6 +157,15 @@
             <button class="chip" data-format="XLSX">XLSX</button>
             <button class="chip" data-format="CSV">CSV</button>
             <button class="chip" data-format="JSON">JSON</button>
+          </div>
+
+          <div id="csvOptions" class="csv-options" style="display:none; margin-top:10px;">
+            <label for="csvSeparator" class="small">Разделитель CSV:</label>
+            <select id="csvSeparator">
+              <option value=",">Запятая (,)</option>
+              <option value=";">Точка с запятой (;)</option>
+              <option value="|">Вертикальная черта (|)</option>
+            </select>
           </div>
         </div>
 
