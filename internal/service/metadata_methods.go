@@ -52,7 +52,7 @@ func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*model
 }
 
 func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
-	mds.logger.Debug().Str("evt", "call GetTables")
+	mds.logger.Debug().Str("evt", "call GetColumns")
 	data, err := mds.db.GetColumns(pCtx, schemaName, tableName)
 	if err != nil {
 		return nil, err
@@ -66,11 +66,16 @@ func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableN
 }
 
 func (mds *mdService) GetQueries(pCtx context.Context, key string) ([]string, error) {
-	mds.logger.Debug().Str("evt", "call GetUserQueries")
+	mds.logger.Debug().Str("evt", "call GetQueries")
 	return mds.chc.Get(pCtx, key)
 }
 
 func (mds *mdService) DeleteAllQueries(pCtx context.Context, key string) error {
-	mds.logger.Debug().Str("evt", "call DeleteUserQueries")
+	mds.logger.Debug().Str("evt", "call DeleteAllQueries")
 	return mds.chc.DeleteAll(pCtx, key)
+}
+
+func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value string) error {
+	mds.logger.Debug().Str("evt", "call DeleteQuery")
+	return mds.chc.Delete(pCtx, key, value)
 }

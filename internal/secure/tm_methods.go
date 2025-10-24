@@ -5,13 +5,18 @@ import (
 	"github.com/ummuys/reportify/internal/config"
 )
 
-var cfg = config.ParseTMConfig()
+var cfg config.TMConfig
 
 type tokMan struct {
 }
 
-func NewTokenManager() TokenManager {
-	return &tokMan{}
+func NewTokenManager() (TokenManager, error) {
+	c, err := config.ParseTMConfig()
+	if err != nil {
+		return nil, err
+	}
+	cfg = c
+	return &tokMan{}, nil
 }
 
 func (tm *tokMan) GenerateRefreshToken(user_id int64) (string, error) {

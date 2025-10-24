@@ -117,8 +117,8 @@ func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 }
 
 // GetQueries godoc
-// @Summary      Получить сохранённые запросы пользователя
-// @Description  Возвращает кэшированный список SQL-запросов для текущего пользователя (берётся по user_id из контекста).
+// @Summary      Получить все сохранённые запросы пользователя
+// @Description  Возвращает кэшированный список всех SQL-запросов для текущего пользователя (берётся по user_id из контекста).
 // @Tags         metadata
 // @Accept       json
 // @Produce      json
@@ -142,8 +142,8 @@ func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
 }
 
 // DeleteUserQueries godoc
-// @Summary      Удалить сохранённые запросы пользователя
-// @Description  Очищает кэш SQL-запросов для текущего пользователя (user_id берётся из контекста).
+// @Summary      Удалить все запросы пользователя
+// @Description  Удаляет кэш всех SQL-запросов для текущего пользователя (user_id берётся из контекста).
 // @Tags         metadata
 // @Accept       json
 // @Produce      json
@@ -151,7 +151,7 @@ func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
 // @Success      200  {object}  models.EmptyResponse  "Запросы пользователя удалены"
 // @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
-// @Router       /cache [delete]
+// @Router       /cache/all [delete]
 func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		user_id := g.GetInt64("user_id")
@@ -160,7 +160,39 @@ func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		msg := "user queries are deleted"
+		msg := "all queries are deleted"
+		g.Set("msg", msg)
+		g.JSON(http.StatusOK, models.EmptyResponse{Message: msg})
+	}
+}
+
+// DeleteUserQueries godoc
+// @Summary      Удалить запрос пользователя
+// @Description  Очищает кэш SQL-запроса для текущего пользователя (user_id берётся из контекста).
+// @Tags         metadata
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request  body   models.DeleteQuery   true  "SQL-запрос для отчета"
+// @Success      200  {object}  models.EmptyResponse  "Запрос пользователя удален"
+// @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
+// @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
+// @Router       /cache [delete]
+func (mdh *mdHandler) DeleteQuery(pCtx context.Context) gin.HandlerFunc {
+	return func(g *gin.Context) {
+		user_id := g.GetInt64("user_id")
+		var dl models.DeleteQuery
+		if err := g.ShouldBindJSON(&dl); err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
+		}
+
+		if err := mdh.srv.DeleteQuery(pCtx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		msg := "query is deleted"
 		g.Set("msg", msg)
 		g.JSON(http.StatusOK, models.EmptyResponse{Message: msg})
 	}

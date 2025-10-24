@@ -12,4 +12,5 @@ type MetadataHandler interface {
 	GetColumns(pCtx context.Context) gin.HandlerFunc
 	GetQueries(pCtx context.Context) gin.HandlerFunc
 	DeleteAllQueries(pCtx context.Context) gin.HandlerFunc
+	DeleteQuery(pCtx context.Context) gin.HandlerFunc
 }

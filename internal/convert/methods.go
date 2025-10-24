@@ -31,7 +31,7 @@ func (rc *repConv) ToDOCX(headers []string, data [][]any, f *os.File) error {
 	table := doc.AddTable()
 	table.Properties().SetWidthPercent(100)
 	tblBorders := table.Properties().Borders()
-	th := measurement.Distance(0.5 * measurement.Point) // толщина линии ~0.5pt (можешь увеличить до 1.0pt)
+	th := measurement.Distance(0.5 * measurement.Point) // толщина линии ~0.5pt
 	tblBorders.SetAll(wml.ST_BorderSingle, color.Auto, th)
 	tblBorders.SetInsideVertical(wml.ST_BorderSingle, color.Auto, th)
 	tblBorders.SetInsideHorizontal(wml.ST_BorderSingle, color.Auto, th)

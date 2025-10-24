@@ -15,7 +15,7 @@ func (m *MockRepCache) Init(pCtx context.Context, queries map[string][]string) e
 	return args.Error(0)
 }
 
-func (m *MockRepCache) Set(pCtx context.Context, key string, value any) error {
+func (m *MockRepCache) Set(pCtx context.Context, key string, value string) error {
 	args := m.Called(pCtx, key, value)
 	return args.Error(0)
 }
@@ -38,7 +38,7 @@ func (m *MockRepCache) GetAll(pCtx context.Context) (map[string][]string, error)
 	return out, args.Error(1)
 }
 
-func (m *MockRepCache) Delete(pCtx context.Context, key string, value any) error {
+func (m *MockRepCache) Delete(pCtx context.Context, key string, value string) error {
 	args := m.Called(pCtx, key, value)
 	return args.Error(0)
 }

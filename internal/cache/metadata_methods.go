@@ -61,7 +61,7 @@ func (rc *repCache) Init(pCtx context.Context, queries map[string][]string) erro
 	return nil
 }
 
-func (rc *repCache) Set(pCtx context.Context, key string, value any) error {
+func (rc *repCache) Set(pCtx context.Context, key string, value string) error {
 	rc.logger.Debug().Str("evt", "call Set").Msg("")
 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
@@ -108,7 +108,7 @@ func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
 	return m, nil
 }
 
-func (rc *repCache) Delete(pCtx context.Context, key string, value any) error {
+func (rc *repCache) Delete(pCtx context.Context, key string, value string) error {
 	rc.logger.Debug().Str("evt", "call Delete").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
 	defer cancel()

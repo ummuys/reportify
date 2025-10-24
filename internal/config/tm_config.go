@@ -13,7 +13,7 @@ type TMConfig struct {
 	RefreshSecret     string
 }
 
-func ParseTMConfig() TMConfig {
+func ParseTMConfig() (TMConfig, error) {
 	var errs []string
 	add := func(err error) {
 		if err != nil {
@@ -42,7 +42,7 @@ func ParseTMConfig() TMConfig {
 	}
 
 	if len(errs) > 0 {
-		panic(errors.New(strings.Join(errs, ", ")))
+		return TMConfig{}, errors.New(strings.Join(errs, ", "))
 	}
 
 	return TMConfig{
@@ -50,5 +50,5 @@ func ParseTMConfig() TMConfig {
 		AccessSecret:      ac,
 		RefreshTokenLimit: time.Duration(rtl) * time.Second,
 		RefreshSecret:     rc,
-	}
+	}, nil
 }

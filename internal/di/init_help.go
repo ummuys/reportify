@@ -60,8 +60,11 @@ func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositor
 	return Repositorys{ReportDB: repDB, ReportCache: repChc, UserDB: uDB, MetadataDB: mdDB}, nil
 }
 
-func InitSecure() Secure {
-	tm := secure.NewTokenManager()
+func InitSecure() (Secure, error) {
+	tm, err := secure.NewTokenManager()
+	if err != nil {
+		return Secure{}, err
+	}
 	ph := secure.NewPasswordHasher()
-	return Secure{PasswordHasher: ph, TokenManager: tm}
+	return Secure{PasswordHasher: ph, TokenManager: tm}, nil
 }
