@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/ummuys/reportify/internal/errs"
@@ -116,7 +115,6 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 
 		g.Set("msg", "auth successful")
 		g.SetCookie("refresh_token", refresh, 3600*144, "/", "", false, true)
-		fmt.Println(refresh)
 		g.JSON(http.StatusOK, models.NewAccessToken{AccessToken: access})
 	}
 }

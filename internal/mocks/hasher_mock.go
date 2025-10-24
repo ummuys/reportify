@@ -11,7 +11,7 @@ func (m *MockHasher) Hash(password string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (m *MockHasher) ChechHash(password, hash string) bool {
+func (m *MockHasher) CheckHash(password, hash string) bool {
 	args := m.Called(password, hash)
 	return args.Bool(0)
 }

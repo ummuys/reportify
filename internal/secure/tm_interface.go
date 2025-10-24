@@ -7,6 +7,3 @@ type TokenManager interface {
 	GenerateAccessToken(user_id int64) (string, error)
 	ValidateToken(rawToken string, mode bool) (jwt.MapClaims, error) // mode == true - access, mode == false - refresh
 }
-
-var secret_access = "zopa"
-var secret_refresh = "popa"

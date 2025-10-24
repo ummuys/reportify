@@ -1,10 +1,11 @@
 package secure
 
 import (
-	"time"
-
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/ummuys/reportify/internal/config"
 )
+
+var cfg = config.ParseTMConfig()
 
 type tokMan struct {
 }
@@ -16,19 +17,19 @@ func NewTokenManager() TokenManager {
 func (tm *tokMan) GenerateRefreshToken(user_id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
-		"exp":     time.Now().Add(time.Hour * 144).Unix(), // Срок действия — 144 часа
+		"exp":     cfg.RefreshTokenLimit, // Срок действия — 144 часа
 	}
 	refresh := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	return refresh.SignedString([]byte(secret_refresh))
+	return refresh.SignedString([]byte(cfg.RefreshSecret))
 }
 
 func (tm *tokMan) GenerateAccessToken(user_id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
-		"exp":     time.Now().Add(time.Hour * 2).Unix(), // Срок действия — 2 часа
+		"exp":     cfg.AccessTokenLimit, // Срок действия — 2 часа
 	}
 	access := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	return access.SignedString([]byte(secret_access))
+	return access.SignedString([]byte(cfg.AccessSecret))
 }
 
 func (tm *tokMan) ValidateToken(rawToken string, mode bool) (jwt.MapClaims, error) {

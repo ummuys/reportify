@@ -11,7 +11,7 @@ func unhashAccessToken(token string) (*jwt.Token, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return []byte(secret_access), nil
+		return []byte(cfg.AccessSecret), nil
 	})
 }
 
@@ -20,7 +20,7 @@ func unhashRefreshToken(token string) (*jwt.Token, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return []byte(secret_refresh), nil
+		return []byte(cfg.RefreshSecret), nil
 	})
 }
 

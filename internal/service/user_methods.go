@@ -53,7 +53,7 @@ func (u *uSrv) CheckPass(pCtx context.Context, username, password string) (int64
 		return 0, err
 	}
 
-	if !u.ph.ChechHash(password, hashPass) {
+	if !u.ph.CheckHash(password, hashPass) {
 		return 0, errs.ErrInvalidCredentials
 	}
 
