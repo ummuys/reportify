@@ -8,6 +8,7 @@ import (
 
 	"github.com/phpdave11/gofpdf"
 	"github.com/rs/zerolog"
+	"github.com/unidoc/unioffice/document"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -17,6 +18,40 @@ type repConv struct {
 
 func NewReportConvert(logger *zerolog.Logger) ReportConvert {
 	return &repConv{logger: logger}
+}
+
+func (rc *repConv) ToDOCX(headers []string, data [][]any, f *os.File) error {
+	rc.logger.Debug().Str("env", "call toDOCX").Msg("")
+
+	doc := document.New()
+	defer doc.Close()
+
+	table := doc.AddTable()
+	table.Properties().SetWidthPercent(100)
+
+	header := table.AddRow()
+	for _, h := range headers {
+		cell := header.AddCell()
+		para := cell.AddParagraph()
+		run := para.AddRun()
+		run.AddText(h)
+		run.Properties().SetBold(true)
+	}
+
+	for _, rowData := range data {
+		row := table.AddRow()
+		for _, d := range rowData {
+			cell := row.AddCell()
+			cell.AddParagraph().AddRun().AddText(fmt.Sprint(d))
+		}
+	}
+
+	if err := doc.Save(f); err != nil {
+		rc.logger.Error().Err(err).Msg("fatal create DOCX")
+		return fmt.Errorf("can't save in DOCX file: %v", err)
+	}
+
+	return nil
 }
 
 func (rc *repConv) ToJSON(headers []string, data [][]any, f *os.File) error {
@@ -32,7 +67,7 @@ func (rc *repConv) ToJSON(headers []string, data [][]any, f *os.File) error {
 	}
 
 	if err := json.NewEncoder(f).Encode(res); err != nil {
-		rc.logger.Debug().Str("msg", "fatal create JSON").Msg("")
+		rc.logger.Error().Err(err).Msg("fatal create JSON")
 		return fmt.Errorf("can't save in JSON file: %v", err)
 	}
 
@@ -86,7 +121,7 @@ func (rc *repConv) ToXLSX(headers []string, data [][]any, f *os.File) error {
 	fx.SetActiveSheet(idx)
 
 	if err := fx.Write(f); err != nil {
-		rc.logger.Debug().Str("msg", "fatal create XLSX").Msg("")
+		rc.logger.Error().Err(err).Msg("fatal create XLSX")
 		return fmt.Errorf("can't save in XLSX file: %v", err)
 	}
 
@@ -388,7 +423,7 @@ func (rc *repConv) ToPDF(headers []string, rows [][]any, f *os.File) error {
 	}
 
 	if err := pdf.Output(f); err != nil {
-		rc.logger.Debug().Str("msg", "fatal to create PDF").Msg("")
+		rc.logger.Error().Err(err).Msg("fatal create PDF")
 		return err
 	}
 	rc.logger.Debug().Str("msg", "successful create PDF").Msg("")

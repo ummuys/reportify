@@ -10,6 +10,11 @@ type MockRepConv struct {
 	mock.Mock
 }
 
+func (m *MockRepConv) ToDOCX(headers []string, data [][]any, f *os.File) error {
+	args := m.Called(headers, data, f)
+	return args.Error(0)
+}
+
 func (m *MockRepConv) ToPDF(headers []string, data [][]any, f *os.File) error {
 	args := m.Called(headers, data, f)
 	return args.Error(0)
