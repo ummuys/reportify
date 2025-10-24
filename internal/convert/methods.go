@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"os"
 
+	"baliance.com/gooxml/color"
+	"baliance.com/gooxml/document"
+	"baliance.com/gooxml/measurement"
+	"baliance.com/gooxml/schema/soo/wml"
 	"github.com/phpdave11/gofpdf"
 	"github.com/rs/zerolog"
-	"github.com/unidoc/unioffice/document"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -24,10 +27,14 @@ func (rc *repConv) ToDOCX(headers []string, data [][]any, f *os.File) error {
 	rc.logger.Debug().Str("env", "call toDOCX").Msg("")
 
 	doc := document.New()
-	defer doc.Close()
 
 	table := doc.AddTable()
 	table.Properties().SetWidthPercent(100)
+	tblBorders := table.Properties().Borders()
+	th := measurement.Distance(0.5 * measurement.Point) // толщина линии ~0.5pt (можешь увеличить до 1.0pt)
+	tblBorders.SetAll(wml.ST_BorderSingle, color.Auto, th)
+	tblBorders.SetInsideVertical(wml.ST_BorderSingle, color.Auto, th)
+	tblBorders.SetInsideHorizontal(wml.ST_BorderSingle, color.Auto, th)
 
 	header := table.AddRow()
 	for _, h := range headers {

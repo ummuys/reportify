@@ -50,6 +50,7 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			msg := fmt.Sprintf("bad format: %s", format)
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: msg})
 			g.Set("msg", msg)
+			return
 		}
 
 		var rawParam models.RawReportParams
@@ -127,9 +128,13 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 func isFormat(format string) bool {
 	switch format {
 	case "pdf":
+		fallthrough
 	case "csv":
-	case "xlxs":
+		fallthrough
+	case "xlsx":
+		fallthrough
 	case "json":
+		fallthrough
 	case "docx":
 		return true
 	}
