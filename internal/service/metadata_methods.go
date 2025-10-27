@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 
 	"github.com/rs/zerolog"
 	"github.com/ummuys/reportify/internal/cache"
@@ -32,6 +33,9 @@ func (mds *mdService) GetSchemas(pCtx context.Context) (*models.ListSchemas, err
 	for name, comm := range data {
 		ls.Schemas = append(ls.Schemas, models.Schema{Name: name, Comment: comm})
 	}
+	sort.Slice(ls.Schemas, func(i, j int) bool {
+		return ls.Schemas[i].Name < ls.Schemas[j].Name
+	})
 	return &ls, nil
 }
 
@@ -48,6 +52,9 @@ func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*model
 	for name, comm := range data {
 		lt.Tables = append(lt.Tables, models.Table{Name: name, Comment: comm})
 	}
+	sort.Slice(lt.Tables, func(i, j int) bool {
+		return lt.Tables[i].Name < lt.Tables[j].Name
+	})
 	return &lt, nil
 }
 
@@ -62,6 +69,9 @@ func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableN
 	for name, comm := range data {
 		lc.Columns = append(lc.Columns, models.Column{Name: name, Comment: comm})
 	}
+	sort.Slice(lc.Columns, func(i, j int) bool {
+		return lc.Columns[i].Name < lc.Columns[j].Name
+	})
 	return &lc, nil
 }
 

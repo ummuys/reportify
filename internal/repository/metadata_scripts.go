@@ -13,8 +13,7 @@ WHERE n.nspname = $1            -- schema
   AND c.relname = $2            -- table
   AND c.relkind IN ('r','p','v','m','f')  -- table, partitioned table, view, matview, foreign table
   AND a.attnum > 0
-  AND NOT a.attisdropped
-ORDER BY a.attnum;
+  AND NOT a.attisdropped;
 	`
 )
 
@@ -27,8 +26,7 @@ SELECT
 FROM pg_class c
 JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = $1
-  AND c.relkind IN ('r','p','v','m','f')  -- отфильтровали лишнее
-ORDER BY c.oid;  -- порядок создания (как в psql \dt)
+  AND c.relkind IN ('r','p','v','m','f')  -- отфильтровали лишнее;
 	`
 )
 
@@ -40,8 +38,7 @@ SELECT
   COALESCE(obj_description(n.oid, 'pg_namespace'), '') AS comment
 FROM pg_namespace n
 WHERE n.nspname NOT IN ('pg_toast', 'pg_catalog', 'information_schema')
-  AND n.nspname NOT LIKE 'pg\_%' ESCAPE '\'
-ORDER BY n.oid;  
+  AND n.nspname NOT LIKE 'pg\_%' ESCAPE '\';
 	`
 )
 

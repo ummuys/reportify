@@ -80,7 +80,7 @@ func main() {
 	errsCh := make(chan error, 4)
 	srvOff := make(chan struct{})
 
-	// Аккуратно выключаем после ctx.Done
+	// Аккуратно выключаем сервер после ctx.Done
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
 		<-mainCtx.Done()
