@@ -9,7 +9,7 @@ import (
 	"github.com/ummuys/reportify/internal/di"
 	"github.com/ummuys/reportify/internal/web/middleware"
 
-	// _ "github.com/ummuys/reportify/docs"
+	_ "github.com/ummuys/reportify/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -48,6 +48,7 @@ func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, sr
 	md.GET(GetColumnsPath, hand.MetadataHandler.GetColumns(pCtx))
 	md.GET(GetAllQueriesPath, hand.MetadataHandler.GetQueries(pCtx))
 	md.DELETE(DeleteAllQueriesPath, hand.MetadataHandler.DeleteAllQueries(pCtx))
+	md.DELETE(DeleteQueryPath, hand.MetadataHandler.DeleteQuery(pCtx))
 
 	// SECURE
 	auth := api.Group("")

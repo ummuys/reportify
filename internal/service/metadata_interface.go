@@ -15,6 +15,6 @@ type MetadataService interface {
 
 	// CACHE
 	GetQueries(pCtx context.Context, key string) ([]string, error)
-	//Delete query
 	DeleteAllQueries(pCtx context.Context, key string) error
+	DeleteQuery(pCtx context.Context, key string, value string) error
 }

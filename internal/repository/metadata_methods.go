@@ -110,13 +110,14 @@ func unpackingRows(rows pgx.Rows) (map[string]string, error) {
 	return res, rows.Err()
 }
 
-func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) error {
+func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) (err error) {
 	m.logger.Debug().Str("evt", "call SaveCacheQuerys").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
 
+	var rows pgx.Rows
 	allID := `select user_id from identity.users`
-	rows, err := m.uPool.Query(ctx, allID)
+	rows, err = m.uPool.Query(ctx, allID)
 	if err != nil {
 		return fmt.Errorf("can't get all user_id: %v", err)
 	}
@@ -125,7 +126,7 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	usersID := make([]string, 0, 64)
 	for rows.Next() {
 		var uid string
-		if err := rows.Scan(&uid); err != nil {
+		if err = rows.Scan(&uid); err != nil {
 			return fmt.Errorf("scan user_id: %w", err)
 		}
 		usersID = append(usersID, uid)
@@ -135,11 +136,17 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 		return fmt.Errorf("rows err: %w", err)
 	}
 
-	tx, err := m.uPool.Begin(ctx)
+	var tx pgx.Tx
+	tx, err = m.uPool.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		txErr := tx.Rollback(ctx)
+		if txErr != nil {
+			err = fmt.Errorf("from SetCacheQueries: %v & from tx.Rollback: %v", err, txErr)
+		}
+	}()
 
 	b := &pgx.Batch{}
 
@@ -157,12 +164,12 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	defer br.Close()
 
 	for range usersID {
-		if _, err := br.Exec(); err != nil {
+		if _, err = br.Exec(); err != nil {
 			return fmt.Errorf("batch err: %v", err)
 		}
 	}
 
-	if err := tx.Commit(ctx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit err: %v", err)
 	}
 

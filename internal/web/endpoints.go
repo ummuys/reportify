@@ -13,8 +13,8 @@ const (
 	GetTablesPath        = "db/tables"
 	GetColumnsPath       = "db/columns"
 	GetAllQueriesPath    = "cache"
-	DeleteAllQueriesPath = "cache"
-	DeleteQueryPath      = "cache/:query"
+	DeleteAllQueriesPath = "cache/all"
+	DeleteQueryPath      = "cache"
 )
 
 // AUTH

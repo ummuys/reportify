@@ -90,6 +90,7 @@ export async function fetchWithToken(url, options = {}) {
   const isBinaryRequested =
     requestedAccept.includes("application/pdf") ||
     requestedAccept.includes("text/csv") ||
+    requestedAccept.includes("application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
     requestedAccept.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
     requestedAccept.includes("application/zip") ||
     requestedAccept.includes("application/octet-stream");
@@ -101,6 +102,7 @@ export async function fetchWithToken(url, options = {}) {
     ct.includes("application/pdf") ||
     ct.includes("text/csv") ||
     ct.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+    ct.includes("application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
     ct.includes("application/zip") ||
     ct.includes("application/octet-stream") ||
     (!ct && requestedAccept !== "application/json");

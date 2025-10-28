@@ -12,6 +12,7 @@ export async function postReportAndGetBlob(format, sql, csvSep = ",") {
         csv:  "text/csv",
         xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/zip",
         json: "application/json",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     };
     const accept = acceptByFormat[fileFormat] || "*/*";
 
@@ -40,6 +41,8 @@ export async function postReportAndGetBlob(format, sql, csvSep = ",") {
         pdf:  "report.pdf",
         csv:  "report.csv",
         xlsx: "report.xlsx",
+        json: "report.json",
+        docx: "report.docx"
     };
     const filename = pickFilename(res.headers, fallbackNameByFormat[fileFormat] || `report.${fileFormat}`);
 
