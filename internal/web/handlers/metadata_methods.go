@@ -36,6 +36,7 @@ func (mdh *mdHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 		mdh.logger.Debug().Str("evt", "call GetSchemas")
 		data, err := mdh.srv.GetSchemas(pCtx)
 		if err != nil {
+			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -185,6 +186,7 @@ func (mdh *mdHandler) DeleteQuery(pCtx context.Context) gin.HandlerFunc {
 		if err := g.ShouldBindJSON(&dl); err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
+			return
 		}
 
 		if err := mdh.srv.DeleteQuery(pCtx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
