@@ -96,6 +96,7 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 			default:
 				g.Set("msg", err.Error())
 				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
+				return
 			}
 		}
 

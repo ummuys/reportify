@@ -114,7 +114,13 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			g.Header("Content-Type", "application/json")
 		case "docx":
 			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+		default:
+			msg := fmt.Sprintf("invalid format: %s", format)
+			g.Set("msg", msg)
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: msg})
+			return
 		}
+
 		g.Status(200)
 		g.Set("msg", "report successful created")
 
