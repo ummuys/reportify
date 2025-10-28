@@ -10,9 +10,9 @@
     --err: hsla(0, 100%, 75%, 1);
 }
 
+
 * {
     box-sizing: border-box;
-
 }
 
 
@@ -398,23 +398,47 @@ select option:checked {
 }
 
 .list {
-    max-height: 220px;
+    max-height: 400px;
     overflow: auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
     margin: 8px;
 }
 
 .item {
     display: flex;
-    gap: 8px;
     align-items: center;
+    gap: 8px;
     padding: 10px 12px;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 12px;
-    background-color: hsla(167, 22%, 71%, .5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background-color: hsla(167, 22%, 71%, 0.5);
+    transition: background 0.15s ease;
+}
+
+.item.dragging {
+    opacity: 0.5;
+    background-color: hsla(167, 22%, 71%, 0.7);
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 4px;
+    margin-left: auto;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+    user-select: none;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+
+.item.dragging .drag-handle {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
 }
 
 .error {
@@ -923,6 +947,7 @@ input.invalid, textarea.invalid {
 .btn-preview.disabled {
   opacity: 0.6;
   cursor: default;
+  pointer-events: all;
 }
 
 .btn-preview.disabled:hover {
@@ -933,12 +958,12 @@ input.invalid, textarea.invalid {
 .btn.is-disabled {
   opacity: 0.6;
   cursor: default;
-  pointer-events: auto; /* оставляем кликабельность, чтобы можно было показать toast */
+  pointer-events: auto;
   filter: grayscale(.03);
 }
 
 .btn.disabled:hover,
 .btn.is-disabled:hover {
   transform: none;
-  background: inherit;
+  background: hsla(167, 22%, 71%, .8);
 }

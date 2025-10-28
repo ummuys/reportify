@@ -31,8 +31,6 @@ export function parseColumns(payload) {
 
 export async function loadSchemas() {
     try {
-        // УБИРАЕМ все обращения к DOM-элементам
-        // Вместо этого возвращаем данные
         const data = await getJSON(`${API_BASE}/api/v1/db/schemas`);
         const schemas = parseSchemas(data);
         
