@@ -22,7 +22,7 @@ func NewTokenManager() (TokenManager, error) {
 func (tm *tokMan) GenerateRefreshToken(user_id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
-		"exp":     cfg.RefreshTokenLimit, // Срок действия — 144 часа
+		"exp":     cfg.RefreshTokenLimit, // Срок действия указывать в cfg
 	}
 	refresh := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return refresh.SignedString([]byte(cfg.RefreshSecret))
@@ -31,7 +31,7 @@ func (tm *tokMan) GenerateRefreshToken(user_id int64) (string, error) {
 func (tm *tokMan) GenerateAccessToken(user_id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user_id,
-		"exp":     cfg.AccessTokenLimit, // Срок действия — 2 часа
+		"exp":     cfg.AccessTokenLimit, // Срок действия указывать в cfg
 	}
 	access := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return access.SignedString([]byte(cfg.AccessSecret))

@@ -53,7 +53,7 @@ func (rc *repCache) Init(pCtx context.Context, queries map[string][]string) erro
 		for _, val := range values {
 			err := rc.cli.LPush(ctx, key, val).Err()
 			if err != nil {
-				return fmt.Errorf("can't add a query (warnUp): %v", err)
+				return fmt.Errorf("can't add a query (Init): %v", err)
 			}
 		}
 	}
