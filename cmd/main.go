@@ -15,7 +15,7 @@ import (
 	"github.com/ummuys/reportify/internal/web"
 )
 
-// @title           github.com/ummuys/reportify API
+// @title           github.com/ummuys/reportify
 // @version         1.0
 // @description     API для отчетов
 // @host            localhost:1337
@@ -40,7 +40,10 @@ func main() {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("")
 	}
 
-	sec := di.InitSecure()
+	sec, err := di.InitSecure()
+	if err != nil {
+		tools.Logger.AppLog.Fatal().Err(err).Msg("")
+	}
 	srv := di.InitServices(repos, sec, tools)
 	hand := di.InitHandlers(tools, srv, sec)
 	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
@@ -77,7 +80,7 @@ func main() {
 	errsCh := make(chan error, 4)
 	srvOff := make(chan struct{})
 
-	// Аккуратно выключаем после ctx.Done
+	// Аккуратно выключаем сервер после ctx.Done
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
 		<-mainCtx.Done()

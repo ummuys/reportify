@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type currentLog struct {
@@ -13,7 +15,10 @@ type currentLog struct {
 
 func initLogFile(path string) *currentLog {
 	date := time.Now().Format("2006-01-02")
-	os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		panic(err)
+	}
 
 	file, err := os.OpenFile(fmt.Sprintf("%s/%s.log", path, date), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -31,7 +36,7 @@ func (l *currentLog) Write(p []byte) (n int, err error) {
 		l.file.Close()
 		file, err := os.OpenFile(fmt.Sprintf("logs/%s.log", date), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
-			panic(fmt.Errorf("can't create/open file: %w", err))
+			log.Error().Msg(fmt.Sprintf("can't create/open file: %v", err))
 		}
 		l.date = date
 		l.file = file

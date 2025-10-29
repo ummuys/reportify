@@ -46,9 +46,15 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		rh.logger.Debug().Str("evt", "call CreateReport")
 
 		format := g.Param("format")
+		if !isFormat(format) {
+			msg := fmt.Sprintf("bad format: %s", format)
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: msg})
+			g.Set("msg", msg)
+			return
+		}
+
 		var rawParam models.RawReportParams
 		if err := g.ShouldBindJSON(&rawParam); err != nil {
-			rh.logger.Error().Err(fmt.Errorf("bad json: %v", err))
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
 			g.Set("msg", err.Error())
 			return
@@ -65,6 +71,7 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		f, err := os.CreateTemp("", tmpName)
 		if err != nil {
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
+			g.Set("msg", err.Error())
 			return
 		}
 		defer os.Remove(f.Name())
@@ -72,7 +79,6 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		u := g.GetInt64("user_id")
 		err = rh.srv.CreateReport(pCtx, u, param, f, format)
 		if err != nil {
-			rh.logger.Error().Err(err)
 			_ = f.Close()
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: err.Error()})
@@ -80,7 +86,6 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		}
 
 		if err := f.Close(); err != nil {
-			rh.logger.Error().Err(err)
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
 			return
@@ -107,7 +112,15 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 		case "json":
 			g.Header("Content-Type", "application/json")
+		case "docx":
+			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+		default:
+			msg := fmt.Sprintf("invalid format: %s", format)
+			g.Set("msg", msg)
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: msg})
+			return
 		}
+
 		g.Status(200)
 		g.Set("msg", "report successful created")
 
@@ -116,4 +129,20 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		g.FileAttachment(f.Name(), filename)
 
 	}
+}
+
+func isFormat(format string) bool {
+	switch format {
+	case "pdf":
+		fallthrough
+	case "csv":
+		fallthrough
+	case "xlsx":
+		fallthrough
+	case "json":
+		fallthrough
+	case "docx":
+		return true
+	}
+	return false
 }

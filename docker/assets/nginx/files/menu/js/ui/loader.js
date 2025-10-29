@@ -5,6 +5,7 @@ class Loader {
 	}
 
 	init() {
+		// Создаем маску если её нет
 		if (!this.mask) {
 			this.mask = document.createElement('div')
 			this.mask.className = 'loader-mask'
@@ -41,4 +42,4 @@ class Loader {
 }
 
 // Создаем глобальный экземпляр
-window.loader = new Loader()
+export const loader = new Loader();

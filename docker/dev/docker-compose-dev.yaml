@@ -19,10 +19,6 @@ services:
       migration-userdata:
         condition: service_completed_successfully
 
-      
-    
-    
-
   nginx:
     image: nginx:alpine
     container_name: nginx
@@ -61,7 +57,7 @@ services:
       POSTGRES_PASSWORD: ${PG_RP_PASSWORD}
       POSTGRES_DB: ${PG_RP_DB}
     ports:
-      - 5432:5432
+      - 5434:5432
     networks:
       - default
     volumes:
