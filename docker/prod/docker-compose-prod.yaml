@@ -16,6 +16,8 @@ services:
         condition: service_healthy
       migration-userdata:
         condition: service_completed_successfully
+    networks:
+      - reportify_network
 
   nginx:
     image: nginx:alpine
@@ -31,6 +33,8 @@ services:
              nginx -g 'daemon off;'"
     depends_on:
       - app
+    networks:
+      - reportify_network
 
   cache:
     image: redis:7.2.11-alpine3.21
@@ -46,6 +50,8 @@ services:
       interval: 2s
       timeout: 2s
       retries: 10
+    networks:
+      - reportify_network
 
   db-userdata:
     image: postgres:17
@@ -56,8 +62,6 @@ services:
       POSTGRES_DB: ${PG_UD_DB}
     ports:
       - 5433:5432
-    networks:
-      - default
     volumes:
       - pg_ud_data:/var/lib/postgresql/data
     healthcheck:
@@ -66,6 +70,8 @@ services:
       timeout: 2s
       retries: 10
     restart: unless-stopped
+    networks:
+      - reportify_network
 
   migration-userdata:
     image: migrate/migrate
@@ -79,6 +85,8 @@ services:
       db-userdata:
         condition: service_healthy
     restart: no
+    networks:
+      - reportify_network
 
 volumes:
   pg_ud_data:

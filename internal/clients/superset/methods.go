@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ummuys/reportify/internal/models"
 )
 
 type ssclient struct {
+	url          string
 	username     string
 	password     string
 	accessToken  string
@@ -21,7 +22,7 @@ type ssclient struct {
 }
 
 func NewSupersetClient(username string, password string) SupersetClient {
-	return &ssclient{username: username, password: password}
+	return &ssclient{url: "http://localhost:9099", username: username, password: password}
 }
 
 func (ss *ssclient) Login() error {
@@ -32,15 +33,22 @@ func (ss *ssclient) Login() error {
 		Provider: "db",
 	}
 
-	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", "http://localhost:8088/api/v1/security/login", false, false)
+	path := fmt.Sprintf("%s/api/v1/security/login", ss.url)
+
+	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", path, false, false)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return errors.New("1")
 	}
 
 	var respData models.SSCAuthResponse
@@ -58,24 +66,29 @@ func (ss *ssclient) CreateDatabaseConn() error {
 		ConfigurationMethod: "sqlalchemy_form",
 		DatabaseName:        "report_db",
 		Engine:              "postgresql",
-		SQLAlchemyURI:       "postgresql+psycopg2://admin:admin@localhost:5434/report",
+		SQLAlchemyURI:       "postgresql+psycopg2://admin:admin@db-report:5432/report",
 		ExposeInSQLLab:      true,
 		AllowCTAS:           true,
 		AllowCVAS:           true,
 		AllowDML:            true,
+		UUID:                uuid.New().String(),
 	}
-	resp, err := ss.httpDo(time.Second*time.Duration(180), req, "POST", "http://localhost:8088/api/v1/database/", true, false)
+
+	path := fmt.Sprintf("%s/api/v1/database/", ss.url)
+	resp, err := ss.httpDo(time.Second*time.Duration(180), req, "POST", path, true, false)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	bud, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(bud))
-
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return errors.New("1")
 	}
 
 	return nil
@@ -83,15 +96,21 @@ func (ss *ssclient) CreateDatabaseConn() error {
 }
 
 func (ss *ssclient) GetListDatabase() (models.SSCDatabasesResponse, error) {
-	resp, err := ss.httpDo(time.Second*time.Duration(5), nil, "GET", "http://localhost:8088/api/v1/database/", true, false)
+	path := fmt.Sprintf("%s/api/v1/database/", ss.url)
+	resp, err := ss.httpDo(time.Second*time.Duration(5), nil, "GET", path, true, false)
 	if err != nil {
 		return models.SSCDatabasesResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return models.SSCDatabasesResponse{}, errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return models.SSCDatabasesResponse{}, err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return models.SSCDatabasesResponse{}, errors.New("1")
 	}
 
 	var respData models.SSCDatabasesResponse
@@ -102,19 +121,11 @@ func (ss *ssclient) GetListDatabase() (models.SSCDatabasesResponse, error) {
 	return respData, nil
 }
 
-func (ss *ssclient) CreateReport(schema string, tableName string, sql string, toCreateDataset bool) error {
-	if toCreateDataset {
-		ss.CreateDataset(schema, tableName, sql)
-	}
-
-	return nil
-}
-
-func (ss *ssclient) CreateDataset(schema string, tableName string, sql string) (int64, error) {
+func (ss *ssclient) CreateDataset(databaseID int, schema string, tableName string, sql string) (int64, error) {
 	data := models.SSCCreateDatasetRequest{
 		AlwaysFilterMainDttm: false,
 		Catalog:              "",
-		Database:             2,
+		Database:             int(databaseID),
 		ExternalURL:          "",
 		IsManagedExternally:  false,
 		NormalizeColumns:     false,
@@ -124,17 +135,22 @@ func (ss *ssclient) CreateDataset(schema string, tableName string, sql string) (
 		TableName:            tableName,
 	}
 
-	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", "http://localhost:8088/api/v1/dataset/", true, false)
+	path := fmt.Sprintf("%s/api/v1/dataset/", ss.url)
+	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", path, true, false)
 	if err != nil {
 		return -1, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return -1, errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return -1, err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return -1, errors.New("1")
 	}
-
 	var respData models.SSCCreateDatasetResponse
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
 		return -1, fmt.Errorf("can't decode response body: %v", err)
@@ -146,7 +162,7 @@ func (ss *ssclient) CreateDataset(schema string, tableName string, sql string) (
 func (ss *ssclient) CreateChart(datasetID int64) (int64, error) {
 	data := models.SSCChartCreateRequest{
 		DatasourceID:           datasetID,
-		DatasourceType:         "table", // или "query", если dataset виртуальный
+		DatasourceType:         "table",
 		SliceName:              "All records view",
 		VizType:                "table",
 		QueryContextGeneration: true,
@@ -154,25 +170,31 @@ func (ss *ssclient) CreateChart(datasetID int64) (int64, error) {
 		CacheTimeout:           0,
 		Params: `{
 			"query_mode": "raw",
-			"all_columns": [],
+			"all_columns": ["id", "username", "email", "created_at", "is_active", "balance"],
 			"row_limit": 1000
 		}`,
 	}
 
-	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", "http://localhost:8088/api/v1/chart/", true, false)
+	path := fmt.Sprintf("%s/api/v1/chart/", ss.url)
+	resp, err := ss.httpDo(time.Second*time.Duration(5), data, "POST", path, true, false)
 	if err != nil {
 		return -1, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return -1, errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return -1, err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return -1, errors.New("1")
 	}
 
 	var respData models.SSCChartCreateResponse
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return -1, fmt.Errorf("can't decode response body: %v", err)
+		return -1, err
 	}
 
 	return respData.ID, nil
@@ -182,16 +204,33 @@ func (ss *ssclient) CreateChart(datasetID int64) (int64, error) {
 // ############################     HELP FUNCTION    ##################################
 // ####################################################################################
 
+func (ss *ssclient) GetInfoChart(chatID int) error {
+	return nil
+}
+
+func (ss *ssclient) CreateReport(databaseID int, schema string, tableName string, sql string, toCreateDataset bool) error {
+	return nil
+}
+
+func (ss *ssclient) ExportChart(chartID int, format string) error {
+	return nil
+}
+
 func (ss *ssclient) getCSRFToken() error {
-	resp, err := ss.httpDo(time.Second*time.Duration(5), nil, "GET", "http://localhost:8088/api/v1/security/csrf_token/", true, false)
+	resp, err := ss.httpDo(time.Second*time.Duration(5), nil, "GET", "http://localhost:9099/api/v1/security/csrf_token/", true, false)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		bud, _ := io.ReadAll(resp.Body)
-		return errors.New(string(bud))
+		var respBody models.SSCErrorResponse
+		if err := json.NewDecoder(resp.Body).Decode(&respBody); err != nil {
+			return err
+		}
+		fmt.Println("[ERROR] Catch bad response ")
+		fmt.Println(respBody)
+		return errors.New("1")
 	}
 
 	var respData models.SSCSCRFResponse
@@ -207,7 +246,7 @@ func (ss *ssclient) updateAccess() error {
 }
 
 func (ss *ssclient) GetDataSourceInfo(datasetID int64) (models.SSCDatasetInfo, error) {
-	// path := fmt.Sprintf("http://localhost:8088/api/v1/dataset/%d", datasetID)
+	// path := fmt.Sprintf("http://localhost:9099/api/v1/dataset/%d", datasetID)
 	// resp, err := ss.httpDo(time.Second*time.Duration(5), nil, "GET", path, true, false)
 	// if err != nil {
 	// 	return models.SSCDatasetInfo{}, err

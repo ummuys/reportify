@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type SSCAuthResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -30,10 +32,6 @@ type SSCCreateDatasetResponse struct {
 	ID int64 `json:"id"`
 }
 
-type SSCInvalidResponse struct {
-	Message any `json:"message"`
-}
-
 type SSCDatasetResponse struct {
 	ID     int64          `json:"id"`
 	Result SSCDatasetInfo `json:"result"`
@@ -45,4 +43,8 @@ type SSCDatasetInfo struct {
 		DatasourceID   int64  `json:"datasource_id"`
 		DatasourceType string `json:"datasource_type"`
 	} `json:"result"`
+}
+
+type SSCErrorResponse struct {
+	Data json.RawMessage `json:"data"`
 }

@@ -5,6 +5,8 @@ services:
     build:
       context: ../..
       dockerfile: docker/Dockerfile
+    networks:
+      - reportify_network
     ports:
       - 1337:1337
     env_file:
@@ -22,6 +24,8 @@ services:
   nginx:
     image: nginx:alpine
     container_name: nginx
+    networks:
+      - reportify_network
     ports:
       - "8088:80"
     volumes:
@@ -37,6 +41,8 @@ services:
   cache:
     image: redis:7.2.11-alpine3.21
     container_name: cache
+    networks:
+      - reportify_network
     ports:
         - "6379:6379"
     environment:
@@ -59,7 +65,7 @@ services:
     ports:
       - 5434:5432
     networks:
-      - default
+      - reportify_network
     volumes:
       - pg_rp_data:/var/lib/postgresql/data
     healthcheck:
@@ -79,7 +85,7 @@ services:
     ports:
       - 5433:5432
     networks:
-      - default
+      - reportify_network
     volumes:
       - pg_ud_data:/var/lib/postgresql/data
     healthcheck:
@@ -101,8 +107,14 @@ services:
       db-userdata:
         condition: service_healthy
     restart: no
+    networks:
+      - reportify_network
   
 
 volumes:
   pg_rp_data:
   pg_ud_data:
+
+networks:
+  reportify_network:
+    external: true
