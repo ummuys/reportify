@@ -18,7 +18,8 @@ func InitServices(repos Repositorys, sec Secure, tools Tools) Services {
 	repSrv := service.NewReportService(tools.Logger.SvcLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
 	userSrv := service.NewUserService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
 	mdSrv := service.NewMetadataService(tools.Logger.SvcLog, repos.MetadataDB, repos.ReportCache)
-	return Services{ReportService: repSrv, UserService: userSrv, MetadataService: mdSrv}
+	admSrv := service.NewAdminService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
+	return Services{ReportService: repSrv, UserService: userSrv, MetadataService: mdSrv, AdminService: admSrv}
 }
 
 func InitTools() (Tools, error) {
@@ -34,7 +35,8 @@ func InitHandlers(tools Tools, serv Services, sec Secure) Handlers {
 	repHand := handlers.NewReportHandler(tools.Logger.SrvLog, serv.ReportService)
 	authHand := handlers.NewAuthHandler(tools.Logger.SrvLog, sec.TokenManager, serv.UserService)
 	mdHand := handlers.NewMetadataHandler(tools.Logger.SrvLog, serv.MetadataService)
-	return Handlers{ReportHandler: repHand, AuthHandler: authHand, MetadataHandler: mdHand}
+	admHand := handlers.NewAdminHandler(tools.Logger.SrvLog, serv.AdminService)
+	return Handlers{ReportHandler: repHand, AuthHandler: authHand, MetadataHandler: mdHand, AdminHandler: admHand}
 }
 
 func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositorys, error) {

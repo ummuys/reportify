@@ -229,3 +229,7 @@ func (g *grafcli) httpDo(timeout time.Duration, data any, method string, url str
 
 	return resp, nil
 }
+
+func (g *grafcli) CreateReport() error {
+	return nil
+}

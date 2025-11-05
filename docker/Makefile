@@ -7,8 +7,6 @@ DEV_COMPOSE=dev/docker-compose-dev.yaml
 PROD_COMPOSE=prod/docker-compose-prod.yaml
 
 # 			DEV			# 
-
-
 dev-start:
 	-docker compose -f $(DEV_COMPOSE) up -d
 
@@ -38,7 +36,6 @@ dev-psql:
 
 
 # 			PROD			# 
-
 prod-start:
 	-docker compose -f $(PROD_COMPOSE) up -d
 
@@ -71,6 +68,14 @@ delete_all_volumes:
 	-docker volume rm prod_pg_ud_data
 	-docker volume rm dev_pg_ud_data
 	-docker volume rm dev_pg_rp_data
+
+
+
+# HELP
+grafana-up:
+	-docker compose -f grafana/docker-compose.yaml up -d
+grafana-down:
+	-docker compose -f grafana/docker-compose.yaml down
 
 
 

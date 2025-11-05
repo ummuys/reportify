@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -35,8 +34,9 @@ func NewAuthHandler(logger *zerolog.Logger, tm secure.TokenManager, u service.Us
 // @Failure      401     {object} models.EmptyResponse   "Отсутствует/некорректный refresh-токен"
 // @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /secure/access [get]
-func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
+func (ah *authHandler) UpdateAccessToken() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		_ = g.Request.Context()
 		refreshToken, err := g.Cookie("refresh_token")
 		if err != nil {
 			g.Set("msg", err.Error())
@@ -44,16 +44,17 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := ah.tm.ValidateToken(refreshToken, false)
+		claims, err := ah.tm.ValidateRefreshToken(refreshToken)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: "bad refresh token"})
 			return
 		}
 
-		userID := int64(claims["user_id"].(float64))
+		userID := claims.UserID
+		role := claims.Role
 
-		access, err := ah.tm.GenerateAccessToken(userID)
+		access, err := ah.tm.GenerateAccessToken(userID, role)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusUnauthorized)
@@ -77,8 +78,9 @@ func (ah *authHandler) UpdateAccessToken(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401      {object}  models.EmptyResponse   "Неверные учетные данные"
 // @Failure      500      {object}  models.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /secure/auth [post]
-func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
+func (ah *authHandler) Authorization() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		var req models.Auth
 		if err := g.ShouldBindJSON(&req); err != nil {
 			g.Set("msg", err.Error())
@@ -86,7 +88,7 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		id, err := ah.u.CheckPass(pCtx, req.Username, req.Password)
+		id, role, err := ah.u.CheckCredentials(ctx, req.Username, req.Password)
 		if err != nil {
 			switch {
 			case errors.Is(err, errs.ErrInvalidCredentials):
@@ -100,14 +102,14 @@ func (ah *authHandler) Authorization(pCtx context.Context) gin.HandlerFunc {
 			}
 		}
 
-		access, err := ah.tm.GenerateAccessToken(id)
+		access, err := ah.tm.GenerateAccessToken(id, role)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
-		refresh, err := ah.tm.GenerateRefreshToken(id)
+		refresh, err := ah.tm.GenerateRefreshToken(id, role)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)

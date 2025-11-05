@@ -20,42 +20,22 @@ func NewUserService(logger *zerolog.Logger, db repository.UserDB, ph secure.Pass
 	return &uSrv{logger: logger, db: db, ph: ph}
 }
 
-func (u *uSrv) Create(pCtx context.Context, username, password string) error {
-	u.logger.Debug().Str("evt", "call Create").Msg("")
+func (u *uSrv) CheckCredentials(pCtx context.Context, username, password string) (int64, string, error) {
+	u.logger.Debug().Str("evt", "call CheckCredentials").Msg("")
 
 	err := u.db.Exists(pCtx, username)
 	if err != nil {
-		return err
+		return 0, "", err
 	}
 
-	hashPass, err := u.ph.Hash(password)
+	user_id, role, hashPass, err := u.db.CheckCredentials(pCtx, username)
 	if err != nil {
-		return err
-	}
-
-	if err := u.db.CreateUser(pCtx, username, hashPass); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (u *uSrv) CheckPass(pCtx context.Context, username, password string) (int64, error) {
-	u.logger.Debug().Str("evt", "call CheckPass").Msg("")
-
-	err := u.db.Exists(pCtx, username)
-	if err != nil {
-		return 0, err
-	}
-
-	user_id, hashPass, err := u.db.GetPassword(pCtx, username)
-	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
 	if !u.ph.CheckHash(password, hashPass) {
-		return 0, errs.ErrInvalidCredentials
+		return 0, "", errs.ErrInvalidCredentials
 	}
 
-	return user_id, nil
+	return user_id, role, nil
 }

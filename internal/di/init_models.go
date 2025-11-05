@@ -14,6 +14,7 @@ type Services struct {
 	ReportService   service.ReportService
 	UserService     service.UserService
 	MetadataService service.MetadataService
+	AdminService    service.AdminService
 }
 
 type Repositorys struct {
@@ -32,6 +33,7 @@ type Handlers struct {
 	ReportHandler   handlers.ReportHandler
 	AuthHandler     handlers.AuthHandler
 	MetadataHandler handlers.MetadataHandler
+	AdminHandler    handlers.AdminHandler
 }
 
 type Secure struct {

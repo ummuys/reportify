@@ -57,7 +57,7 @@ func main() {
 	if err != nil {
 		tools.Logger.AppLog.Fatal().Err(err).Msg("can't hash the password")
 	} else {
-		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass)
+		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass, "user")
 		if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
 			tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
 		} else {
@@ -76,7 +76,7 @@ func main() {
 	}
 	tools.Logger.DbLog.Info().Msg("cache successfully warmed up")
 
-	server := web.CreateServer(mainCtx, tools, repos, srv, sec, hand)
+	server := web.CreateServer(tools, repos, srv, sec, hand)
 	errsCh := make(chan error, 4)
 	srvOff := make(chan struct{})
 

@@ -43,38 +43,41 @@ func NewUserDB(pCtx context.Context, logger *zerolog.Logger) (UserDB, error) {
 
 }
 
-func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword string) error {
-	u.logger.Debug().Str("evt", "call Set").Msg("")
+func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword string, role string) error {
+	u.logger.Debug().Str("evt", "call CreateUser").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	_, err := u.pool.Exec(ctx, NewUser, username, hashPassword)
+	_, err := u.pool.Exec(ctx, NewUserStep1, username, hashPassword)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return errs.ErrUsernameAlredyExists
 		}
+		return err
 	}
+	_, err = u.pool.Exec(ctx, NewUserStep2, username, role)
 	return err
 }
 
-func (u *uDB) GetPassword(pCtx context.Context, username string) (int64, string, error) {
-	u.logger.Debug().Str("evt", "call Get").Msg("")
+func (u *uDB) CheckCredentials(pCtx context.Context, username string) (int64, string, string, error) {
+	u.logger.Debug().Str("evt", "call CheckCredentials").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
 	var (
 		user_id int64
+		role    string
 		pass    string
 	)
-	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&user_id, &pass)
+	err := u.pool.QueryRow(ctx, GetPass, username).Scan(&user_id, &pass, &role)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, pass, errs.ErrInvalidCredentials
+			return 0, "", pass, errs.ErrInvalidCredentials
 		}
 	}
 
-	return user_id, pass, nil
+	return user_id, role, pass, nil
 }
 
 func (u *uDB) Exists(pCtx context.Context, username string) error {

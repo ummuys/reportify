@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -41,8 +40,9 @@ func NewReportHandler(logger *zerolog.Logger, srv service.ReportService) ReportH
 // @Failure      400      {object} models.EmptyResponse "Некорректный запрос или формат"
 // @Failure      401      {object} models.EmptyResponse "Неавторизован"
 // @Router       /reports/{format} [post]
-func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
+func (rh *repHandler) CreateReport() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		rh.logger.Debug().Str("evt", "call CreateReport")
 
 		format := g.Param("format")
@@ -77,7 +77,7 @@ func (rh *repHandler) CreateReport(pCtx context.Context) gin.HandlerFunc {
 		defer os.Remove(f.Name())
 
 		u := g.GetInt64("user_id")
-		err = rh.srv.CreateReport(pCtx, u, param, f, format)
+		err = rh.srv.CreateReport(ctx, u, param, f, format)
 		if err != nil {
 			_ = f.Close()
 			g.Set("msg", err.Error())

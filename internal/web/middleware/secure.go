@@ -8,7 +8,7 @@ import (
 	"github.com/ummuys/reportify/internal/secure"
 )
 
-func Auth(tm secure.TokenManager) gin.HandlerFunc {
+func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 	return func(g *gin.Context) {
 		authHeader := g.GetHeader("Authorization")
 		if authHeader == "" {
@@ -18,14 +18,26 @@ func Auth(tm secure.TokenManager) gin.HandlerFunc {
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := tm.ValidateToken(tokenStr, true)
+		claims, err := tm.ValidateAccessToken(tokenStr)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
 		}
 
-		user_id := int64(claims["user_id"].(float64))
+		user_id := claims.UserID
+		role := claims.Role
+		forbidden := true
+		for _, acc := range access {
+			if acc == role {
+				forbidden = false
+				break
+			}
+		}
+		if forbidden {
+			g.AbortWithStatus(http.StatusForbidden)
+			return
+		}
 		g.Set("user_id", user_id)
 		g.Next()
 	}

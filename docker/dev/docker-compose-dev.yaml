@@ -109,7 +109,22 @@ services:
     restart: no
     networks:
       - reportify_network
-  
+
+  migration-report:
+    image: migrate/migrate
+    container_name: migration-report
+    environment:
+      - ${DB_RP_URL}
+    volumes:
+      - ./../assets/db/report/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "${DB_RP_URL}", "up"]
+    depends_on:
+      db-report:
+        condition: service_healthy
+    restart: no
+    networks:
+      - reportify_network
+
 
 volumes:
   pg_rp_data:

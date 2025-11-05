@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -31,10 +30,11 @@ func NewMetadataHandler(logger *zerolog.Logger, srv service.MetadataService) Met
 // @Failure      401  {object}  models.EmptyResponse   "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/schemas [get]
-func (mdh *mdHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) GetSchemas() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		mdh.logger.Debug().Str("evt", "call GetSchemas")
-		data, err := mdh.srv.GetSchemas(pCtx)
+		data, err := mdh.srv.GetSchemas(ctx)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -59,8 +59,9 @@ func (mdh *mdHandler) GetSchemas(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401     {object} models.EmptyResponse   "Неавторизован"
 // @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/tables [get]
-func (mdh *mdHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) GetTables() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		mdh.logger.Debug().Str("evt", "call GetTables")
 		schema := g.Query("schema")
 		if schema == "" {
@@ -69,7 +70,7 @@ func (mdh *mdHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		data, err := mdh.srv.GetTables(pCtx, schema)
+		data, err := mdh.srv.GetTables(ctx, schema)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -95,8 +96,9 @@ func (mdh *mdHandler) GetTables(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401     {object} models.EmptyResponse   "Неавторизован"
 // @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/columns [get]
-func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) GetColumns() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		mdh.logger.Debug().Str("evt", "call GetColumns")
 		schema := g.Query("schema")
 		table := g.Query("table")
@@ -105,7 +107,7 @@ func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "schema and table names are required"})
 			return
 		}
-		data, err := mdh.srv.GetColumns(pCtx, schema, table)
+		data, err := mdh.srv.GetColumns(ctx, schema, table)
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -128,10 +130,11 @@ func (mdh *mdHandler) GetColumns(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401  {object}  models.EmptyResponse    "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse    "Внутренняя ошибка сервера"
 // @Router       /cache [get]
-func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		user_id := g.GetInt64("user_id")
-		queries, err := mdh.srv.GetQueries(pCtx, strconv.FormatInt(user_id, 10))
+		queries, err := mdh.srv.GetQueries(ctx, strconv.FormatInt(user_id, 10))
 		if err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
@@ -153,10 +156,11 @@ func (mdh *mdHandler) GetQueries(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
 // @Router       /cache/all [delete]
-func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) DeleteAllQueries() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		user_id := g.GetInt64("user_id")
-		if err := mdh.srv.DeleteAllQueries(pCtx, strconv.FormatInt(user_id, 10)); err != nil {
+		if err := mdh.srv.DeleteAllQueries(ctx, strconv.FormatInt(user_id, 10)); err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -179,8 +183,9 @@ func (mdh *mdHandler) DeleteAllQueries(pCtx context.Context) gin.HandlerFunc {
 // @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
 // @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
 // @Router       /cache [delete]
-func (mdh *mdHandler) DeleteQuery(pCtx context.Context) gin.HandlerFunc {
+func (mdh *mdHandler) DeleteQuery() gin.HandlerFunc {
 	return func(g *gin.Context) {
+		ctx := g.Request.Context()
 		user_id := g.GetInt64("user_id")
 		var dl models.DeleteQuery
 		if err := g.ShouldBindJSON(&dl); err != nil {
@@ -189,7 +194,7 @@ func (mdh *mdHandler) DeleteQuery(pCtx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		if err := mdh.srv.DeleteQuery(pCtx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
+		if err := mdh.srv.DeleteQuery(ctx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatus(http.StatusInternalServerError)
 			return

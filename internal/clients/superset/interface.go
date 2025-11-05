@@ -13,7 +13,7 @@ type SupersetClient interface {
 	// GET
 	GetListDatabase() (models.SSCDatabasesResponse, error)
 	GetDataSourceInfo(datasetID int64) (models.SSCDatasetInfo, error)
-	GetInfoChart(int) error
+	GetInfoChart(id int) error
 
 	// EXPORT
 	ExportChart(chartID int, format string) error

@@ -90,3 +90,6 @@ services:
 
 volumes:
   pg_ud_data:
+
+networks:
+  reportify_network:

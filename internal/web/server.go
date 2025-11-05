@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"net"
 	"net/http"
 	"os"
@@ -17,7 +16,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, srv di.Services, sec di.Secure, hand di.Handlers) *http.Server {
+func CreateServer(tools di.Tools, repos di.Repositorys, srv di.Services, sec di.Secure, hand di.Handlers) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
@@ -35,25 +34,33 @@ func CreateServer(pCtx context.Context, tools di.Tools, repos di.Repositorys, sr
 	api.Use(middleware.RequestLogger(tools.Logger.SrvLog)) // -- Логгирование любого запроса
 	api.Use(gin.Recovery())
 
+	adminAccess := []string{"admin"}
+	basicAccess := []string{"user", "admin"}
+
+	// ADMIN
+	adm := api.Group("")
+	adm.Use(middleware.Auth(sec.TokenManager, adminAccess))
+	adm.POST(CreateUserPath, hand.AdminHandler.CreateUserWithRole())
+
 	// REPORT
 	rep := api.Group("")
-	rep.Use(middleware.Auth(sec.TokenManager)) // -- Проверка токена каждый раз, когда выполняется запрос
-	rep.POST(CreateReportPath, hand.ReportHandler.CreateReport(pCtx))
+	rep.Use(middleware.Auth(sec.TokenManager, basicAccess)) // -- Проверка токена каждый раз, когда выполняется запрос
+	rep.POST(CreateReportPath, hand.ReportHandler.CreateReport())
 
 	// METADATA
 	md := api.Group("")
-	md.Use(middleware.Auth(sec.TokenManager))
-	md.GET(GetSchemasPath, hand.MetadataHandler.GetSchemas(pCtx))
-	md.GET(GetTablesPath, hand.MetadataHandler.GetTables(pCtx))
-	md.GET(GetColumnsPath, hand.MetadataHandler.GetColumns(pCtx))
-	md.GET(GetAllQueriesPath, hand.MetadataHandler.GetQueries(pCtx))
-	md.DELETE(DeleteAllQueriesPath, hand.MetadataHandler.DeleteAllQueries(pCtx))
-	md.DELETE(DeleteQueryPath, hand.MetadataHandler.DeleteQuery(pCtx))
+	md.Use(middleware.Auth(sec.TokenManager, basicAccess))
+	md.GET(GetSchemasPath, hand.MetadataHandler.GetSchemas())
+	md.GET(GetTablesPath, hand.MetadataHandler.GetTables())
+	md.GET(GetColumnsPath, hand.MetadataHandler.GetColumns())
+	md.GET(GetAllQueriesPath, hand.MetadataHandler.GetQueries())
+	md.DELETE(DeleteAllQueriesPath, hand.MetadataHandler.DeleteAllQueries())
+	md.DELETE(DeleteQueryPath, hand.MetadataHandler.DeleteQuery())
 
 	// SECURE
 	auth := api.Group("")
-	auth.POST(AuthPath, hand.AuthHandler.Authorization(pCtx))
-	auth.GET(GetAccessTokenPath, hand.AuthHandler.UpdateAccessToken(pCtx))
+	auth.POST(AuthPath, hand.AuthHandler.Authorization())
+	auth.GET(GetAccessTokenPath, hand.AuthHandler.UpdateAccessToken())
 
 	host := os.Getenv("SERVER_IP")
 	port := os.Getenv("SERVER_PORT")

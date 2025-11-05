@@ -21,4 +21,6 @@ type GrafanaClient interface {
 
 	RenderChart(dashboardUID, slug string, chartID, width, height, scale int) error
 	RenderDashboard() error
+
+	CreateReport() error
 }
