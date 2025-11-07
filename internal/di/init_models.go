@@ -17,7 +17,7 @@ type Services struct {
 	AdminService    service.AdminService
 }
 
-type Repositorys struct {
+type Repositories struct {
 	ReportDB    repository.ReportDB
 	ReportCache cache.ReportCache
 	UserDB      repository.UserDB

@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/service"
 	"github.com/ummuys/reportify/internal/validation"
@@ -55,14 +56,14 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 
 		var rawParam models.RawReportParams
 		if err := g.ShouldBindJSON(&rawParam); err != nil {
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			g.Set("msg", err.Error())
 			return
 		}
 
 		param, err := validation.RequestParams(rawParam)
 		if err != nil {
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			g.Set("msg", err.Error())
 			return
 		}
@@ -70,7 +71,7 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 		tmpName := fmt.Sprintf("report-*.%s", format)
 		f, err := os.CreateTemp("", tmpName)
 		if err != nil {
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			g.Set("msg", err.Error())
 			return
 		}
@@ -81,25 +82,21 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 		if err != nil {
 			_ = f.Close()
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: err.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 
 		if err := f.Close(); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 
 		st, err := os.Stat(f.Name())
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: "empty report"})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
-		}
-
-		if st.Size() == 0 {
-			rh.logger.Error().Msg("empty report")
 		}
 
 		rh.logger.Info().Int64("file_size", st.Size()).Msg("report created and sent")
@@ -114,11 +111,6 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 			g.Header("Content-Type", "application/json")
 		case "docx":
 			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-		default:
-			msg := fmt.Sprintf("invalid format: %s", format)
-			g.Set("msg", msg)
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: msg})
-			return
 		}
 
 		g.Status(200)

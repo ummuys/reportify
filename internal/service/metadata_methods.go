@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/ummuys/reportify/internal/cache"
+	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/repository"
 )
@@ -25,7 +26,7 @@ func (mds *mdService) GetSchemas(pCtx context.Context) (*models.ListSchemas, err
 	data, err := mds.db.GetSchemas(pCtx)
 
 	if err != nil {
-		return nil, err
+		return nil, errs.ParsePgError(err)
 	}
 
 	var ls models.ListSchemas
@@ -44,7 +45,7 @@ func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*model
 	mds.logger.Debug().Str("evt", "call GetTables")
 	data, err := mds.db.GetTables(pCtx, schemaName)
 	if err != nil {
-		return nil, err
+		return nil, errs.ParsePgError(err)
 	}
 
 	var lt models.ListTables
@@ -62,7 +63,7 @@ func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableN
 	mds.logger.Debug().Str("evt", "call GetColumns")
 	data, err := mds.db.GetColumns(pCtx, schemaName, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errs.ParsePgError(err)
 	}
 	var lc models.ListColumns
 	lc.Columns = make([]models.Column, 0, len(data))

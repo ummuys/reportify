@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/secure"
 )
 
@@ -13,7 +14,7 @@ func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 		authHeader := g.GetHeader("Authorization")
 		if authHeader == "" {
 			g.Set("msg", "empty token")
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "you need to auth"})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": errs.ErrUserUnauthorized})
 			return
 		}
 
@@ -21,7 +22,7 @@ func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 		claims, err := tm.ValidateAccessToken(tokenStr)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errs.ErrBadAccessToken})
 			return
 		}
 

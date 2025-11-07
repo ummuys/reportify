@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -111,15 +111,15 @@ func unpackingRows(rows pgx.Rows) (map[string]string, error) {
 }
 
 func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) (err error) {
-	m.logger.Debug().Str("evt", "call SaveCacheQuerys").Msg("")
-	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
+	m.logger.Debug().Str("evt", "call SetCacheQuerys").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, 30*time.Second)
 	defer cancel()
 
 	var rows pgx.Rows
 	allID := `select user_id from identity.users`
 	rows, err = m.uPool.Query(ctx, allID)
 	if err != nil {
-		return fmt.Errorf("can't get all user_id: %v", err)
+		return err
 	}
 	defer rows.Close()
 
@@ -127,13 +127,13 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	for rows.Next() {
 		var uid string
 		if err = rows.Scan(&uid); err != nil {
-			return fmt.Errorf("scan user_id: %w", err)
+			return err
 		}
 		usersID = append(usersID, uid)
 	}
 
-	if rows.Err() != nil {
-		return fmt.Errorf("rows err: %w", err)
+	if err := rows.Err(); err != nil {
+		return err
 	}
 
 	var tx pgx.Tx
@@ -141,10 +141,10 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	if err != nil {
 		return err
 	}
+
 	defer func() {
-		txErr := tx.Rollback(ctx)
-		if txErr != nil {
-			err = fmt.Errorf("from SetCacheQueries: %v & from tx.Rollback: %v", err, txErr)
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			m.logger.Error().Err(rbErr).Msg("rollback failed")
 		}
 	}()
 
@@ -157,20 +157,25 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 		} else {
 			b.Queue(qSetCacheQuery, uid, val)
 		}
-
 	}
 
-	br := m.uPool.SendBatch(ctx, b)
-	defer br.Close()
+	br := tx.SendBatch(ctx, b)
 
 	for range usersID {
 		if _, err = br.Exec(); err != nil {
-			return fmt.Errorf("batch err: %v", err)
+			_ = br.Close()
+			_ = tx.Rollback(ctx)
+			return err
 		}
 	}
 
+	if err := br.Close(); err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
 	if err = tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit err: %v", err)
+		return err
 	}
 
 	return nil

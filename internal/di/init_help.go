@@ -14,7 +14,7 @@ import (
 	"github.com/ummuys/reportify/internal/web/handlers"
 )
 
-func InitServices(repos Repositorys, sec Secure, tools Tools) Services {
+func InitServices(repos Repositories, sec Secure, tools Tools) Services {
 	repSrv := service.NewReportService(tools.Logger.SvcLog, repos.ReportDB, tools.ReportConvert, repos.ReportCache)
 	userSrv := service.NewUserService(tools.Logger.SvcLog, repos.UserDB, sec.PasswordHasher)
 	mdSrv := service.NewMetadataService(tools.Logger.SvcLog, repos.MetadataDB, repos.ReportCache)
@@ -39,27 +39,27 @@ func InitHandlers(tools Tools, serv Services, sec Secure) Handlers {
 	return Handlers{ReportHandler: repHand, AuthHandler: authHand, MetadataHandler: mdHand, AdminHandler: admHand}
 }
 
-func InitRepositorys(mainCtx context.Context, logger *config.Loggers) (Repositorys, error) {
+func InitRepositories(mainCtx context.Context, logger *config.Loggers) (Repositories, error) {
 	repDB, err := repository.NewReportDB(mainCtx, logger.DbLog)
 	if err != nil {
-		return Repositorys{}, err
+		return Repositories{}, err
 	}
 	repChc, err := cache.NewReportCache(mainCtx, logger.ChcLog)
 	if err != nil {
-		return Repositorys{}, err
+		return Repositories{}, err
 	}
 
 	uDB, err := repository.NewUserDB(mainCtx, logger.DbLog)
 	if err != nil {
-		return Repositorys{}, err
+		return Repositories{}, err
 	}
 
 	mdDB, err := repository.NewMetadataDB(mainCtx, logger.DbLog)
 	if err != nil {
-		return Repositorys{}, err
+		return Repositories{}, err
 	}
 
-	return Repositorys{ReportDB: repDB, ReportCache: repChc, UserDB: uDB, MetadataDB: mdDB}, nil
+	return Repositories{ReportDB: repDB, ReportCache: repChc, UserDB: uDB, MetadataDB: mdDB}, nil
 }
 
 func InitSecure() (Secure, error) {

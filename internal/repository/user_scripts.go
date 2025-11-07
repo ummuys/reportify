@@ -14,7 +14,7 @@ VALUES (
 );`
 
 // CheckCredentials
-const GetPass = `
+const GetCredentials = `
 SELECT 
     u.user_id,
     u.password,
@@ -26,4 +26,20 @@ WHERE u.username = $1;
 `
 
 // CHECK USER
-const CheckUset = `SELECT 1 FROM identity.users WHERE username = $1`
+const CheckUser = `SELECT 1 FROM identity.users WHERE username = $1`
+
+// DELETE USER
+const DeleteUser = `DELETE FROM identity.users WHERE username = $1`
+
+// CHECK ROLE
+const CheckRole = `SELECT 1 FROM identity.roles WHERE name = $1`
+
+// GET USERS
+const GetUsers = `
+SELECT 
+    u.username,
+    r.name AS role
+FROM identity.users AS u
+JOIN identity.user_roles AS ur ON ur.user_id = u.user_id
+JOIN identity.roles AS r ON r.role_id = ur.role_id
+`

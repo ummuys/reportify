@@ -57,6 +57,7 @@ func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]a
 	}
 
 	var data [][]any
+
 	for rows.Next() {
 		vals, err := rows.Values()
 		if err != nil {
@@ -67,9 +68,10 @@ func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]a
 		copy(row, vals)
 		data = append(data, row)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, nil, err
 	}
 
-	return headers, data, nil
+	return headers, data, rows.Err()
 }

@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/service"
 )
@@ -37,7 +39,7 @@ func (mdh *mdHandler) GetSchemas() gin.HandlerFunc {
 		data, err := mdh.srv.GetSchemas(ctx)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
 			return
 		}
 		g.Set("msg", "schema names are returned")
@@ -65,15 +67,15 @@ func (mdh *mdHandler) GetTables() gin.HandlerFunc {
 		mdh.logger.Debug().Str("evt", "call GetTables")
 		schema := g.Query("schema")
 		if schema == "" {
-			g.Set("msg", "schema name: "+schema)
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "schema name is required"})
+			g.Set("msg", errs.ErrEmptySchemaName.Error())
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrEmptySchemaName.Error()})
 			return
 		}
 
 		data, err := mdh.srv.GetTables(ctx, schema)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		g.Set("msg", "table names are returned")
@@ -103,14 +105,15 @@ func (mdh *mdHandler) GetColumns() gin.HandlerFunc {
 		schema := g.Query("schema")
 		table := g.Query("table")
 		if schema == "" || table == "" {
-			g.Set("msg", "schema: "+schema+"; table: "+table)
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "schema and table names are required"})
+			err := fmt.Errorf("%v ; %v", errs.ErrEmptySchemaName, errs.ErrEmptyTableName)
+			g.Set("msg", err.Error())
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		data, err := mdh.srv.GetColumns(ctx, schema, table)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		g.Set("msg", "column names are returned")
@@ -137,7 +140,7 @@ func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 		queries, err := mdh.srv.GetQueries(ctx, strconv.FormatInt(user_id, 10))
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		g.Set("msg", "user queries are returned")
@@ -162,7 +165,7 @@ func (mdh *mdHandler) DeleteAllQueries() gin.HandlerFunc {
 		user_id := g.GetInt64("user_id")
 		if err := mdh.srv.DeleteAllQueries(ctx, strconv.FormatInt(user_id, 10)); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		msg := "all queries are deleted"
@@ -190,13 +193,13 @@ func (mdh *mdHandler) DeleteQuery() gin.HandlerFunc {
 		var dl models.DeleteQuery
 		if err := g.ShouldBindJSON(&dl); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad json"})
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			return
 		}
 
 		if err := mdh.srv.DeleteQuery(ctx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		msg := "query is deleted"

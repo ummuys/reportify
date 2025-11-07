@@ -7,6 +7,7 @@ import (
 
 	"github.com/ummuys/reportify/internal/cache"
 	"github.com/ummuys/reportify/internal/convert"
+	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/repository"
 
@@ -30,7 +31,7 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 
 	headers, rows, err := rs.db.CreateReport(pCtx, params.Sql)
 	if err != nil {
-		return err
+		return errs.ParsePgError(err)
 	}
 
 	switch format {

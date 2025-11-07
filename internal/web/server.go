@@ -16,7 +16,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func CreateServer(tools di.Tools, repos di.Repositorys, srv di.Services, sec di.Secure, hand di.Handlers) *http.Server {
+func CreateServer(tools di.Tools, repos di.Repositories, srv di.Services, sec di.Secure, hand di.Handlers) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	g := gin.New()
@@ -31,7 +31,7 @@ func CreateServer(tools di.Tools, repos di.Repositorys, srv di.Services, sec di.
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	api.Use(middleware.RequestLogger(tools.Logger.SrvLog)) // -- Логгирование любого запроса
+	api.Use(middleware.RequestLogger(tools.Logger.SrvLog))
 	api.Use(gin.Recovery())
 
 	adminAccess := []string{"admin"}
@@ -40,11 +40,13 @@ func CreateServer(tools di.Tools, repos di.Repositorys, srv di.Services, sec di.
 	// ADMIN
 	adm := api.Group("")
 	adm.Use(middleware.Auth(sec.TokenManager, adminAccess))
-	adm.POST(CreateUserPath, hand.AdminHandler.CreateUserWithRole())
+	adm.GET(GetUsersPath, hand.AdminHandler.GetUsers())
+	adm.POST(CreateUserPath, hand.AdminHandler.CreateUser())
+	adm.DELETE(DeleteUserPath, hand.AdminHandler.DeleteUser())
 
 	// REPORT
 	rep := api.Group("")
-	rep.Use(middleware.Auth(sec.TokenManager, basicAccess)) // -- Проверка токена каждый раз, когда выполняется запрос
+	rep.Use(middleware.Auth(sec.TokenManager, basicAccess))
 	rep.POST(CreateReportPath, hand.ReportHandler.CreateReport())
 
 	// METADATA

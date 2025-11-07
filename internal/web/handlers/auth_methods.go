@@ -40,14 +40,14 @@ func (ah *authHandler) UpdateAccessToken() gin.HandlerFunc {
 		refreshToken, err := g.Cookie("refresh_token")
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: err.Error()})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrBadRefreshToken.Error()})
 			return
 		}
 
 		claims, err := ah.tm.ValidateRefreshToken(refreshToken)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: "bad refresh token"})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrBadRefreshToken.Error()})
 			return
 		}
 
@@ -57,7 +57,7 @@ func (ah *authHandler) UpdateAccessToken() gin.HandlerFunc {
 		access, err := ah.tm.GenerateAccessToken(userID, role)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusUnauthorized)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInvalidCredentials.Error()})
 			return
 		}
 
@@ -84,35 +84,34 @@ func (ah *authHandler) Authorization() gin.HandlerFunc {
 		var req models.Auth
 		if err := g.ShouldBindJSON(&req); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: "bad request"})
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			return
 		}
 
 		id, role, err := ah.u.CheckCredentials(ctx, req.Username, req.Password)
 		if err != nil {
+			var msg string
 			switch {
-			case errors.Is(err, errs.ErrInvalidCredentials):
-				g.Set("msg", err.Error())
-				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: err.Error()})
-				return
+			case errors.Is(err, errs.ErrNotFound):
+				g.Set("msg", msg)
+				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrInvalidCredentials.Error()})
 			default:
 				g.Set("msg", err.Error())
-				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: err.Error()})
-				return
+				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
 			}
 		}
 
 		access, err := ah.tm.GenerateAccessToken(id, role)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
 			return
 		}
 
 		refresh, err := ah.tm.GenerateRefreshToken(id, role)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatus(http.StatusInternalServerError)
+			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
 			return
 		}
 
