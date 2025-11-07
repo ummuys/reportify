@@ -1,0 +1,183 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .6);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: hsla(167, 22%, 71%, 0.8);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 16px;
+  padding: 24px 28px;
+  min-width: 300px;
+  max-width: 420px;
+  color: var(--text);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  animation: slideUp 0.25s ease;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.modal-message {
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 18px;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chart-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.chart-modal {
+  position: relative;
+  width: 90%;
+  height: 95%;
+  background: hsla(167, 22%, 71%, 0.8);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease;
+}
+
+/* Новый контейнер для заголовка и крестика */
+.chart-header-top {
+  display: flex;
+  justify-content: space-between; /* заголовок слева, крестик справа */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.chart-header-top h2 {
+  margin: 0; /* Убираем стандартные отступы у заголовка */
+  font-size: 20px; /* Можно уменьшить размер шрифта */
+}
+
+.chart-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  width: auto; /* Добавляем */
+  padding: 5px 10px; /* Добавляем отступы */
+  flex-shrink: 0; /* Запрещаем сжатие */
+}
+
+.chart-close:hover {
+  transform: scale(1.1);
+}
+
+.chart-modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.chart-form {
+  display: flex;
+  gap: 10px;
+}
+
+.chart-modal-body {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end; /* блок предпросмотра всегда справа */
+  align-items: stretch;      /* растягиваем дочерние элементы по высоте */
+  flex: 1;                     /* занимает всё оставшееся место между хедером и футером */
+  overflow: hidden;
+}
+
+/* Настройки или пустой блок */
+.chart-settings,
+.chart-settings-placeholder {
+  flex: 0 0 35%; /* фиксированная ширина слева */
+  background:/* hsla(167, 22%, 71%, 0.6); */#fff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsla(167, 22%, 71%, .7);
+}
+
+.chart-preview {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  border: 2px dashed hsla(167, 22%, 71%, .8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 16px;
+  margin-left: auto;
+}
+
+.chart-modal-footer {
+  text-align: left;
+  margin-top: 20px;
+}
+
+#chartDownload {
+  width: auto;            /* чтобы не растягивалась */
+  padding: 12px 36px;      /* фиксированный размер кнопки */
+  font-size: 14px;
+}
+
+.chart-btn-container {
+  display: flex;
+  justify-content: flex-start; 
+  margin: 28px 0;              
+}
+
+.chart-settings select,
+.chart-settings input[type="text"] {
+  background: #fff;
+  border: 1px solid rgba(135, 184, 167, 0.4);
+  color: #2d4a43;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.chart-settings select:focus,
+.chart-settings input[type="text"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

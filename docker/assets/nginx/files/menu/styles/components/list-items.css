@@ -1,0 +1,44 @@
+.list {
+    max-height: 400px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
+    margin: 8px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background-color: hsla(167, 22%, 71%, 0.5);
+    transition: background 0.15s ease transform .1s ease;
+}
+
+.item.dragging {
+    opacity: 0.5;
+    background-color: hsla(167, 22%, 71%, 0.7);
+    transform: scale(.99);
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 4px;
+    margin-left: auto;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+    user-select: none;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+
+.item.dragging .drag-handle {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+}

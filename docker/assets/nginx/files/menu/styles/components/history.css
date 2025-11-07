@@ -1,0 +1,91 @@
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#historyList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: hsla(167, 22%, 71%, .7) transparent;
+}
+
+.history-list li {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: hsla(167, 22%, 71%, .6);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.history-list li:hover {
+  background: hsla(167, 22%, 71%, .7);
+  transform: scale(1.02);
+}
+
+.history-list li small {
+  color: #555;
+  margin-top: 4px;
+}
+
+.history-list li.empty-state {
+  background: transparent !important;
+  cursor: default !important;
+  transform: none !important;
+  text-align: center;
+  font-size: 18px !important;
+  font-weight: 400;
+  padding: 20px;
+}
+
+.history-list li.empty-state:hover {
+  background: transparent !important;
+  transform: none !important;
+}
+
+.history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.history-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    grid-gap: 8px;
+}
+
+.history-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.report-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

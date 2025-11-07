@@ -1,0 +1,35 @@
+.dropdown {
+  position: relative;
+  margin-left: 240px;
+}
+
+.dropdown-btn {
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
+  border-radius: 10px;
+  padding: 8px 120px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.dropdown-btn:hover {
+    background: hsla(150, 69%, 55%, 1);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 115%;
+  left: 0;                /* привязано к кнопке, а сама кнопка уже отступлена */
+  background: var(--bg);
+  border: 1px solid hsla(167, 22%, 71%, .6);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 8px 16px;
+  min-width: 300px;       /* сделаем длиннее */
+  z-index: 1100;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}

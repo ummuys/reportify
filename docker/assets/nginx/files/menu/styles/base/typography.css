@@ -1,0 +1,37 @@
+@font-face {
+    font-family: 'OpenSansL';                     /* ← имя, под которым ты потом используешь шрифт */
+    src: url('../fonts/OpenSans/OpenSans-Light.ttf')    
+        format('truetype');                   
+    font-weight: 300;                          
+    font-style: normal;                        
+}
+
+@font-face {
+    font-family: 'Montserrat';                     /* ← имя, под которым ты потом используешь шрифт */
+    src: url('../fonts/Montserrat/Montserrat-Medium.ttf')    
+        format('truetype');                   
+    font-weight: 400;                          
+    font-style: normal;                       
+}
+
+h1 {
+    font-size: 28px;
+    margin: 0 0 6px;
+    font-weight: 800;
+}
+
+p.lead {
+    margin: 0 0 20px;
+}
+
+.hint {
+    color: var(--text);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.error {
+    color: var(--err);
+    font-size: 13px;
+    margin-top: 8px;
+} 

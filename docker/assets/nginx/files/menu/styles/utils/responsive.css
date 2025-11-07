@@ -1,0 +1,103 @@
+@media(min-width:1024px) {
+    .grid-2 {
+        grid-template-columns: 1fr 1.3fr;
+    }
+}
+
+/* --- Адаптивность dropdown --- */
+@media (max-width: 1100px) {
+  .dropdown {
+    margin-left: 120px; 
+  }
+}
+
+@media (max-width: 700px) {
+  .dropdown {
+    margin-left: 60px;
+  }
+
+   .dropdown-btn {
+    padding: 8px 40px;
+  } 
+}
+
+@media (max-width: 600px) {
+  .chips {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  .sidebar {
+    width: 260px;
+  }
+  .container {
+    padding-left: 280px;
+  }
+}
+
+/* На экранах до 800px — ещё меньше */
+@media (max-width: 800px) {
+  .sidebar {
+    width: 200px;
+  }
+  .container {
+    padding-left: 220px;
+  }
+  .sidebar h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 650px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 220px;
+    position: fixed;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .container {
+    padding-left: 20px;
+  }
+
+  /* Кнопка "Меню" делает панель видимой */
+  .dropdown-btn {
+    display: inline-block;
+  }
+}
+
+/* Красивый скролл для WebKit-браузеров */
+#historyList::-webkit-scrollbar {
+  width: 8px;
+}
+#historyList::-webkit-scrollbar-thumb {
+  background-color: hsla(167, 22%, 71%, .7);
+  border-radius: 8px;
+}
+#historyList::-webkit-scrollbar-thumb:hover {
+  background-color: hsla(167, 22%, 71%, .9);
+}
+
+/* Убираем стрелочки (spinner) в Chrome, Edge, Safari */
+#limitInput::-webkit-outer-spin-button,
+#limitInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#filtersContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#sortContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

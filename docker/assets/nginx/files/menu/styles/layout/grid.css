@@ -1,0 +1,33 @@
+.grid {
+    display: grid;
+    gap: 20px;
+}
+
+.row {
+    display: grid;
+    gap: 12px;
+}
+
+.row-3 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.sort-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
