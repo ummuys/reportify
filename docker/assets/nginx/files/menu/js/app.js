@@ -2,7 +2,7 @@
 import { API_BASE } from './config/index.js';
 import { loadSchemas } from './api/index.js';
 import { setupEventListeners, renderHistory, updateButtons, updateSchemaSelect } from './ui/index.js';
-import { showAlert } from './ui/index.js';
+import { showAlert, initChartModal } from './ui/index.js';
 import { loader } from './ui/loader.js';
 
 async function init() {
@@ -24,6 +24,7 @@ async function init() {
     setupEventListeners();
     renderHistory();
     updateButtons();
+    initChartModal();
 
   } catch (e) {
     console.error("Ошибка при инициализации:", e);
