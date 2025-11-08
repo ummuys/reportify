@@ -6,8 +6,7 @@ import (
 
 type AdminHandler interface {
 	GetUsers() gin.HandlerFunc
+	UpdateUser() gin.HandlerFunc
 	CreateUser() gin.HandlerFunc
 	DeleteUser() gin.HandlerFunc
-	ChangeUserPassword() gin.HandlerFunc
-	ChangeUserRole() gin.HandlerFunc
 }

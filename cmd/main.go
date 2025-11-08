@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ummuys/reportify/internal/config"
 	"github.com/ummuys/reportify/internal/di"
@@ -15,122 +16,104 @@ import (
 	"github.com/ummuys/reportify/internal/web"
 )
 
-// @title           github.com/ummuys/reportify
-// @version         1.0
-// @description     API для отчетов
-// @host            localhost:1337
-// @BasePath       	/
-// @schemes         http
-
 func main() {
-
-	// CONTEXT
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// INTERFACES
 	tools, err := di.InitTools()
 	if err != nil {
 		log.Fatal(err)
 	}
-	tools.Logger.AppLog.Info().Msg("Start the app")
+	log := tools.Logger.AppLog
+	log.Info().Msg("starting Reportify")
 
-	repos, err := di.InitRepositorys(mainCtx, tools.Logger)
+	repos, err := di.InitRepositories(mainCtx, tools.Logger)
 	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("")
+		log.Fatal().Err(err).Msg("init repositories failed")
 	}
 
 	sec, err := di.InitSecure()
 	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("")
+		log.Fatal().Err(err).Msg("init secure failed")
 	}
 	srv := di.InitServices(repos, sec, tools)
 	hand := di.InitHandlers(tools, srv, sec)
-	tools.Logger.AppLog.Info().Msg("Init all interfaces: tools, repos, service, secure and handlers")
+	log.Info().Msg("initialized all components")
 
-	// CREATE BASIC USER
 	appConf, err := config.ParseAppConfig()
 	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("can't load app config")
+		log.Fatal().Err(err).Msg("load app config failed")
 	}
 	pass, err := sec.PasswordHasher.Hash(appConf.Password)
 	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("can't hash the password")
+		log.Fatal().Err(err).Msg("hash admin password failed")
+	}
+	if err := srv.AdminService.CreateUser(mainCtx, appConf.Username, pass, "admin"); err == nil || errors.Is(err, errs.ErrDuplicate) {
+		log.Info().Msg("default admin user initialized")
 	} else {
-		err = repos.UserDB.CreateUser(mainCtx, appConf.Username, pass, "user")
-		if err != nil && !errors.Is(err, errs.ErrUsernameAlredyExists) {
-			tools.Logger.AppLog.Error().Err(err).Msg("can't init basic user")
-		} else {
-			tools.Logger.AppLog.Info().Msg("basic user successfull init")
-		}
+		log.Error().Err(err).Msg("failed to init admin user")
 	}
 
-	//Warn Up (Cache)
-	m, err := repos.MetadataDB.GetCacheQueries(mainCtx)
+	cacheQueries, err := repos.MetadataDB.GetCacheQueries(mainCtx)
 	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("can't get cache querys")
+		log.Fatal().Err(err).Msg("load cache queries failed")
 	}
-	err = repos.ReportCache.Init(mainCtx, m)
-	if err != nil {
-		tools.Logger.AppLog.Fatal().Err(err).Msg("can't set querys in cache")
+	if err := repos.ReportCache.Init(mainCtx, cacheQueries); err != nil {
+		log.Fatal().Err(err).Msg("cache warm-up failed")
 	}
-	tools.Logger.DbLog.Info().Msg("cache successfully warmed up")
+	tools.Logger.DbLog.Info().Msg("cache warm-up complete")
 
 	server := web.CreateServer(tools, repos, srv, sec, hand)
 	errsCh := make(chan error, 4)
 	srvOff := make(chan struct{})
 
-	// Аккуратно выключаем сервер после ctx.Done
-	wg := sync.WaitGroup{}
+	var wg sync.WaitGroup
+
 	wg.Go(func() {
 		<-mainCtx.Done()
 		defer server.Close()
-		if err := server.Shutdown(mainCtx); err != nil {
-			errsCh <- err
-			tools.Logger.AppLog.Error().Err(fmt.Errorf("server shutdown: %v", err))
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			errsCh <- fmt.Errorf("server shutdown: %w", err)
 		}
-		srvOff <- struct{}{}
+		close(srvOff)
 	})
 
-	// Включаем сервер
 	wg.Go(func() {
 		if err := web.RunServer(server); err != nil {
-			errsCh <- err
-			tools.Logger.AppLog.Error().Err(fmt.Errorf("server: %v", err))
+			errsCh <- fmt.Errorf("server start failed: %w", err)
 		}
 	})
 
-	// Сохраняем кэш
 	wg.Go(func() {
 		<-srvOff
 		cache, err := repos.ReportCache.GetAll(context.Background())
 		if err != nil {
-			errsCh <- err
+			errsCh <- fmt.Errorf("read cache: %w", err)
+			return
 		}
-
-		err = repos.MetadataDB.SetCacheQueries(context.Background(), cache)
-		if err != nil {
-			errsCh <- err
+		if err := repos.MetadataDB.SetCacheQueries(context.Background(), cache); err != nil {
+			errsCh <- fmt.Errorf("save cache: %w", err)
 		}
 	})
 
-	<-mainCtx.Done()
-	tools.Logger.AppLog.Info().Msg("turning down the server")
 	wg.Wait()
 	close(errsCh)
-	close(srvOff)
-	var hadErr bool
 
+	var hadErr bool
 	for err := range errsCh {
 		if err != nil {
 			hadErr = true
-			tools.Logger.AppLog.Error().Err(err).Send()
+			log.Error().Err(err).Send()
 		}
 	}
 
 	if hadErr {
-		tools.Logger.AppLog.Error().Msg("fatal shutdown")
+		log.Error().Msg("graceful shutdown completed with errors")
 	} else {
-		tools.Logger.AppLog.Info().Msg("shutdown successful")
+		log.Info().Msg("shutdown successful")
 	}
 }

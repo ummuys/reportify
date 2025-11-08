@@ -26,7 +26,7 @@ func CreateServer(tools di.Tools, repos di.Repositories, srv di.Services, sec di
 	api := g.Group("/api/v1")
 	api.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://127.0.0.1:8088"},
-		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "DELETE", "UPDATE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -43,6 +43,7 @@ func CreateServer(tools di.Tools, repos di.Repositories, srv di.Services, sec di
 	adm.GET(GetUsersPath, hand.AdminHandler.GetUsers())
 	adm.POST(CreateUserPath, hand.AdminHandler.CreateUser())
 	adm.DELETE(DeleteUserPath, hand.AdminHandler.DeleteUser())
+	adm.PATCH(UpdateUserPath, hand.AdminHandler.UpdateUser())
 
 	// REPORT
 	rep := api.Group("")

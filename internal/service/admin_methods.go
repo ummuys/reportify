@@ -19,11 +19,10 @@ func NewAdminService(logger *zerolog.Logger, db repository.UserDB, ph secure.Pas
 	return &admService{logger: logger, db: db, ph: ph}
 }
 
-// TO FIX: MAKE BETTER ERR CHECKER
 func (a *admService) CreateUser(pCtx context.Context, username, password, role string) error {
 	a.logger.Debug().Str("evt", "call CreateUser").Msg("")
 
-	err := a.db.CheckRole(pCtx, role)
+	err := a.db.ValidateRole(pCtx, role)
 	if err != nil {
 		return errs.ParsePgError(err)
 	}
@@ -40,7 +39,35 @@ func (a *admService) CreateUser(pCtx context.Context, username, password, role s
 	return nil
 }
 
-// TO FIX: MAKE BETTER ERR CHECKER
+func (a *admService) UpdateUser(pCtx context.Context, userID int64, username, password, role string) error {
+	a.logger.Debug().Str("evt", "call CreateUser").Msg("")
+
+	var (
+		err      error
+		hashPass string
+	)
+
+	if password != "" {
+		hashPass, err = a.ph.Hash(password)
+		if err != nil {
+			return err
+		}
+	}
+
+	if role != "" {
+		err = a.db.ValidateRole(pCtx, role)
+		if err != nil {
+			return errs.ParsePgError(err)
+		}
+	}
+
+	if err := a.db.UpdateUser(pCtx, userID, username, hashPass, role); err != nil {
+		return errs.ParsePgError(err)
+	}
+
+	return nil
+}
+
 func (a *admService) DeleteUser(pCtx context.Context, username string) error {
 	a.logger.Debug().Str("evt", "call DeleteUser").Msg("")
 
@@ -52,7 +79,7 @@ func (a *admService) DeleteUser(pCtx context.Context, username string) error {
 }
 
 // TO FIX: MAKE BETTER ERR CHECKER
-func (a *admService) GetUsers(pCtx context.Context) ([][]string, error) {
+func (a *admService) GetUsers(pCtx context.Context) ([][]any, error) {
 	a.logger.Debug().Str("evt", "call GetUsers").Msg("")
 
 	list, err := a.db.GetUsers(pCtx)

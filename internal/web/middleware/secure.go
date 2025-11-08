@@ -14,7 +14,7 @@ func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 		authHeader := g.GetHeader("Authorization")
 		if authHeader == "" {
 			g.Set("msg", "empty token")
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": errs.ErrUserUnauthorized})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": errs.ErrUserUnauthorized.Error()})
 			return
 		}
 
@@ -22,7 +22,7 @@ func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 		claims, err := tm.ValidateAccessToken(tokenStr)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errs.ErrBadAccessToken})
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errs.ErrBadAccessToken.Error()})
 			return
 		}
 

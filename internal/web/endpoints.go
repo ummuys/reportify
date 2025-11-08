@@ -19,16 +19,15 @@ const (
 
 // ADMIN
 const (
-	AdminUsersBasePath = "/admin/users"
 
 	// Collection
 	GetUsersPath   = "/admin/users" // GET
 	CreateUserPath = "/admin/users" // POST
+	UpdateUserPath = "/admin/users" // PATCH
 
 	// Item
-	GetUserInfoPath    = "/admin/users/:username" // GET
-	ChangeUserInfoPath = "/admin/users/:username" // PATCH (или PUT)
-	DeleteUserPath     = "/admin/users/:username" // DELETE
+	GetUserInfoPath = "/admin/users/:username" // GET
+	DeleteUserPath  = "/admin/users/:username" // DELETE
 )
 
 // AUTH

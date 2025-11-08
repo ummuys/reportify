@@ -63,7 +63,7 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 
 		param, err := validation.RequestParams(rawParam)
 		if err != nil {
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			g.Set("msg", err.Error())
 			return
 		}

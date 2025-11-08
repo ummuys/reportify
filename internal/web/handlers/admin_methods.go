@@ -80,15 +80,38 @@ func (a *admHandler) DeleteUser() gin.HandlerFunc {
 	}
 }
 
-func (a *admHandler) ChangeUserPassword() gin.HandlerFunc {
+func (a *admHandler) UpdateUser() gin.HandlerFunc {
 	return func(g *gin.Context) {
-		a.logger.Debug().Str("evt", "call ChangeUserPassword").Msg("")
+		a.logger.Debug().Str("evt", "call UpdateUser").Msg("")
+		ctx := g.Request.Context()
 
-	}
-}
-func (a *admHandler) ChangeUserRole() gin.HandlerFunc {
-	return func(g *gin.Context) {
-		a.logger.Debug().Str("evt", "call ChangeUserRole").Msg("")
+		var req models.UpdateUserRequest
+		if err := g.ShouldBindBodyWithJSON(&req); err != nil {
+			g.Set("msg", err.Error())
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
+			return
+		}
+
+		if req.UserID <= 0 {
+			g.Set("msg", "invalid UserID")
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
+			return
+		}
+
+		if err := a.srv.UpdateUser(ctx, req.UserID, req.Username, req.Password, req.Role); err != nil {
+			switch {
+			case errors.Is(err, errs.ErrNotFound):
+				g.Set("msg", errs.ErrUserNotFound.Error())
+				g.AbortWithStatusJSON(http.StatusNotFound, models.EmptyResponse{Message: errs.ErrUserNotFound.Error()})
+			default:
+				g.Set("msg", err.Error())
+				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			}
+			return
+		}
+
+		g.Set("msg", "user info updated")
+		g.JSON(http.StatusOK, models.EmptyResponse{Message: "user info updated"})
 
 	}
 }
@@ -109,8 +132,9 @@ func (a *admHandler) GetUsers() gin.HandlerFunc {
 		var users models.GetUsersResponse
 		users.List = make([]models.UserResponse, len(data))
 		for i := 0; i < len(data); i++ {
-			users.List[i].Username = data[i][0]
-			users.List[i].Role = data[i][1]
+			users.List[i].UserID = data[i][0].(int64)
+			users.List[i].Username = data[i][1].(string)
+			users.List[i].Role = data[i][2].(string)
 		}
 
 		g.Set("msg", "users info returned")

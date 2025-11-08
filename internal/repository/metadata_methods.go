@@ -143,8 +143,10 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	}
 
 	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
-			m.logger.Error().Err(rbErr).Msg("rollback failed")
+		if err != nil {
+			if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+				m.logger.Error().Err(rbErr).Msg("rollback failed")
+			}
 		}
 	}()
 
@@ -164,18 +166,16 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	for range usersID {
 		if _, err = br.Exec(); err != nil {
 			_ = br.Close()
-			_ = tx.Rollback(ctx)
 			return err
 		}
 	}
 
-	if err := br.Close(); err != nil {
-		_ = tx.Rollback(ctx)
-		return err
+	if err = br.Close(); err != nil {
+		return
 	}
 
 	if err = tx.Commit(ctx); err != nil {
-		return err
+		return
 	}
 
 	return nil

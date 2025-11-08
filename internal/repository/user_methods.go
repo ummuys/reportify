@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/ummuys/reportify/internal/config"
@@ -40,7 +41,7 @@ func NewUserDB(pCtx context.Context, logger *zerolog.Logger) (UserDB, error) {
 
 }
 
-func (u *uDB) GetUsers(pCtx context.Context) ([][]string, error) {
+func (u *uDB) GetUsers(pCtx context.Context) ([][]any, error) {
 	u.logger.Debug().Str("evt", "call GetUsers").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
@@ -52,15 +53,18 @@ func (u *uDB) GetUsers(pCtx context.Context) ([][]string, error) {
 	}
 	defer rows.Close()
 
-	var data [][]string
+	var data [][]any
 	for rows.Next() {
-		vals, err := rows.Values()
+		var (
+			id       int64
+			username string
+			role     string
+		)
+		err = rows.Scan(&id, &username, &role)
 		if err != nil {
 			return nil, err
 		}
-		row := make([]string, 2)
-		row[0], row[1] = vals[0].(string), vals[1].(string)
-		data = append(data, row)
+		data = append(data, []any{id, username, role})
 	}
 
 	if err := rows.Err(); err != nil {
@@ -70,20 +74,90 @@ func (u *uDB) GetUsers(pCtx context.Context) ([][]string, error) {
 	return data, nil
 }
 
-func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword string, role string) error {
+func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword string, role string) (err error) {
 	u.logger.Debug().Str("evt", "call CreateUser").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	_, err := u.pool.Exec(ctx, NewUserStep1, username, hashPassword)
+	var tx pgx.Tx
+	tx, err = u.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = u.pool.Exec(ctx, NewUserStep2, username, role)
-	return err
+
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+				u.logger.Error().Err(rbErr).Msg("rollback failed")
+			}
+		}
+	}()
+
+	_, err = tx.Exec(ctx, NewUserStep1, username, hashPassword)
+	if err != nil {
+		return
+	}
+
+	_, err = tx.Exec(ctx, NewUserStep2, username, role)
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return
+	}
+
+	return
 }
 
-func (u *uDB) CheckRole(pCtx context.Context, role string) error {
+func (u *uDB) UpdateUser(pCtx context.Context, userID int64, username string, hashPassword string, role string) (err error) {
+	u.logger.Debug().Str("evt", "call UpdateUser").Msg("")
+	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
+	defer cancel()
+
+	var tx pgx.Tx
+	tx, err = u.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+				u.logger.Error().Err(rbErr).Msg("rollback failed")
+			}
+		}
+	}()
+
+	if username != "" {
+		_, err = tx.Exec(ctx, UpdateUsername, userID, username)
+		if err != nil {
+			return
+		}
+	}
+
+	if hashPassword != "" {
+		_, err = tx.Exec(ctx, UpdateUserPassword, userID, hashPassword)
+		if err != nil {
+			return
+		}
+	}
+
+	if role != "" {
+		_, err = tx.Exec(ctx, UpdateUserRole, userID, role)
+		if err != nil {
+			return
+		}
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return
+	}
+
+	return
+}
+
+func (u *uDB) ValidateRole(pCtx context.Context, role string) error {
 	u.logger.Debug().Str("evt", "call CheckRole").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
@@ -116,14 +190,5 @@ func (u *uDB) DeleteUser(pCtx context.Context, username string) error {
 		return pgx.ErrNoRows
 	}
 
-	return err
-}
-
-func (u *uDB) CheckUser(pCtx context.Context, username string) error {
-	u.logger.Debug().Str("evt", "call CheckUser").Msg("")
-	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
-	defer cancel()
-
-	_, err := u.pool.Exec(ctx, CheckUser, username)
 	return err
 }

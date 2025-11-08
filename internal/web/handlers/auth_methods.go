@@ -90,15 +90,15 @@ func (ah *authHandler) Authorization() gin.HandlerFunc {
 
 		id, role, err := ah.u.CheckCredentials(ctx, req.Username, req.Password)
 		if err != nil {
-			var msg string
 			switch {
 			case errors.Is(err, errs.ErrNotFound):
-				g.Set("msg", msg)
+				g.Set("msg", errs.ErrNotFound)
 				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrInvalidCredentials.Error()})
 			default:
 				g.Set("msg", err.Error())
 				g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
 			}
+			return
 		}
 
 		access, err := ah.tm.GenerateAccessToken(id, role)
