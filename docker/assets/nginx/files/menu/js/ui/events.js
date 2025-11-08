@@ -2,7 +2,7 @@ import { state, el, buildSQL } from '../core/index.js';
 import { loadTables, loadColumns, postReportAndGetBlob, saveBlob, openBlob } from '../api/index.js';
 import { updateButtons, createFilterRow, createSortRow, updateFilterFields } from './index.js';
 import { showToast, showAlert, showConfirm } from './index.js';
-import { saveHistoryEntry, renderHistory, getReportHistory, toggleShowOnlyFavorites, setShowOnlyFavorites } from './history.js';
+import { saveHistoryEntry, renderHistory, getReportHistory, toggleShowOnlyFavorites, setShowOnlyFavorites, clearHistory, toggleFavoriteEntry, deleteHistoryEntry, hydrateHistoryEntry } from './history.js';
 import { labelOf, titleOf } from '../core/index.js';
 
 let reportHistory = getReportHistory();
@@ -511,7 +511,8 @@ export function setupEventListeners() {
         try {
             const { blob, filename } = await postReportAndGetBlob(state.format, sqlText.value.trim());
             saveBlob(blob, filename);
-            saveHistoryEntry();
+            await saveHistoryEntry();
+            updateReportHistory();
         } catch (e) {
             await showAlert('Не удалось сформировать отчёт:\n' + (e.message || e), "Ошибка");
             console.error(e);
@@ -534,7 +535,8 @@ export function setupEventListeners() {
         try {
             const { blob, format } = await postReportAndGetBlob(state.format, sqlText.value.trim());
             (format === 'pdf' || format === 'csv') ? openBlob(blob) : saveBlob(blob, `preview.${format}`);
-            saveHistoryEntry();
+            await saveHistoryEntry();
+            updateReportHistory();
         } catch (e) {
             await showAlert('Не удалось показать предпросмотр:\n' + (e.message || e), "Ошибка");
             console.error(e);
@@ -553,101 +555,99 @@ export function setupEventListeners() {
     }
 
     // История - клик по элементам
-    historyList.addEventListener('click', async e => {
-        const li = e.target.closest('li[data-i]');
-        if (!li) return;
-        const index = +li.dataset.i;
-        const item = reportHistory[index];
-        if (!item) return;
+    function applyColumnSelection(selected = []) {
+        const list = el("columnsList");
+        if (!list) return;
+        const selectedSet = new Set(selected);
+        const synchronized = [];
 
-        const btnFav = e.target.closest('.btn-fav-history');
-        const btnDel = e.target.closest('.btn-delete-history');
+        list.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+            const colName = chk.dataset.col;
+            const shouldCheck = selectedSet.has(colName);
+            chk.checked = shouldCheck;
+            if (shouldCheck && colName) {
+                synchronized.push(colName);
+            }
+        });
 
-        if (btnFav) {
-            e.stopPropagation();
-            item.favorite = !item.favorite;
-            localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
-            renderHistory();
-            showToast(item.favorite
-            ? `⭐ Отчёт "${item.name || 'Без названия'}" добавлен в избранное`
-            : `☆ Отчёт "${item.name || 'Без названия'}" удалён из избранного`);
-            return;
-        }
+        state.chosen = synchronized;
+    }
 
-        if (btnDel) {
-            e.stopPropagation();
-            const confirmed = await showConfirm(
-                `Вы уверены, что хотите удалить отчёт "${item.name || 'Без названия'}"?`,
-                "Удалить отчёт"
-            );
-            if (!confirmed) return;
-
-            reportHistory.splice(index, 1);
-            localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
-            updateReportHistory(); // ДОБАВЛЕНО обновление переменной
-            renderHistory();
-            showToast(`🗑️ Отчёт "${item.name || 'Без названия'}" удалён`);
-            return;
-        }
-
-        // Загрузка отчета из истории - ИСПРАВЛЕННЫЙ КОД
+    async function loadHistoryEntryIntoForm(item) {
         const schemaSel = el("schemaSelect");
         const tableSel = el("tableSelect");
-        
-        if (!schemaSel || !tableSel) return;
+        const sqlTextArea = el("sqlText");
+        if (!schemaSel || !tableSel) return false;
 
-        state.schema = item.schema;
-        schemaSel.value = item.schema;
-        tableSel.innerHTML = `<option value="">Загрузка...</option>`;
-        tableSel.disabled = true;
+        if (sqlTextArea && item.sql) {
+            sqlTextArea.value = item.sql;
+        }
+
+        const hasSchema = Boolean(item.schema);
+        const hasTable = Boolean(item.table);
+
+        if (!hasSchema && !hasTable) {
+            updateButtons();
+            showToast(item.sql
+                ? 'SQL запроса загружен. Дополнительные параметры недоступны для этого элемента истории.'
+                : 'Для этого запроса нет сохранённых параметров.');
+            return Boolean(item.sql);
+        }
+
+        if (hasSchema) {
+            state.schema = item.schema;
+            schemaSel.value = item.schema;
+            tableSel.innerHTML = `<option value="">Загрузка...</option>`;
+            tableSel.disabled = true;
+        }
 
         try {
-            // Загружаем таблицы и обновляем интерфейс
+            if (hasSchema) {
             const tables = await loadTables(item.schema);
-            await updateTableSelect(tables); // ИСПОЛЬЗУЕМ существующую функцию
-            
-            // Устанавливаем выбранную таблицу
+            await updateTableSelect(tables);
+        }
+
+        if (hasSchema && hasTable) {
             tableSel.value = item.table;
             state.table = item.table;
+        } else if (hasSchema) {
+            state.table = "";
+            tableSel.disabled = false;
+            tableSel.value = "";
+        }
 
-            // Загружаем колонки
+        if (hasSchema && hasTable) {
+            state.chosen = Array.from(new Set(item.chosen || []));
             const columns = await loadColumns(item.schema, item.table);
             updateColumnsList(columns);
+            applyColumnSelection(state.chosen);
+        } else if (hasSchema) {
+            state.chosen = Array.from(new Set(item.chosen || []));
+            applyColumnSelection(state.chosen);
+        }
 
-            // Восстанавливаем выбранные колонки
-            state.chosen = [...item.chosen];
-            const list = el("columnsList");
-            if (list) {
-            list.querySelectorAll("input[type=checkbox]").forEach(chk => {
-                chk.checked = state.chosen.includes(chk.dataset.col);
-            });
-            }
-
-            // Восстанавливаем фильтры
             const filtersContainer = el("filtersContainer");
             if (filtersContainer) {
-            filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
-            const filters = item.filters?.filter(f => f.field || f.value) || [];
-            if (filters.length) {
-                filters.forEach(f => filtersContainer.appendChild(createFilterRow(f)));
-            } else {
-                filtersContainer.appendChild(createFilterRow());
-            }
+                filtersContainer.querySelectorAll('.filter-row').forEach(r => r.remove());
+                const filters = item.filters?.filter(f => f.field || f.value) || [];
+                if (filters.length) {
+                    filters.forEach(f => filtersContainer.appendChild(createFilterRow(f)));
+                } else {
+                    filtersContainer.appendChild(createFilterRow());
+                }
             }
 
-            // Восстанавливаем сортировки
             const sortContainer = el("sortContainer");
             if (sortContainer) {
-            sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
-            const sorts = item.sorts?.filter(s => s.field) || [];
-            if (sorts.length) {
-                sorts.forEach(s => sortContainer.appendChild(createSortRow(s)));
-            } else {
-                sortContainer.appendChild(createSortRow());
-            }
+                sortContainer.querySelectorAll('.sort-row').forEach(r => r.remove());
+                const sorts = item.sorts?.filter(s => s.field) || [];
+                if (sorts.length) {
+                    sorts.forEach(s => sortContainer.appendChild(createSortRow(s)));
+                } else {
+                    sortContainer.appendChild(createSortRow());
+                }
             }
 
-            // Восстанавливаем остальные поля
             const sortField = el("sortField");
             const sortDir = el("sortDir");
             const limitInput = el("limitInput");
@@ -659,26 +659,80 @@ export function setupEventListeners() {
             if (limitInput) limitInput.value = item.limit || "";
             if (reportName) reportName.value = item.name || "";
             if (reportComment) {
-            reportComment.value = item.comment || "";
-            reportComment.style.height = 'auto';
-            reportComment.style.height = reportComment.scrollHeight + 'px';
+                reportComment.value = item.comment || "";
+                reportComment.style.height = 'auto';
+                reportComment.style.height = reportComment.scrollHeight + 'px';
             }
 
             buildSQL();
+            if (sqlTextArea && item.sql) {
+                sqlTextArea.value = item.sql;
+            }
             updateButtons();
 
-            showToast(`Загружен отчёт: ${item.name || (item.schema + '.' + item.table)}`);
+            if (hasSchema && hasTable) {
+                showToast(`Загружен отчёт: ${item.name || (item.schema + '.' + item.table)}`);
+            } else if (hasSchema) {
+                showToast('Схема установлена. Выберите таблицу вручную.');
+            }
 
         } catch (e) {
             console.error("Ошибка загрузки отчета из истории:", e);
             tableSel.innerHTML = `<option value="">Ошибка загрузки</option>`;
             showToast('Ошибка загрузки отчета из истории');
+            return false;
         }
+        return true;
+    }
+
+    historyList.addEventListener('click', async e => {
+        updateReportHistory();
+        const li = e.target.closest('li[data-i]');
+        if (!li) return;
+        const index = +li.dataset.i;
+        const item = hydrateHistoryEntry(reportHistory[index]);
+        if (!item) return;
+
+        const btnFav = e.target.closest('.btn-fav-history');
+        const btnDel = e.target.closest('.btn-delete-history');
+
+        if (btnFav) {
+            e.stopPropagation();
+            const favState = toggleFavoriteEntry(index);
+            updateReportHistory();
+            renderHistory();
+            showToast(favState
+                ? `⭐ Отчёт "${item.name || 'Без названия'}" добавлен в избранное`
+                : `☆ Отчёт "${item.name || 'Без названия'}" удалён из избранного`);
+            return;
+        }
+
+        if (btnDel) {
+            e.stopPropagation();
+            const confirmed = await showConfirm(
+                `Вы уверены, что хотите удалить отчёт "${item.name || 'Без названия'}"?`,
+                "Удалить отчёт"
+            );
+            if (!confirmed) return;
+
+            const removed = await deleteHistoryEntry(index);
+            if (removed) {
+                updateReportHistory();
+                renderHistory();
+                showToast(`🗑️ Отчёт "${item.name || 'Без названия'}" удалён`);
+            } else {
+                showToast('Не удалось удалить отчёт');
+            }
+            return;
+        }
+
+        await loadHistoryEntryIntoForm(item);
     });
 
     // Очистка истории
     if (btnClearHistory) {
         btnClearHistory.addEventListener('click', async () => {
+            updateReportHistory();
             if (!reportHistory.length) {
             showToast('История уже пуста');
             return;
@@ -690,13 +744,15 @@ export function setupEventListeners() {
             );
 
             if (confirmed) {
-            // Очищаем историю через функцию из history.js
-            reportHistory.length = 0; // очищаем массив
-            localStorage.removeItem('reportHistory');
-            setShowOnlyFavorites(false); // сбрасываем фильтр избранного
-            updateReportHistory(); // обновляем локальную переменную
-            renderHistory();
-            showToast('История успешно удалена');
+            const cleared = await clearHistory();
+            if (cleared) {
+                setShowOnlyFavorites(false);
+                updateReportHistory();
+                renderHistory();
+                showToast('История успешно удалена');
+            } else {
+                showToast('Не удалось очистить историю');
+            }
             }
         });
     }

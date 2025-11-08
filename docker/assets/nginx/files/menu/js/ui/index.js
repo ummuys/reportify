@@ -4,9 +4,14 @@ export { showToast, showAlert, showConfirm } from './modals.js';
 export { 
     saveHistoryEntry, 
     renderHistory, 
+    refreshHistory,
+    clearHistory,
     getShowOnlyFavorites, 
     setShowOnlyFavorites, 
     toggleShowOnlyFavorites, 
-    getReportHistory 
+    getReportHistory,
+    toggleFavoriteEntry,
+    deleteHistoryEntry,
+    hydrateHistoryEntry
 } from './history.js';
 export { initChartModal } from './chartModal.js'
