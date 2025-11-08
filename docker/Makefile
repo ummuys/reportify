@@ -8,12 +8,14 @@ PROD_COMPOSE=prod/docker-compose-prod.yaml
 
 # 			DEV			# 
 dev-start:
+	-docker network create reportify_network
 	-docker compose -f $(DEV_COMPOSE) up -d
 
 dev-stop:
 	-docker compose -f $(DEV_COMPOSE) down
 
 dev-update:
+	-docker network create reportify_network
 	-docker compose -f $(DEV_COMPOSE) down
 	-docker image rm dev-app
 	-docker compose -f $(DEV_COMPOSE) up -d

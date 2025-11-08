@@ -29,7 +29,7 @@ func (u *uSrv) CheckCredentials(pCtx context.Context, username, password string)
 	}
 
 	if !u.ph.CheckHash(password, hashPass) {
-		return 0, "", errs.ErrNotFound
+		return 0, "", errs.ErrInvalidCredentials
 	}
 
 	return user_id, role, nil

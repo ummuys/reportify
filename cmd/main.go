@@ -44,11 +44,8 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("load app config failed")
 	}
-	pass, err := sec.PasswordHasher.Hash(appConf.Password)
-	if err != nil {
-		log.Fatal().Err(err).Msg("hash admin password failed")
-	}
-	if err := srv.AdminService.CreateUser(mainCtx, appConf.Username, pass, "admin"); err == nil || errors.Is(err, errs.ErrDuplicate) {
+
+	if err := srv.AdminService.CreateUser(mainCtx, appConf.Username, appConf.Password, "admin"); err == nil || errors.Is(err, errs.ErrDuplicate) {
 		log.Info().Msg("default admin user initialized")
 	} else {
 		log.Error().Err(err).Msg("failed to init admin user")

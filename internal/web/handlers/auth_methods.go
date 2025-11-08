@@ -92,7 +92,10 @@ func (ah *authHandler) Authorization() gin.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, errs.ErrNotFound):
-				g.Set("msg", errs.ErrNotFound)
+				g.Set("msg", err.Error())
+				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrInvalidCredentials.Error()})
+			case errors.Is(err, errs.ErrInvalidCredentials):
+				g.Set("msg", err.Error())
 				g.AbortWithStatusJSON(http.StatusUnauthorized, models.EmptyResponse{Message: errs.ErrInvalidCredentials.Error()})
 			default:
 				g.Set("msg", err.Error())
