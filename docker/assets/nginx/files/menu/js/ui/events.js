@@ -242,9 +242,18 @@ export function setupEventListeners() {
     const historyList = el('historyList');
     const favFilterBtn = el('btnFavFilter');
     const btnClearHistory = el('btnClearHistory');
+    const logoutBtn = el('logoutBtn');
 
     if (btnAddSort) btnAddSort.removeAttribute('disabled');
     if (btnAddFilter) btnAddFilter.removeAttribute('disabled');
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('access_token_v1');
+            document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            window.location.assign('/');
+        });
+    }
 
     // Схемы
     schemaSel.addEventListener("change", async () => {

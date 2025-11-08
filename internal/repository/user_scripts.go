@@ -10,7 +10,7 @@ const NewUserStep2 = `
 INSERT INTO identity.user_roles (user_id, role_id)
 VALUES (
     (SELECT user_id FROM identity.users WHERE username = $1),
-    (SELECT role_id FROM identity.roles WHERE name = $3)
+    (SELECT role_id FROM identity.roles WHERE name = $2)
 );`
 
 // UPDATE USER

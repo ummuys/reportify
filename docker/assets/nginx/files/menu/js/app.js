@@ -5,12 +5,46 @@ import { setupEventListeners, renderHistory, updateButtons, updateSchemaSelect }
 import { showAlert, initChartModal } from './ui/index.js';
 import { loader } from './ui/loader.js';
 
+function initTypedHeading() {
+  const target = document.querySelector('.typed-text');
+  if (!target) return;
+
+  const TypedConstructor = window.Typed;
+  if (typeof TypedConstructor !== 'function') {
+    console.warn('Typed.js не найден на window');
+    return;
+  }
+
+  if (target.dataset.typedReady === 'true') {
+    return;
+  }
+
+  target.dataset.typedReady = 'true';
+
+  new TypedConstructor(target, {
+    strings: [
+      'Конструктор отчёта',
+      'SQL генерируется автоматически',
+      'Создавайте отчёты быстрее'
+    ],
+    typeSpeed: 45,
+    backSpeed: 25,
+    backDelay: 2200,
+    smartBackspace: true,
+    loop: true
+  });
+}
+
 async function init() {
   const token = localStorage.getItem("access_token_v1") || "";
   console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
 
+  initTypedHeading();
+
   if (!token) {
-    await showAlert("Не найден access токен. Сначала авторизуйтесь.", "Авторизация");
+    loader.hide();
+    await showAlert("Требуется авторизация. Войдите в систему.", "Авторизация");
+    window.location.assign('/');
     return;
   }
 
