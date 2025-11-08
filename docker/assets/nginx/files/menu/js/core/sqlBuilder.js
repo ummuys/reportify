@@ -2,6 +2,13 @@ import { state } from './state.js';
 import { ident } from './utils.js';
 
 export function buildSQL() {
+  const columnItems = document.querySelectorAll('#columnsList .item');
+  if (columnItems.length) {
+    state.chosen = [...columnItems]
+      .filter(el => el.querySelector('input[type="checkbox"]').checked)
+      .map(el => el.dataset.col);
+  }
+
   if (!state.schema || !state.table || !state.chosen.length) {
     sqlText.value = "";
     return;

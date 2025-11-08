@@ -21,7 +21,7 @@ export function showToast(message, duration = 3000) {
 }
 
 
-export function showConfirm(message, title = "Подтверждение") {
+export function showConfirm(message, title = "Подтверждение", optionYes = 'Удалить') {
     return new Promise(resolve => {
         const modal = document.getElementById('confirmModal');
         const msgEl = document.getElementById('confirmMessage');
@@ -29,21 +29,34 @@ export function showConfirm(message, title = "Подтверждение") {
         const btnNo = document.getElementById('confirmNo');
 
         document.querySelector('.modal-title').textContent = title;
+        btnYes.textContent = optionYes;
         msgEl.textContent = message;
         modal.style.display = 'flex';
 
         const close = (result) => {
-        modal.style.display = 'none';
-        btnYes.removeEventListener('click', yesHandler);
-        btnNo.removeEventListener('click', noHandler);
-        resolve(result);
+            modal.style.display = 'none';
+            btnYes.removeEventListener('click', yesHandler);
+            btnNo.removeEventListener('click', noHandler);
+            document.removeEventListener('keydown', keyHandler); // Удаляем обработчик клавиш
+            resolve(result);
         };
 
         const yesHandler = () => close(true);
         const noHandler = () => close(false);
 
+        const keyHandler = (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                yesHandler();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                noHandler();
+            }
+        };
+
         btnYes.addEventListener('click', yesHandler);
         btnNo.addEventListener('click', noHandler);
+        document.addEventListener('keydown', keyHandler); // Добавляем обработчик клавиш
     });
 }
 

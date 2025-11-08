@@ -1,0 +1,11 @@
+:root {
+    --bg: hsla(0, 0%, 100%, 1); 
+    --panel: hsla(167, 22%, 71%, .5);
+    --muted:hsla(167, 22%, 71%, .5); 
+    --text: hsla(0, 0%, 20%, 1);
+    --drop: hsla(0, 0%, 100%, 1); 
+    --drop-hover:hsla(0, 0%, 87%, 1);
+    --accent: hsla(221, 83%, 53%, 1);
+    --green: hsla(150, 69%, 55%, .8);
+    --err: hsla(0, 100%, 75%, 1);
+}

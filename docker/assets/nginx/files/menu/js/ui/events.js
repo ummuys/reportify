@@ -1,7 +1,7 @@
 import { state, el, buildSQL } from '../core/index.js';
 import { loadTables, loadColumns, postReportAndGetBlob, saveBlob, openBlob } from '../api/index.js';
-import { updateButtons, createFilterRow, createSortRow, updateFilterFields } from './components.js';
-import { showToast, showAlert, showConfirm } from './modals.js';
+import { updateButtons, createFilterRow, createSortRow, updateFilterFields } from './index.js';
+import { showToast, showAlert, showConfirm } from './index.js';
 import { saveHistoryEntry, renderHistory, getReportHistory, toggleShowOnlyFavorites, setShowOnlyFavorites } from './history.js';
 import { labelOf, titleOf } from '../core/index.js';
 
@@ -38,51 +38,183 @@ export async function updateTableSelect(tables) {
 }
 
 
+// ------------------ updateColumnsList ------------------
 function updateColumnsList(columns) {
     const list = el("columnsList");
     const sortField = el("sortField");
-    
+
+    // сохраняем метаданные
     state.columns = columns;
-    
-    // Чекбоксы колонок (с проверкой)
+
     if (list) {
+        // при рендере отмечаем checkbox если колонка уже в state.chosen
         list.innerHTML = columns.map(c => `
-        <label class="item" title="${titleOf(c)}">
-            <input type="checkbox" data-col="${c.name}" />
-            <span style="overflow:hidden;text-overflow:ellipsis">${labelOf(c)}</span>
-        </label>
+            <label class="item" draggable="true" data-col="${c.name}" title="${titleOf(c)}">
+                <input type="checkbox" data-col="${c.name}" ${state.chosen && state.chosen.includes(c.name) ? "checked" : ""} />
+                <span style="overflow:hidden;text-overflow:ellipsis">${labelOf(c)}</span>
+                <span class="drag-handle">☰</span>
+            </label>
         `).join("");
+
+        // Включаем drag & drop + хендлеры чекбоксов
+        initDragAndDrop(list);
+        initColumnCheckboxHandlers(list);
     }
 
-    // Кнопки (с проверкой)
     const btnAll = el("btnAll");
     const btnClear = el("btnClear");
     if (btnAll && btnClear) {
         btnAll.disabled = btnClear.disabled = columns.length === 0;
     }
-    
-    // Select для сортировки (с проверкой)
+
     if (sortField) {
         sortField.innerHTML = `<option value="">Поле</option>` +
-        columns.map(c => `<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
+            columns.map(c => `<option value="${c.name}" title="${titleOf(c)}">${labelOf(c)}</option>`).join("");
     }
 
-    // Ошибки (с проверкой)
     const columnsError = el("columnsError");
-    if (columnsError) {
-        columnsError.style.display = "none";
-    }
-    
-    // Обновляем поля в существующих фильтрах и сортировках
-    updateFilterFields(); // ТЕПЕРЬ эта функция доступна
-    
-    // Обновляем select'ы в существующих сортировках (с проверкой)
+    if (columnsError) columnsError.style.display = "none";
+
+    updateFilterFields();
+
     document.querySelectorAll('.sortField').forEach(sel => {
         const current = sel.value;
         sel.innerHTML = `<option value="">Поле</option>` +
-        columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join('');
+            columns.map(c => `<option value="${c.name}" ${c.name === current ? "selected" : ""}>${labelOf(c)}</option>`).join('');
     });
 }
+
+
+// ------------------ checkbox handlers ------------------
+function initColumnCheckboxHandlers(container) {
+    // делаем live-делегирование: обработаем клики по чекбоксам
+    container.addEventListener('change', (e) => {
+        const cb = e.target.closest('input[type="checkbox"]');
+        if (!cb) return;
+
+        // Обновляем state.chosen по реальному порядку в DOM
+        state.chosen = [...container.querySelectorAll('.item')]
+            .filter(el => el.querySelector('input[type="checkbox"]').checked)
+            .map(el => el.dataset.col);
+
+        // обновим sqlText, если нужно — можно убрать, если не нужен live-обновление
+        if (typeof buildSQL === "function") buildSQL();
+    });
+}
+
+// ------------------ initDragAndDrop  ------------------
+function initDragAndDrop(container) {
+    let dragged = null;
+    let isDragging = false;
+
+    // Обработчик mousedown на handle - начинаем перетаскивание
+    container.addEventListener('mousedown', (e) => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+
+        const item = handle.closest('.item');
+        if (!item) return;
+
+        isDragging = true;
+        item.classList.add('dragging');
+    });
+
+    // Обработчик dragstart - настраиваем перетаскивание
+    container.addEventListener('dragstart', (e) => {
+        // Если dragstart вызван не handle, отменяем
+        if (!isDragging) {
+            e.preventDefault();
+            return;
+        }
+
+        const item = e.target.closest('.item');
+        if (!item) return;
+
+        dragged = item;
+
+        // Устанавливаем drag image как сам элемент
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset.col || '');
+
+        // Небольшая задержка для корректного отображения drag image
+        setTimeout(() => {
+            item.classList.add('dragging');
+        }, 0);
+    });
+
+    container.addEventListener('dragend', (e) => {
+        isDragging = false;
+        if (!dragged) return;
+
+        dragged.classList.remove('dragging');
+        
+        // Синхронизируем state.columns в новом порядке
+        const newOrder = [...container.querySelectorAll('.item')].map(el => el.dataset.col);
+        state.columns = newOrder.map(name => state.columns.find(c => c.name === name) || { name });
+
+        // Синхронизируем state.chosen (с учётом нового визуального порядка)
+        state.chosen = [...container.querySelectorAll('.item')]
+            .filter(el => el.querySelector('input[type="checkbox"]').checked)
+            .map(el => el.dataset.col);
+
+        // Обновляем SQL (если нужно live)
+        if (typeof buildSQL === "function") buildSQL();
+
+        dragged = null;
+    });
+
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!dragged) return;
+        
+        const afterElement = getDragAfterElement(container, e.clientY);
+        if (afterElement == null) {
+            container.appendChild(dragged);
+        } else {
+            container.insertBefore(dragged, afterElement);
+        }
+    });
+
+    container.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+    });
+
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+    });
+
+    // предотвращаем конфликт mousedown чекбоксов с dragstart
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('mousedown', (e) => e.stopPropagation());
+    });
+
+    // предотвращаем стандартное поведение drag для handle
+    container.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('dragstart', (e) => {
+            if (!isDragging) {
+                e.preventDefault();
+            }
+        });
+    });
+}
+
+// ------------------ getDragAfterElement ------------------
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+
 
 
 export function setupEventListeners() {
@@ -260,6 +392,7 @@ export function setupEventListeners() {
         updateButtons();
     });
 
+
     btnClear.addEventListener("click", () => {
         state.chosen = [];
         list.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -276,12 +409,14 @@ export function setupEventListeners() {
 
             if (state.format === "CSV") {
                 csvOptions.style.display = "block";
-                btnPreview.disabled = true;
-                btnPreview.classList.add("disabled");
             } else {
                 csvOptions.style.display = "none";
-                btnPreview.disabled = false;
+            }
+
+            if (state.format === "PDF") {
                 btnPreview.classList.remove("disabled");
+            } else {
+                btnPreview.classList.add("disabled");
             }
         });
     });
@@ -379,6 +514,10 @@ export function setupEventListeners() {
 
     // Предпросмотр
     btnPreview.addEventListener('click', async () => {
+        if (btnPreview.classList.contains('disabled')) {
+            showToast('Предпросмотр доступен только для PDF');
+            return;
+        }
         if (!reportName.value.trim()) { showToast('Введите название отчёта'); return; }
         if (!reportComment.value.trim()) { showToast('Введите комментарий к отчёту'); return; }
         if (!sqlText.value.trim()) { showToast('SQL пустой'); return; }

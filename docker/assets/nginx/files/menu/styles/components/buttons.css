@@ -1,0 +1,174 @@
+.btn {
+    cursor: pointer;
+}
+
+.btn-ghost {
+    background: hsla(167, 22%, 71%, .8);
+}
+
+.btn-ghost:hover {
+    background-color: hsla(167, 22%, 71%, 1);
+}
+
+.btn-primary {
+    background: var(--green);
+    color: var(--text);
+    border: 0;
+} 
+
+.btn-primary:hover {
+    background: hsla(150, 69%, 55%, 1);
+}
+
+.btn-primary:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+.btn-primary:disabled:hover {
+    background: var(--green);
+}
+
+.btn-remove.btn {
+    padding: 6px 10px;
+    background-color: var(--err);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-remove.btn:hover {
+    background-color: hsla(0, 100%, 75%, .9);
+}
+
+.about-btn {
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
+  width: 150px;
+  border-radius: 10px;
+  padding: 10px 2px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-fav-filter {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.btn-fav-filter:hover {
+  color: gold;
+}
+
+/* Активное состояние — фильтр включён */
+.btn-fav-filter.active {
+  color: gold;
+}
+
+.btn-clear-history {
+  background: hsla(0, 0%, 100%, 0.6);
+  border: 1px solid hsla(167, 22%, 71%, 0.6);
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 6px 7px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  width: auto;                  
+  flex-shrink: 0;           
+  white-space: nowrap;
+}
+
+.btn-clear-history:hover {
+  background: hsla(167, 22%, 71%, 0.7);
+}
+
+.btn-delete-history {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.btn-delete-history:hover {
+  color: var(--err);
+  transform: scale(1.1);
+}
+
+.btn-fav-history {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 22px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.btn-fav-history.active {
+  color: gold;
+}
+
+.btn-fav-history:hover {
+  color: gold;
+}
+
+.history-item:hover .btn-delete-history {
+  opacity: 1;
+}
+
+.history-item:hover .btn-fav-history {
+  opacity: 1;
+}
+
+.btn-preview.disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: all;
+}
+
+.btn.disabled,
+.btn.is-disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: auto;
+  filter: grayscale(.03);
+}
+
+.btn.disabled:hover,
+.btn.is-disabled:hover {
+  transform: none;
+  background: hsla(167, 22%, 71%, .8);
+}
+
+#btnCreateChart {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+  background: var(--green);
+  border: 1px solid hsla(150, 69%, 55%, 1);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+#btnCreateChart:hover {
+  background: hsla(150, 69%, 55%, 1);
+  transform: scale(1.02);
+}
+
+.btn-preview.disabled:hover {
+    background: hsla(167, 22%, 71%, .8);
+}

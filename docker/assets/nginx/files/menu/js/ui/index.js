@@ -9,3 +9,4 @@ export {
     toggleShowOnlyFavorites, 
     getReportHistory 
 } from './history.js';
+export { initChartModal } from './chartModal.js'

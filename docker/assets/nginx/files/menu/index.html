@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Конструктор отчёта</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles/main.css">
   <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-  <link rel="stylesheet" href="loader/loader.css">
+  <script src="C:/Users/nikit/node_modules/chart.js/dist/chart.umd.min.js"></script>
   <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
@@ -192,6 +192,45 @@
         <h3>7) SQL-запрос</h3>
         <textarea id="sqlText" class="sql" placeholder="SELECT ..."></textarea>
         <div class="hint">Запрос генерируется автоматически при выборе схемы/таблицы/полей и сортировки. Можно редактировать вручную.</div>
+      </div>
+
+      <div class="chart-btn-container">
+        <button id="btnCreateChart" class="btn btn-primary">📊 Создать график</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- Модальное окно создания графика -->
+  <div id="chartModal" class="chart-modal-overlay" style="display:none;">
+    <div class="chart-modal">
+      <div class="chart-modal-header">
+        <!-- Добавил контейнер для заголовка и крестика -->
+        <div class="chart-header-top">
+          <h2>Создание графика</h2>
+          <button class="chart-close">✕</button>
+        </div>
+        <div class="chart-form">
+          <input type="text" id="chartName" placeholder="Введите название графика" />
+          <select id="chartType">
+            <option value="">Выберите тип графика</option>
+            <option value="pie">Пирог</option>
+            <option value="bar">Бар</option>
+            <option value="line">Линейный</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chart-modal-body">
+        <div class="chart-settings" id="chartSettings" style="display: none;">
+          <p>Здесь будут параметры графика...</p>
+        </div>
+        <div class="chart-preview">
+          <p>Предпросмотр графика</p>
+        </div>
+      </div>
+
+      <div class="chart-modal-footer">
+        <button id="chartDownload" class="btn btn-primary">⬇️ Скачать</button>
       </div>
     </div>
   </div>
