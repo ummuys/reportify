@@ -10,14 +10,17 @@
   padding: 8px 120px;
   font-size: 15px;
   cursor: pointer;
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 14px rgba(15, 76, 80, 0.12);
 }
 
 .dropdown-btn:hover {
     background: hsla(150, 69%, 55%, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(15, 76, 80, 0.18);
 }
 
 .dropdown-content {
-  display: none;
   position: absolute;
   top: 115%;
   left: 0;                /* привязано к кнопке, а сама кнопка уже отступлена */
@@ -28,8 +31,19 @@
   padding: 8px 16px;
   min-width: 300px;       /* сделаем длиннее */
   z-index: 1100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-14px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
+  will-change: opacity, transform;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
+.dropdown:hover .dropdown-content,
+.dropdown:focus-within .dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
+
