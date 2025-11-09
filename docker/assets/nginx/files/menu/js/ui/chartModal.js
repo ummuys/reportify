@@ -1,5 +1,7 @@
 import { showToast, showConfirm } from './modals.js';
-import { setupPieSettings } from './charts/pieChart.js';
+import { setupPieSettings, drawGhostPieChart } from './charts/pieChart.js';
+import { drawGhostBarChart, setupBarSettings } from './charts/barChart.js';
+import { setupLineSettings, drawGhostLineChart } from './charts/lineChart.js';
 
 export function initChartModal() {
     const btnCreateChart = document.getElementById('btnCreateChart');
@@ -59,7 +61,18 @@ export function initChartModal() {
 
       // 🔄 Настройки для конкретного типа
       if (type === 'pie' || type === 'donut') {
+        drawGhostPieChart(chartPreview, type);
         await setupPieSettings(chartSettings, chartPreview, type, btnDownload);
+      }
+
+      else if (type === 'bar') {
+        drawGhostBarChart(chartPreview);
+        await setupBarSettings(chartSettings, chartPreview, btnDownload);
+      }
+
+      else if (type === 'line') {
+        drawGhostLineChart(chartPreview);
+        await setupLineSettings(chartSettings, chartPreview, btnDownload);
       }
     });
 
