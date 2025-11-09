@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/service"
+	"github.com/ummuys/reportify/internal/validation"
 )
 
 type mdHandler struct {
@@ -143,8 +145,13 @@ func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
+
+		response := append([]byte{'['}, bytes.Join(queries, []byte(","))...)
+		response = append(response, ']')
+
 		g.Set("msg", "user queries are returned")
-		g.JSON(http.StatusOK, models.QueryList{Queries: queries})
+		g.Data(http.StatusOK, "application/json; charset=", response)
+
 	}
 }
 
@@ -190,14 +197,21 @@ func (mdh *mdHandler) DeleteQuery() gin.HandlerFunc {
 	return func(g *gin.Context) {
 		ctx := g.Request.Context()
 		user_id := g.GetInt64("user_id")
-		var dl models.DeleteQuery
-		if err := g.ShouldBindJSON(&dl); err != nil {
+		var rawParam models.RawReportParams
+		if err := g.ShouldBindJSON(&rawParam); err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			return
 		}
 
-		if err := mdh.srv.DeleteQuery(ctx, strconv.FormatInt(user_id, 10), dl.Sql); err != nil {
+		param, err := validation.RequestParams(rawParam)
+		if err != nil {
+			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
+			g.Set("msg", err.Error())
+			return
+		}
+
+		if err := mdh.srv.DeleteQuery(ctx, strconv.FormatInt(user_id, 10), param); err != nil {
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return

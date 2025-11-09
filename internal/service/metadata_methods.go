@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"sort"
 
 	"github.com/rs/zerolog"
@@ -76,7 +77,7 @@ func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableN
 	return &lc, nil
 }
 
-func (mds *mdService) GetQueries(pCtx context.Context, key string) ([]string, error) {
+func (mds *mdService) GetQueries(pCtx context.Context, key string) ([][]byte, error) {
 	mds.logger.Debug().Str("evt", "call GetQueries")
 	return mds.chc.Get(pCtx, key)
 }
@@ -86,7 +87,18 @@ func (mds *mdService) DeleteAllQueries(pCtx context.Context, key string) error {
 	return mds.chc.DeleteAll(pCtx, key)
 }
 
-func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value string) error {
+func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value models.ReportParams) error {
 	mds.logger.Debug().Str("evt", "call DeleteQuery")
-	return mds.chc.Delete(pCtx, key, value)
+	data := models.CacheValue{
+		ReportName: value.ReportComm,
+		ReportComm: value.ReportComm,
+		CreatedAt:  value.CreatedAt,
+		Sql:        value.Sql,
+		CSVSep:     value.CSVSep,
+	}
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return mds.chc.Delete(pCtx, key, bytes)
 }

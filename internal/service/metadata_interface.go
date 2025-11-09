@@ -14,7 +14,7 @@ type MetadataService interface {
 	GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error)
 
 	// CACHE
-	GetQueries(pCtx context.Context, key string) ([]string, error)
+	GetQueries(pCtx context.Context, key string) ([][]byte, error)
 	DeleteAllQueries(pCtx context.Context, key string) error
-	DeleteQuery(pCtx context.Context, key string, value string) error
+	DeleteQuery(pCtx context.Context, key string, value models.ReportParams) error
 }

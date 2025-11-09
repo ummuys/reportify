@@ -61,7 +61,7 @@ func (rc *repCache) Init(pCtx context.Context, queries map[string][]string) erro
 	return nil
 }
 
-func (rc *repCache) Set(pCtx context.Context, key string, value string) error {
+func (rc *repCache) Set(pCtx context.Context, key string, value []byte) error {
 	rc.logger.Debug().Str("evt", "call Set").Msg("")
 
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
@@ -74,7 +74,8 @@ func (rc *repCache) Set(pCtx context.Context, key string, value string) error {
 	return nil
 }
 
-func (rc *repCache) Get(pCtx context.Context, key string) ([]string, error) {
+// Make it into [][]byte, because need for api :(
+func (rc *repCache) Get(pCtx context.Context, key string) ([][]byte, error) {
 	rc.logger.Debug().Str("evt", "call Get").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second)
 	defer cancel()
@@ -84,7 +85,12 @@ func (rc *repCache) Get(pCtx context.Context, key string) ([]string, error) {
 		return nil, fmt.Errorf("can't get a value: %v", err)
 	}
 
-	return value, nil
+	bytes := make([][]byte, len(value))
+	for i, v := range value {
+		bytes[i] = []byte(v)
+	}
+
+	return bytes, nil
 }
 
 func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
@@ -108,7 +114,7 @@ func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
 	return m, nil
 }
 
-func (rc *repCache) Delete(pCtx context.Context, key string, value string) error {
+func (rc *repCache) Delete(pCtx context.Context, key string, value []byte) error {
 	rc.logger.Debug().Str("evt", "call Delete").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
 	defer cancel()

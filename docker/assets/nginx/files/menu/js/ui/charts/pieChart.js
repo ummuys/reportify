@@ -77,12 +77,21 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
 
       preview.innerHTML = '<p>Загрузка данных...</p>';
       try {
-        const { json } = await postReportAndGetBlob('json', sql);
+        const chartNameInput = document.getElementById('chartName');
+        const defaultChartTitle = type === 'donut' ? 'Кольцевая диаграмма' : 'Круговая диаграмма';
+        const normalizedChartName = chartNameInput?.value?.trim() || defaultChartTitle;
+        const { json } = await postReportAndGetBlob({
+          format: 'json',
+          sql,
+          reportName: normalizedChartName,
+          reportComment: `Предпросмотр диаграммы ${schema}.${table}`,
+          csvSep: document.getElementById('csvSeparator')?.value || ",",
+          createdAt: new Date().toISOString(),
+        });
 
         // Если пришёл валидный массив — рисуем график
         if (Array.isArray(json) && json.length) {
-            const chartNameInput = document.getElementById('chartName');
-            const initialTitle = chartNameInput?.value || (type === 'donut' ? 'Кольцевая диаграмма' : 'Круговая диаграмма');
+            const initialTitle = chartNameInput?.value || defaultChartTitle;
 
             // строим график
             const chartInstance = drawPieChart(preview, json, type, initialTitle);

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"strconv"
 
@@ -51,7 +52,12 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		return err
 	}
 
-	if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), params.Sql); err != nil {
+	bytes, err := json.Marshal(params)
+	if err != nil {
+		return err
+	}
+
+	if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), bytes); err != nil {
 		rs.logger.Error().Err(err).Msg("failed to save last query")
 	}
 

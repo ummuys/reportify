@@ -110,6 +110,96 @@ function normalizeReportComment(value) {
     return trimmed || DEFAULT_REPORT_COMMENT;
 }
 
+function tryParseJSONLike(value) {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (!/^[\[{]/.test(trimmed)) return null;
+    try {
+        return JSON.parse(trimmed);
+    } catch {
+        return null;
+    }
+}
+
+function normalizeCachePayload(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (typeof payload === 'string') {
+        const parsed = tryParseJSONLike(payload);
+        return parsed !== null ? normalizeCachePayload(parsed) : [payload];
+    }
+    if (typeof payload === 'object') {
+        if (Array.isArray(payload.queries)) return payload.queries;
+        return [payload];
+    }
+    return [];
+}
+
+function decodeCsvSeparator(value) {
+    if (typeof value === 'string') {
+        return value.trim().charAt(0) || '';
+    }
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+        try {
+            return String.fromCodePoint(value);
+        } catch {
+            return '';
+        }
+    }
+    return '';
+}
+
+function normalizeCacheEntry(raw) {
+    if (raw == null) return null;
+
+    if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (!trimmed) return null;
+        const parsed = tryParseJSONLike(trimmed);
+        if (parsed !== null) {
+            return normalizeCacheEntry(parsed);
+        }
+        return { sql: trimmed, meta: {} };
+    }
+
+    if (typeof raw !== 'object' || Array.isArray(raw)) {
+        return null;
+    }
+
+    const sqlCandidate = raw.sql ?? raw.Sql ?? raw.query ?? raw.Query;
+    const sql = typeof sqlCandidate === 'string' ? sqlCandidate.trim() : '';
+    if (!sql) return null;
+
+    const meta = {};
+    const nameCandidate = raw.report_name ?? raw.ReportName ?? raw.name ?? raw.Name;
+    if (typeof nameCandidate === 'string' && nameCandidate.trim()) {
+        meta.name = nameCandidate.trim();
+    }
+
+    const commentCandidate = raw.report_comm ?? raw.ReportComm ?? raw.comment ?? raw.Comment;
+    if (typeof commentCandidate === 'string' && commentCandidate.trim()) {
+        meta.comment = commentCandidate.trim();
+    }
+
+    const csvCandidate = raw.csv_sep ?? raw.CSVSep ?? raw.csv ?? raw.Csv;
+    const csvSep = decodeCsvSeparator(csvCandidate);
+    if (csvSep) {
+        meta.csvSep = csvSep;
+    }
+
+    const createdCandidate = raw.created_at ?? raw.CreatedAt ?? raw.created ?? raw.Created;
+    if (createdCandidate) {
+        const created = new Date(createdCandidate);
+        if (!Number.isNaN(created.getTime())) {
+            meta.time = created.toLocaleString();
+            meta.savedAt = created.toISOString();
+        }
+    }
+
+    return { sql, meta };
+}
+
 function parseColumnsFromSelect(selectSegment = '') {
     if (!selectSegment) return [];
     return splitSqlList(selectSegment)
@@ -374,6 +464,7 @@ function createEntryFromSql(sql, idx) {
         limit: meta.limit || derived.limit || '',
         name: normalizeReportName(meta.name),
         comment: normalizeReportComment(meta.comment),
+        csvSep: meta.csvSep || '',
         favorite: !!meta.favorite,
         time: meta.time || meta.savedAt || ''
     };
@@ -424,11 +515,15 @@ export async function saveHistoryEntry() {
         return;
     }
 
-    const sortField = el("sortField");
-    const sortDir = el("sortDir");
-    const limitInput = el("limitInput");
-    const reportName = el("reportName");
-    const reportComment = el("reportComment");
+	const sortField = el("sortField");
+	const sortDir = el("sortDir");
+	const limitInput = el("limitInput");
+	const reportName = el("reportName");
+	const reportComment = el("reportComment");
+	const csvSelect = el("csvSeparator");
+	const csvRaw = (csvSelect?.value || ",").trim();
+	const csvSepChar = csvRaw ? csvRaw.charAt(0) : ",";
+	const now = new Date();
 
     const filters = Array.from(document.querySelectorAll('.filter-row')).map(row => ({
         field: row.querySelector('.filterField')?.value || "",
@@ -441,19 +536,21 @@ export async function saveHistoryEntry() {
         dir: row.querySelector('.sortDir')?.value || "ASC"
     }));
 
-    const entry = {
-        schema: state.schema || "",
-        table: state.table || "",
-        chosen: [...(state.chosen || [])],
-        sortField: sortField?.value || "",
-        sortDir: sortDir?.value || "ASC",
-        limit: limitInput?.value.trim() || "",
-        name: normalizeReportName(reportName?.value),
-        comment: normalizeReportComment(reportComment?.value),
-        filters,
-        sorts,
-        time: new Date().toLocaleString()
-    };
+	const entry = {
+		schema: state.schema || "",
+		table: state.table || "",
+		chosen: [...(state.chosen || [])],
+		sortField: sortField?.value || "",
+		sortDir: sortDir?.value || "ASC",
+		limit: limitInput?.value.trim() || "",
+		name: normalizeReportName(reportName?.value),
+		comment: normalizeReportComment(reportComment?.value),
+		filters,
+		sorts,
+		time: now.toLocaleString(),
+		savedAt: now.toISOString(),
+		csvSep: csvSepChar
+	};
 
     mergeMeta(sql, {
         ...entry,
@@ -478,7 +575,25 @@ export async function refreshHistory(options = {}) {
     let lastError = null;
     try {
         const payload = await getCache();
-        const queries = Array.isArray(payload?.queries) ? payload.queries : [];
+        const rawEntries = normalizeCachePayload(payload);
+        const normalizedEntries = rawEntries
+            .map(normalizeCacheEntry)
+            .filter(entry => entry && entry.sql);
+
+        normalizedEntries.forEach(({ sql, meta }) => {
+            if (!meta || typeof meta !== 'object') return;
+            const patch = {};
+            if (meta.name) patch.name = meta.name;
+            if (meta.comment) patch.comment = meta.comment;
+            if (meta.csvSep) patch.csvSep = meta.csvSep;
+            if (meta.time) patch.time = meta.time;
+            if (meta.savedAt) patch.savedAt = meta.savedAt;
+            if (Object.keys(patch).length) {
+                mergeMeta(sql, patch);
+            }
+        });
+
+        const queries = normalizedEntries.map(entry => entry.sql);
         setFallbackQueries(queries);
         reportHistory = buildHistoryFromQueries(fallbackQueries);
     } catch (err) {
@@ -592,12 +707,13 @@ export function hydrateHistoryEntry(entry) {
     entry.sorts = cloneSorts(sortsSource);
 
     entry.sortField = entry.sortField || meta?.sortField || derived?.sortField || '';
-    entry.sortDir = entry.sortDir || meta?.sortDir || derived?.sortDir || 'ASC';
-    entry.limit = entry.limit || meta?.limit || derived?.limit || '';
-    entry.name = normalizeReportName(entry.name || meta?.name);
-    entry.comment = normalizeReportComment(entry.comment || meta?.comment);
-    entry.favorite = typeof entry.favorite === 'boolean' ? entry.favorite : !!meta?.favorite;
-    entry.time = entry.time || meta?.time || meta?.savedAt || '';
+	entry.sortDir = entry.sortDir || meta?.sortDir || derived?.sortDir || 'ASC';
+	entry.limit = entry.limit || meta?.limit || derived?.limit || '';
+	entry.name = normalizeReportName(entry.name || meta?.name);
+	entry.comment = normalizeReportComment(entry.comment || meta?.comment);
+	entry.csvSep = entry.csvSep || meta?.csvSep || '';
+	entry.favorite = typeof entry.favorite === 'boolean' ? entry.favorite : !!meta?.favorite;
+	entry.time = entry.time || meta?.time || meta?.savedAt || '';
 
     return entry;
 }

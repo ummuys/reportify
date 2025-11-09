@@ -509,7 +509,14 @@ export function setupEventListeners() {
         btnDownload.textContent = 'Готовим...';
 
         try {
-            const { blob, filename } = await postReportAndGetBlob(state.format, sqlText.value.trim());
+            const { blob, filename } = await postReportAndGetBlob({
+                format: state.format,
+                sql: sqlText.value.trim(),
+                reportName: reportName.value.trim(),
+                reportComment: reportComment.value.trim(),
+                csvSep: csvSeparator?.value || ",",
+                createdAt: new Date().toISOString(),
+            });
             saveBlob(blob, filename);
             await saveHistoryEntry();
             updateReportHistory();
@@ -533,7 +540,14 @@ export function setupEventListeners() {
         if (!sqlText.value.trim()) { showToast('SQL пустой'); return; }
 
         try {
-            const { blob, format } = await postReportAndGetBlob(state.format, sqlText.value.trim());
+            const { blob, format } = await postReportAndGetBlob({
+                format: state.format,
+                sql: sqlText.value.trim(),
+                reportName: reportName.value.trim(),
+                reportComment: reportComment.value.trim(),
+                csvSep: csvSeparator?.value || ",",
+                createdAt: new Date().toISOString(),
+            });
             (format === 'pdf' || format === 'csv') ? openBlob(blob) : saveBlob(blob, `preview.${format}`);
             await saveHistoryEntry();
             updateReportHistory();
@@ -662,6 +676,9 @@ export function setupEventListeners() {
                 reportComment.value = item.comment || "";
                 reportComment.style.height = 'auto';
                 reportComment.style.height = reportComment.scrollHeight + 'px';
+            }
+            if (csvSeparator && item.csvSep) {
+                csvSeparator.value = item.csvSep;
             }
 
             buildSQL();

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/ummuys/reportify/internal/models"
 )
@@ -14,6 +15,25 @@ func RequestParams(rawParams models.RawReportParams) (models.ReportParams, error
 		params models.ReportParams
 		err    error
 	)
+	if rawParams.ReportName == "" {
+		return models.ReportParams{}, errors.New("invalid report name")
+	}
+	params.ReportName = rawParams.ReportName
+
+	if rawParams.ReportComm == "" {
+		return models.ReportParams{}, errors.New("invalid report commentary")
+	}
+	params.ReportComm = rawParams.ReportComm
+
+	diff := time.Since(rawParams.CreatedAt)
+	if diff < 0 {
+		diff = -diff
+	}
+	if diff > 5*time.Minute {
+		return models.ReportParams{}, errors.New("invalid created report time")
+	}
+	params.CreatedAt = rawParams.CreatedAt
+
 	if err = checkQuery(rawParams.Sql); err != nil {
 		return models.ReportParams{}, err
 	}

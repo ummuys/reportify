@@ -1,11 +1,27 @@
 import { fetchWithToken } from './fetchWithToken.js';
-import { FORMAT_CONFIG, API_BASE } from '../config/index.js';
+import { API_BASE } from '../config/index.js';
 
-export async function postReportAndGetBlob(format, sql, csvSep = ",") {
+export async function postReportAndGetBlob({
+    format = "PDF",
+    sql = "",
+    reportName,
+    reportComment,
+    csvSep,
+    createdAt
+} = {}) {
     const fileFormat = (format || "PDF").toLowerCase(); // 'pdf' | 'csv' | 'xlsx' | 'json'
     const url = `${API_BASE}/api/v1/report/${fileFormat}`;
-    const sep = document.getElementById('csvSeparator')?.value || ",";
-    const payload = { sql: sql.trim(), csv_sep: sep };
+    const sepSource = csvSep ?? document.getElementById('csvSeparator')?.value ?? ",";
+    const normalizedSep = (typeof sepSource === "string" && sepSource.length) ? sepSource : ",";
+    const resolvedName = (reportName ?? document.getElementById('reportName')?.value ?? "").trim();
+    const resolvedComment = (reportComment ?? document.getElementById('reportComment')?.value ?? "").trim();
+    const payload = {
+        report_name: resolvedName,
+        report_comm: resolvedComment,
+        created_at: createdAt ?? new Date().toISOString(),
+        sql: (sql || "").trim(),
+        csv_sep: normalizedSep
+    };
 
     const acceptByFormat = {
         pdf:  "application/pdf",
