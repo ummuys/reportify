@@ -204,7 +204,7 @@ func (mdh *mdHandler) DeleteQuery() gin.HandlerFunc {
 			return
 		}
 
-		param, err := validation.RequestParams(rawParam)
+		param, err := validation.RequestParams(rawParam, false)
 		if err != nil {
 			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			g.Set("msg", err.Error())

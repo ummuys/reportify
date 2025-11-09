@@ -10,7 +10,7 @@ import (
 	"github.com/ummuys/reportify/internal/models"
 )
 
-func RequestParams(rawParams models.RawReportParams) (models.ReportParams, error) {
+func RequestParams(rawParams models.RawReportParams, toCreate bool) (models.ReportParams, error) {
 	var (
 		params models.ReportParams
 		err    error
@@ -25,12 +25,14 @@ func RequestParams(rawParams models.RawReportParams) (models.ReportParams, error
 	}
 	params.ReportComm = rawParams.ReportComm
 
-	diff := time.Since(rawParams.CreatedAt)
-	if diff < 0 {
-		diff = -diff
-	}
-	if diff > 5*time.Minute {
-		return models.ReportParams{}, errors.New("invalid created report time")
+	if toCreate {
+		diff := time.Since(rawParams.CreatedAt)
+		if diff < 0 {
+			diff = -diff
+		}
+		if diff > 5*time.Minute {
+			return models.ReportParams{}, errors.New("invalid created report time")
+		}
 	}
 	params.CreatedAt = rawParams.CreatedAt
 

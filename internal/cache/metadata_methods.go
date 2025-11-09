@@ -119,6 +119,8 @@ func (rc *repCache) Delete(pCtx context.Context, key string, value []byte) error
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
 	defer cancel()
 
+	fmt.Println(value)
+
 	if _, err := rc.cli.LRem(ctx, key, 0, value).Result(); err != nil {
 		return fmt.Errorf("can't delete a value: %v", err)
 	}

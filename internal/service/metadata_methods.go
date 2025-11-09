@@ -89,13 +89,7 @@ func (mds *mdService) DeleteAllQueries(pCtx context.Context, key string) error {
 
 func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value models.ReportParams) error {
 	mds.logger.Debug().Str("evt", "call DeleteQuery")
-	data := models.CacheValue{
-		ReportName: value.ReportComm,
-		ReportComm: value.ReportComm,
-		CreatedAt:  value.CreatedAt,
-		Sql:        value.Sql,
-		CSVSep:     value.CSVSep,
-	}
+	data := models.CacheValue(value)
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err

@@ -52,7 +52,8 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		return err
 	}
 
-	bytes, err := json.Marshal(params)
+	data := models.CacheValue(params)
+	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
