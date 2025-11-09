@@ -1,4 +1,4 @@
-import { state, el } from '../core/index.js';
+﻿import { state, el } from '../core/index.js';
 import { showToast } from './modals.js';
 import { getCache, deleteCacheQuery, deleteAllCache } from '../api/cache.js';
 
@@ -106,8 +106,45 @@ function normalizeReportName(value) {
 }
 
 function normalizeReportComment(value) {
-    const trimmed = typeof value === 'string' ? value.trim() : '';
-    return trimmed || DEFAULT_REPORT_COMMENT;
+	const trimmed = typeof value === 'string' ? value.trim() : '';
+	return trimmed || DEFAULT_REPORT_COMMENT;
+}
+
+function toISOStringSafe(value) {
+	const fallback = new Date().toISOString();
+	if (value instanceof Date) {
+		return value.toISOString();
+	}
+	if (typeof value === 'number' && Number.isFinite(value)) {
+		const fromNumber = new Date(value);
+		return Number.isNaN(fromNumber.getTime()) ? fallback : fromNumber.toISOString();
+	}
+	if (typeof value === 'string') {
+		const trimmed = value.trim();
+		if (!trimmed) return fallback;
+		const parsed = new Date(trimmed);
+		if (Number.isNaN(parsed.getTime())) return fallback;
+		return /^\d{4}-\d{2}-\d{2}T/.test(trimmed) ? trimmed : parsed.toISOString();
+	}
+	return fallback;
+}
+
+function buildRawParamsFromEntry(entry) {
+	if (!entry) return null;
+	const sql = typeof entry.sql === 'string' ? entry.sql.trim() : '';
+	if (!sql) return null;
+
+	const createdSource = entry.savedAt || entry.created_at || entry.createdAt || entry.time;
+	const csvSepSource = entry.csvSep || entry.csv_sep || entry.CSVSep || ",";
+	const csvSepChar = String(csvSepSource || ",").trim().charAt(0) || ",";
+
+	return {
+		report_name: normalizeReportName(entry.name),
+		report_comm: normalizeReportComment(entry.comment),
+		created_at: toISOStringSafe(createdSource),
+		sql,
+		csv_sep: csvSepChar
+	};
 }
 
 function tryParseJSONLike(value) {
@@ -447,27 +484,28 @@ function cloneSorts(sorts = []) {
 }
 
 function createEntryFromSql(sql, idx) {
-    const key = normalizeSqlKey(sql);
-    const meta = historyMeta[key] || {};
-    const displaySql = meta.sql || sql;
-    const derived = deriveMetaFromSql(displaySql) || {};
+	const key = normalizeSqlKey(sql);
+	const meta = historyMeta[key] || {};
+	const displaySql = meta.sql || sql;
+	const derived = deriveMetaFromSql(displaySql) || {};
 
-    return {
-        sql: displaySql,
-        schema: meta.schema || derived.schema || '',
+	return {
+		sql: displaySql,
+		schema: meta.schema || derived.schema || '',
         table: meta.table || derived.table || '',
         chosen: Array.isArray(meta.chosen) && meta.chosen.length ? [...meta.chosen] : [...(derived.chosen || [])],
         filters: Array.isArray(meta.filters) && meta.filters.length ? cloneFilters(meta.filters) : cloneFilters(derived.filters || []),
         sorts: Array.isArray(meta.sorts) && meta.sorts.length ? cloneSorts(meta.sorts) : cloneSorts(derived.sorts || []),
         sortField: meta.sortField || derived.sortField || '',
-        sortDir: meta.sortDir || derived.sortDir || 'ASC',
-        limit: meta.limit || derived.limit || '',
-        name: normalizeReportName(meta.name),
-        comment: normalizeReportComment(meta.comment),
-        csvSep: meta.csvSep || '',
-        favorite: !!meta.favorite,
-        time: meta.time || meta.savedAt || ''
-    };
+		sortDir: meta.sortDir || derived.sortDir || 'ASC',
+		limit: meta.limit || derived.limit || '',
+		name: normalizeReportName(meta.name),
+		comment: normalizeReportComment(meta.comment),
+		csvSep: meta.csvSep || '',
+		savedAt: meta.savedAt || '',
+		favorite: !!meta.favorite,
+		time: meta.time || meta.savedAt || ''
+	};
 }
 
 function escapeHtml(str = '') {
@@ -674,24 +712,32 @@ export function toggleFavoriteEntry(index) {
 }
 
 export async function deleteHistoryEntry(index) {
-    const item = reportHistory[index];
-    if (!item) return false;
-    const ok = await deleteCacheQuery(item.sql);
-    if (!ok) return false;
-    removeMeta(item.sql);
-    removeFallbackQuery(item.sql);
-    reportHistory = buildHistoryFromQueries(fallbackQueries);
-    renderHistory();
-    refreshHistory({ silent: true }).catch(() => {});
-    return true;
+	const item = reportHistory[index];
+	if (!item) return false;
+
+	const payload = buildRawParamsFromEntry(item);
+	if (!payload) {
+		showToast('Не удалось подготовить данные для удаления запроса');
+		return false;
+	}
+
+	const ok = await deleteCacheQuery(payload);
+	if (!ok) return false;
+
+	removeMeta(item.sql);
+	removeFallbackQuery(item.sql);
+	reportHistory = buildHistoryFromQueries(fallbackQueries);
+	renderHistory();
+	refreshHistory({ silent: true }).catch(() => {});
+	return true;
 }
 
 export function hydrateHistoryEntry(entry) {
-    if (!entry) return entry;
-    const key = normalizeSqlKey(entry.sql || '');
-    const meta = historyMeta[key];
-    const derived = deriveMetaFromSql(entry.sql || '');
-    if (!meta && !derived) return entry;
+	if (!entry) return entry;
+	const key = normalizeSqlKey(entry.sql || '');
+	const meta = historyMeta[key];
+	const derived = deriveMetaFromSql(entry.sql || '');
+	if (!meta && !derived) return entry;
 
     entry.sql = (meta && meta.sql) || entry.sql;
     entry.schema = entry.schema || meta?.schema || derived?.schema || '';
@@ -706,14 +752,18 @@ export function hydrateHistoryEntry(entry) {
     const sortsSource = entry.sorts && entry.sorts.length ? entry.sorts : (meta?.sorts || derived?.sorts || []);
     entry.sorts = cloneSorts(sortsSource);
 
-    entry.sortField = entry.sortField || meta?.sortField || derived?.sortField || '';
+	entry.sortField = entry.sortField || meta?.sortField || derived?.sortField || '';
 	entry.sortDir = entry.sortDir || meta?.sortDir || derived?.sortDir || 'ASC';
 	entry.limit = entry.limit || meta?.limit || derived?.limit || '';
 	entry.name = normalizeReportName(entry.name || meta?.name);
 	entry.comment = normalizeReportComment(entry.comment || meta?.comment);
 	entry.csvSep = entry.csvSep || meta?.csvSep || '';
+	entry.savedAt = entry.savedAt || meta?.savedAt || '';
 	entry.favorite = typeof entry.favorite === 'boolean' ? entry.favorite : !!meta?.favorite;
 	entry.time = entry.time || meta?.time || meta?.savedAt || '';
 
-    return entry;
+	return entry;
 }
+
+
+
