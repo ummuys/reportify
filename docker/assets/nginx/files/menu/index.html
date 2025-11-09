@@ -6,7 +6,9 @@
   <title>Конструктор отчёта</title>
   <link rel="stylesheet" href="styles/main.css">
   <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-  <script src="C:/Users/nikit/node_modules/chart.js/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
   <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
@@ -214,9 +216,10 @@
           <input type="text" id="chartName" placeholder="Введите название графика" />
           <select id="chartType">
             <option value="">Выберите тип графика</option>
-            <option value="pie">Пирог</option>
-            <option value="bar">Бар</option>
-            <option value="line">Линейный</option>
+            <option value="pie">Круговая диаграмма (пирог)</option>
+            <option value="donut">Кольцевая диаграмма (пончик)</option>
+            <option value="bar">Столбчатая диаграмма (бар)</option>
+            <option value="line">Линейный график</option>
           </select>
         </div>
       </div>

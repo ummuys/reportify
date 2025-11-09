@@ -6,6 +6,6 @@
     --drop: hsla(0, 0%, 100%, 1); 
     --drop-hover:hsla(0, 0%, 87%, 1);
     --accent: hsla(221, 83%, 53%, 1);
-    --green: hsla(150, 69%, 55%, .8);
+    --green: hsla(150, 69%, 55%, 1);
     --err: hsla(0, 100%, 75%, 1);
 }
