@@ -149,7 +149,7 @@ input.invalid, textarea.invalid {
   font-weight: 600;
 }
 
-.pie-settings-form {
+.chart-settings-form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;     
@@ -162,13 +162,13 @@ input.invalid, textarea.invalid {
 }
 
 /* подписи и селекты */
-.pie-settings-form label {
+.chart-settings-form label {
   display: flex;
   flex-direction: column;
   width: 100%;
 } 
 
-.pie-settings-form select {
+.chart-settings-form select {
   margin-top: 6px;
   width: 100%;
   border: 1px solid black;

@@ -25,7 +25,7 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
     }
 
     container.innerHTML = `
-      <div class="pie-settings-form">
+      <div class="chart-settings-form">
         <label class="chart-field">
           <span>Поле:</span>
           <select id="pieField">
@@ -190,3 +190,64 @@ export function drawPieChart(preview, data, type = 'pie', titleText = '') {
 
   return chart; // возвращаем экземпляр
 }
+
+// ---------------- GHOST PIE / DONUT CHART ----------------
+export function drawGhostPieChart(preview, type = 'pie') {
+  // Уничтожаем старый график, если он есть
+  if (preview._chartInstance) {
+    preview._chartInstance.destroy();
+    preview._chartInstance = null;
+  }
+
+  preview.innerHTML = '';
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 400;
+  canvas.style.opacity = '0';
+  canvas.style.transition = 'opacity 0.8s ease'; // плавное появление
+  preview.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+
+  // Пример данных для "призрачной" диаграммы
+  const data = [30, 25, 20];
+  const labels = ['A', 'B', 'C'];
+
+  const grayColors = [
+    'rgba(180, 180, 180, 0.15)',
+    'rgba(140, 140, 140, 0.15)',
+    'rgba(120, 120, 120, 0.15)'
+  ];
+
+  const ghostChart = new Chart(ctx, {
+    type: type === 'donut' ? 'doughnut' : 'pie',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: grayColors,
+        borderColor: 'rgba(128,128,128,0.15)',
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      responsive: false,
+      animation: false,
+      events: [],
+      cutout: type === 'donut' ? '60%' : '0%',
+      plugins: {
+        legend: { display: false },
+        title: { display: false },
+        tooltip: { enabled: false },
+        datalabels: { display: false } 
+      }
+    }
+  });
+
+  requestAnimationFrame(() => {
+    canvas.style.opacity = '1';
+  });
+
+  preview._chartInstance = ghostChart;
+}
+
