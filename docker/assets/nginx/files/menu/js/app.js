@@ -1,8 +1,8 @@
 // ---- старт ----
 import { API_BASE } from './config/index.js';
 import { loadSchemas } from './api/index.js';
-import { setupEventListeners, updateButtons, updateSchemaSelect, refreshHistory } from './ui/index.js';
-import { showAlert, initChartModal } from './ui/index.js';
+import { syncRoleFromToken } from './core/index.js';
+import { setupEventListeners, updateButtons, updateSchemaSelect, refreshHistory, showAlert, initChartModal, applyRoleRestrictions } from './ui/index.js';
 import { loader } from './ui/loader.js';
 
 function initTypedHeading() {
@@ -38,6 +38,8 @@ function initTypedHeading() {
 async function init() {
   const token = localStorage.getItem("access_token_v1") || "";
   console.log("Используем токен для API:", token ? "присутствует" : "отсутствует");
+  const currentRole = syncRoleFromToken(token);
+  applyRoleRestrictions(currentRole);
 
   initTypedHeading();
 

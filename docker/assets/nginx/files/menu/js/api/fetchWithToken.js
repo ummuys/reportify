@@ -1,5 +1,6 @@
 import { API_BASE, GET_ACCESS_TOKEN_PATH } from '../config/index.js';
-import { showAlert } from '../ui/index.js';
+import { showAlert, applyRoleRestrictions } from '../ui/index.js';
+import { syncRoleFromToken } from '../core/auth.js';
 
 async function requestNewAccessToken() {
   const res = await fetch(GET_ACCESS_TOKEN_PATH, {
@@ -30,6 +31,8 @@ async function requestNewAccessToken() {
 
   if (token) {
     localStorage.setItem("access_token_v1", token);
+    const role = syncRoleFromToken(token);
+    applyRoleRestrictions(role);
     return { ok: true, token };
   }
   return { ok: false, reason: "empty_token" };
