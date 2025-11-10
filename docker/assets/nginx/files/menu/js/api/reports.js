@@ -9,7 +9,7 @@ export async function postReportAndGetBlob({
     csvSep,
     createdAt
 } = {}) {
-    const fileFormat = (format || "PDF").toLowerCase(); // 'pdf' | 'csv' | 'xlsx' | 'json'
+    const fileFormat = (format || "PDF").toLowerCase(); // 'pdf' | 'csv' | 'xlsx' | 'json' | 'chart'
     const url = `${API_BASE}/api/v1/report/${fileFormat}`;
     const sepSource = csvSep ?? document.getElementById('csvSeparator')?.value ?? ",";
     const normalizedSep = (typeof sepSource === "string" && sepSource.length) ? sepSource : ",";
@@ -28,6 +28,7 @@ export async function postReportAndGetBlob({
         csv:  "text/csv",
         xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/zip",
         json: "application/json",
+        chart: "application/json",
         docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     };
     const accept = acceptByFormat[fileFormat] || "*/*";
@@ -38,11 +39,12 @@ export async function postReportAndGetBlob({
         body: JSON.stringify(payload),
     });
 
-    // JSON: fetchWithToken вернёт уже объект/строку (не Response)
-    if (fileFormat === "json") {
+    const expectsJson = fileFormat === "json" || fileFormat === "chart";
+    if (expectsJson) {
         const jsonObj = (res && typeof res === "string") ? JSON.parse(res) : res;
         const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: "application/json" });
-        return { blob, filename: "report.json", format: "json", json: jsonObj };
+        const filename = fileFormat === "chart" ? "chart.json" : "report.json";
+        return { blob, filename, format: fileFormat, json: jsonObj };
     }
 
     // PDF/CSV/XLSX: res — Response с бинарём
@@ -58,6 +60,7 @@ export async function postReportAndGetBlob({
         csv:  "report.csv",
         xlsx: "report.xlsx",
         json: "report.json",
+        chart: "chart.json",
         docx: "report.docx"
     };
     const filename = pickFilename(res.headers, fallbackNameByFormat[fileFormat] || `report.${fileFormat}`);

@@ -107,6 +107,8 @@ func (rh *repHandler) CreateReport() gin.HandlerFunc {
 			g.Header("Content-Type", "text/csv")
 		case "xlxs":
 			g.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		case "chart":
+			fallthrough
 		case "json":
 			g.Header("Content-Type", "application/json")
 		case "docx":
@@ -132,6 +134,8 @@ func isFormat(format string) bool {
 	case "xlsx":
 		fallthrough
 	case "json":
+		fallthrough
+	case "chart":
 		fallthrough
 	case "docx":
 		return true

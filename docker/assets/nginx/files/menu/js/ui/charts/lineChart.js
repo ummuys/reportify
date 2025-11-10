@@ -92,11 +92,20 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
       preview.innerHTML = '<p>Загрузка данных...</p>';
 
       try {
-        const { json } = await postReportAndGetBlob('json', sql);
+        const chartNameInput = document.getElementById('chartName');
+        const defaultChartTitle = 'Линейный график';
+        const normalizedChartName = chartNameInput?.value?.trim() || defaultChartTitle;
+        const { json } = await postReportAndGetBlob({
+          format: 'chart',
+          sql,
+          reportName: normalizedChartName,
+          reportComment: `Предпросмотр диаграммы ${schema}.${table}`,
+          csvSep: document.getElementById('csvSeparator')?.value || ",",
+          createdAt: new Date().toISOString(),
+        });
 
         if (Array.isArray(json) && json.length) {
-          const chartNameInput = document.getElementById('chartName');
-          const initialTitle = chartNameInput?.value || 'Линейный график';
+          const initialTitle = chartNameInput?.value || defaultChartTitle;
 
           const chartInstance = drawLineChart(preview, json, initialTitle);
 

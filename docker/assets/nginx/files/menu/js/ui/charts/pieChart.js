@@ -81,7 +81,7 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
         const defaultChartTitle = type === 'donut' ? 'Кольцевая диаграмма' : 'Круговая диаграмма';
         const normalizedChartName = chartNameInput?.value?.trim() || defaultChartTitle;
         const { json } = await postReportAndGetBlob({
-          format: 'json',
+          format: 'chart',
           sql,
           reportName: normalizedChartName,
           reportComment: `Предпросмотр диаграммы ${schema}.${table}`,

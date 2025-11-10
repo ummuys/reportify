@@ -34,6 +34,10 @@ dev-update-front:
 dev-psql:
 	-docker exec -it db-report psql -U admin -d report
 
+dev-update-volumes:
+	-docker compose -f $(DEV_COMPOSE) down -v
+	-docker compose -f $(DEV_COMPOSE) up -d
+
 
 
 

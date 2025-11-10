@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS university.lab_usage_logs;
+DROP TABLE IF EXISTS university.faculty_workloads;
+DROP TABLE IF EXISTS university.donation_records;
+DROP TABLE IF EXISTS university.campus_events;
+DROP TABLE IF EXISTS university.training_sessions;
+DROP TABLE IF EXISTS university.library_assets;
+DROP TABLE IF EXISTS university.grant_applications;
+DROP TABLE IF EXISTS university.dorm_residents;
+DROP TABLE IF EXISTS university.project_budgets;
+DROP TABLE IF EXISTS university.student_grades;
+DROP SCHEMA IF EXISTS university;

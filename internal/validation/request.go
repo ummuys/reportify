@@ -67,7 +67,7 @@ func checkSepCSV(rawSep string) (rune, error) {
 // ЗАМЕЧАНИЯ
 // 1) Сейчас функция не пропустит в любой позиции цифру 1. Надо подумать как бы это исправить, так как это не позволяет сделать, к примеру, where id = 1;
 // 2) Очень сильная блокировка не дает писать гибкие запросы. Строгую проверку, к примеру, можно убрать у людей, которые имеют токен повышенной возможности
-// 3) select * from zopa where id = 1 -- проходит, а не должна
+// 3) select * from b where id = 1 -- проходит, а не должна
 func checkQuery(query string) error {
 	bannedWords := []string{
 		"drop", "truncate", "delete", "update", "insert", "alter", "create",

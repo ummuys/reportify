@@ -42,6 +42,8 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		err = rs.conv.ToCSV(headers, rows, f, params.CSVSep)
 	case "xlsx":
 		err = rs.conv.ToXLSX(headers, rows, f)
+	case "chart":
+		fallthrough
 	case "json":
 		err = rs.conv.ToJSON(headers, rows, f)
 	case "docx":
@@ -58,8 +60,10 @@ func (rs *repService) CreateReport(pCtx context.Context, user_id int64, params m
 		return err
 	}
 
-	if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), bytes); err != nil {
-		rs.logger.Error().Err(err).Msg("failed to save last query")
+	if format != "chart" {
+		if err := rs.chc.Set(pCtx, strconv.FormatInt(user_id, 10), bytes); err != nil {
+			rs.logger.Error().Err(err).Msg("failed to save last query")
+		}
 	}
 
 	return nil
