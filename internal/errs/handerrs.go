@@ -13,7 +13,7 @@ var (
 	// ANOTHER
 	ErrUserUnauthorized   = errors.New("you need to auth")
 	ErrInvalidCredentials = errors.New("user or password not found")
-	ErrUserNotFound       = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
 	ErrEmptyUsername      = errors.New("empty username")
 	ErrEmptySchemaName    = errors.New("schema name requeired")
 	ErrEmptyTableName     = errors.New("table name required")

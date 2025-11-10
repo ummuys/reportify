@@ -1,79 +1,87 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Панель администратора</title>
-  <link rel="stylesheet" href="../menu/styles/main.css">
-  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/main.css" />
   <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
-  <header class="header admin-header">
-    <div class="header-left">
-      <img src="../img/pgups_logo2.png" alt="Логотип" class="logo" />
-      <div class="admin-title-block">
-        <p class="admin-subtitle">Внутренний доступ</p>
-        <h1 class="admin-title">Панель администратора</h1>
+  <div class="app">
+    <nav class="topbar">
+      <div class="topbar__left">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img" aria-label="Логотип">
+            <circle cx="24" cy="24" r="22"></circle>
+            <path d="M13 27h22M18 20h12"></path>
+          </svg>
+        </div>
+        <div class="brand">
+          <div class="brand__meta">внутренний доступ</div>
+          <h1 class="brand__title">Панель администратора</h1>
+        </div>
       </div>
-    </div>
-    <div class="header-right">
-      <span class="role-chip" id="roleBadge">—</span>
-      <button class="logout-btn" id="logoutBtn">Выйти</button>
-    </div>
-  </header>
-
-  <main class="admin-main">
-    <div class="admin-grid">
-      <article class="endpoint-card gradient-card">
-        <p class="endpoint-tag get">GET</p>
-        <h3>Получить список пользователей</h3>
-        <p>Просмотр актуальных учётных записей с ролями.</p>
-        <button class="endpoint-btn" data-modal="modalUsers">Открыть список</button>
-      </article>
-
-      <article class="endpoint-card">
-        <p class="endpoint-tag post">POST</p>
-        <h3>Создать пользователя</h3>
-        <p>Быстро добавьте нового участника с нужной ролью.</p>
-        <button class="endpoint-btn" data-modal="modalCreate">Создать пользователя</button>
-      </article>
-
-      <article class="endpoint-card">
-        <p class="endpoint-tag patch">PATCH</p>
-        <h3>Обновить пользователя</h3>
-        <p>Смените логин, пароль или роль без лишних шагов.</p>
-        <button class="endpoint-btn" data-modal="modalUpdate">Редактировать</button>
-      </article>
-
-      <article class="endpoint-card danger">
-        <p class="endpoint-tag delete">DELETE</p>
-        <h3>Удалить пользователя</h3>
-        <p>Безвозвратное удаление учётной записи по имени.</p>
-        <button class="endpoint-btn ghost" data-modal="modalDelete">Удалить</button>
-      </article>
-    </div>
-
-    <section class="panel log-panel">
-      <div class="panel-head">
-        <h3>Журнал действий</h3>
+      <div class="topbar__right">
+        <span class="pill" id="roleBadge">role: admin</span>
+        <button class="chip chip--ghost" type="button">О нас</button>
+        <button class="chip chip--primary" type="button" id="logoutBtn">Выйти</button>
       </div>
-      <div class="status-log" id="statusLog"></div>
-    </section>
-  </main>
+    </nav>
+
+    <main class="content wrap">
+      <section class="cards" aria-label="Основные действия">
+        <article class="card card--with-badge">
+          <span class="method get" aria-hidden="true">GET</span>
+          <h3 class="card__title">Получить список пользователей</h3>
+          <p class="card__text">Просмотр актуальных учётных записей с ролями.</p>
+          <button class="btn btn--primary" type="button" data-modal="modalUsers">Открыть список</button>
+        </article>
+
+        <article class="card card--with-badge">
+          <span class="method post" aria-hidden="true">POST</span>
+          <h3 class="card__title">Создать пользователя</h3>
+          <p class="card__text">Быстро добавьте нового участника с нужной ролью.</p>
+          <button class="btn btn--primary" type="button" data-modal="modalCreate">Создать пользователя</button>
+        </article>
+
+        <article class="card card--with-badge">
+          <span class="method patch" aria-hidden="true">PATCH</span>
+          <h3 class="card__title">Обновить пользователя</h3>
+          <p class="card__text">Смените логин, пароль или роль без лишних шагов.</p>
+          <button class="btn btn--primary" type="button" data-modal="modalUpdate">Редактировать</button>
+        </article>
+
+        <article class="card card--with-badge">
+          <span class="method delete" aria-hidden="true">DELETE</span>
+          <h3 class="card__title">Удалить пользователя</h3>
+          <p class="card__text">Безвозвратное удаление учётной записи по имени.</p>
+          <button class="btn btn--danger" type="button" data-modal="modalDelete">Удалить</button>
+        </article>
+      </section>
+
+      <section class="log" aria-label="Журнал действий">
+        <h2 class="section-title">Журнал действий</h2>
+        <div class="log__box">
+          <div class="status-log" id="statusLog" role="log" aria-live="polite"></div>
+          <div class="log__empty" id="logEmpty">Записей пока нет</div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <div class="admin-modal" id="modalUsers" aria-hidden="true">
-    <div class="admin-modal__dialog">
+    <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalUsersTitle">
       <header class="admin-modal__header">
         <div>
-          <p class="modal-tag get">GET /admin/users</p>
-          <h3>Список пользователей</h3>
+          <p class="modal-tag method get">GET /admin/users</p>
+          <h3 class="admin-modal__title" id="modalUsersTitle">Список пользователей</h3>
         </div>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal>&times;</button>
       </header>
       <div class="admin-modal__body">
         <div class="users-table-toolbar">
-          <button class="btn btn-primary" id="btnReloadUsers">Обновить</button>
+          <button class="btn btn--primary" type="button" id="btnReloadUsers">Обновить</button>
         </div>
         <div class="users-table-wrapper">
           <table class="users-table">
@@ -85,7 +93,7 @@
               </tr>
             </thead>
             <tbody id="usersTableBody">
-              <tr><td colspan="3">Нет данных. Нажмите «Обновить».</td></tr>
+              <tr><td colspan="3">Нет данных. Нажмите «Обновить», чтобы загрузить список.</td></tr>
             </tbody>
           </table>
         </div>
@@ -94,13 +102,13 @@
   </div>
 
   <div class="admin-modal" id="modalCreate" aria-hidden="true">
-    <div class="admin-modal__dialog">
+    <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalCreateTitle">
       <header class="admin-modal__header">
         <div>
-          <p class="modal-tag post">POST /admin/users</p>
-          <h3>Создать пользователя</h3>
+          <p class="modal-tag method post">POST /admin/users</p>
+          <h3 class="admin-modal__title" id="modalCreateTitle">Создать пользователя</h3>
         </div>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal>&times;</button>
       </header>
       <div class="admin-modal__body">
         <form id="formCreateUser" class="admin-form">
@@ -110,7 +118,7 @@
           </label>
           <label class="field">
             <span>Пароль</span>
-            <input type="password" name="password" placeholder="•••••" required />
+            <input type="password" name="password" placeholder="********" required />
           </label>
           <label class="field">
             <span>Роль</span>
@@ -120,7 +128,7 @@
             </select>
           </label>
           <div class="modal-actions">
-            <button class="btn btn-primary" type="submit">Создать</button>
+            <button class="btn btn--primary" type="submit">Создать</button>
           </div>
         </form>
       </div>
@@ -128,16 +136,16 @@
   </div>
 
   <div class="admin-modal" id="modalUpdate" aria-hidden="true">
-    <div class="admin-modal__dialog">
+    <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalUpdateTitle">
       <header class="admin-modal__header">
         <div>
-          <p class="modal-tag patch">PATCH /admin/users</p>
-          <h3>Обновить пользователя</h3>
+          <p class="modal-tag method patch">PATCH /admin/users</p>
+          <h3 class="admin-modal__title" id="modalUpdateTitle">Обновить пользователя</h3>
         </div>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal>&times;</button>
       </header>
       <div class="admin-modal__body">
-        <p class="panel-hint">Оставьте поле пустым, если не хотите менять значение.</p>
+        <p class="panel-hint">Заполните только те поля, которые хотите изменить.</p>
         <form id="formUpdateUser" class="admin-form">
           <label class="field">
             <span>ID пользователя</span>
@@ -154,13 +162,13 @@
           <label class="field">
             <span>Новая роль</span>
             <select name="role">
-              <option value="">— без изменений —</option>
+              <option value="">Не менять</option>
               <option value="user">user</option>
               <option value="admin">admin</option>
             </select>
           </label>
           <div class="modal-actions">
-            <button class="btn btn-primary" type="submit">Сохранить</button>
+            <button class="btn btn--primary" type="submit">Обновить</button>
           </div>
         </form>
       </div>
@@ -168,13 +176,13 @@
   </div>
 
   <div class="admin-modal" id="modalDelete" aria-hidden="true">
-    <div class="admin-modal__dialog">
+    <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalDeleteTitle">
       <header class="admin-modal__header">
         <div>
-          <p class="modal-tag delete">DELETE /admin/users/:username</p>
-          <h3>Удалить пользователя</h3>
+          <p class="modal-tag method delete">DELETE /admin/users/:username</p>
+          <h3 class="admin-modal__title" id="modalDeleteTitle">Удалить пользователя</h3>
         </div>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <button class="modal-close" type="button" aria-label="Закрыть" data-close-modal>&times;</button>
       </header>
       <div class="admin-modal__body">
         <form id="formDeleteUser" class="admin-form">
@@ -183,7 +191,7 @@
             <input type="text" name="username" placeholder="username" required />
           </label>
           <div class="modal-actions">
-            <button class="btn btn-remove" type="submit">Удалить</button>
+            <button class="btn btn--danger" type="submit">Удалить</button>
           </div>
         </form>
       </div>
@@ -191,11 +199,11 @@
   </div>
 
   <div id="alertModal" class="modal-overlay" style="display:none;">
-    <div class="modal">
-      <div class="modal-title" id="alertTitle">Сообщение</div>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alertTitle">
+      <div class="modal-title" id="alertTitle">Уведомление</div>
       <div class="modal-message" id="alertMessage"></div>
       <div class="modal-actions">
-        <button id="alertOk" class="btn btn-primary">OK</button>
+        <button id="alertOk" class="btn btn--primary" type="button">OK</button>
       </div>
     </div>
   </div>
