@@ -43,23 +43,18 @@ export function initChartModal() {
 
       if (btnDownload) btnDownload.disabled = true;
 
-      // 🧹 Уничтожаем предыдущий график, если он есть
       if (chartPreview._chartInstance) {
         chartPreview._chartInstance.destroy();
         chartPreview._chartInstance = null;
       }
 
-      // 🧼 Очищаем превью
       chartPreview.innerHTML = '';
 
-      // 🧩 Очищаем настройки
       chartSettings.innerHTML = '';
       chartSettings.style.display = type ? 'flex' : 'none';
 
-      // 🧭 Плейсхолдер
       placeholder.style.display = type ? 'none' : 'flex';
 
-      // 🔄 Настройки для конкретного типа
       if (type === 'pie' || type === 'donut') {
         drawGhostPieChart(chartPreview, type);
         await setupPieSettings(chartSettings, chartPreview, type, btnDownload);

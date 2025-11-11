@@ -24,44 +24,61 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
       return;
     }
 
-    // 🔧 интерфейс настройки
     container.innerHTML = `
       <div class="chart-settings-form">
-        <label class="chart-field">
-          <span>Ось X (категория):</span>
-          <select id="barX">
-            <option value="">Выберите поле</option>
-            ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-          </select>
-        </label>
+        <div class="chart-settings-scrollable">
+            <h2 style="font-size:18px;margin-bottom:4px;margin-top:2px">Основные параметры</h2>
+            <label class="chart-field">
+            <span>Ось X (категория):</span>
+            <select id="barX">
+                <option value="">Выберите поле</option>
+                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Ось Y (числовое поле):</span>
-          <select id="barY">
-            <option value="">Выберите поле</option>
-            ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Ось Y (числовое поле):</span>
+            <select id="barY">
+                <option value="">Выберите поле</option>
+                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Функция:</span>
-          <select id="barFunc">
-            <option value="">Выберите функцию</option>
-            <option value="count">Количество (COUNT)</option>
-            <option value="sum">Сумма (SUM)</option>
-            <option value="avg">Среднее (AVG)</option>
-            <option value="max">Максимум (MAX)</option>
-            <option value="min">Минимум (MIN)</option>
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Функция:</span>
+            <select id="barFunc">
+                <option value="">Выберите функцию</option>
+                <option value="count">Количество (COUNT)</option>
+                <option value="sum">Сумма (SUM)</option>
+                <option value="avg">Среднее (AVG)</option>
+                <option value="max">Максимум (MAX)</option>
+                <option value="min">Минимум (MIN)</option>
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Ориентация:</span>
-          <select id="barOrientation">
-            <option value="vertical">Вертикальная</option>
-            <option value="horizontal">Горизонтальная</option>
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Ориентация:</span>
+            <select id="barOrientation">
+                <option value="vertical">Вертикальная</option>
+                <option value="horizontal">Горизонтальная</option>
+            </select>
+            </label>
+
+            <div class= "chart-display-settings">
+                <h2 style="font-size:18px;margin-bottom:4px">Отображение</h2>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать подписи на сегментах</span>
+                <input type="checkbox" id="showLabels" checked />
+                </label>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать сетку</span>
+                <input type="checkbox" id="showGrid" checked />
+                </label>
+
+            </div>
+        </div>
 
         <button id="barBuild" class="btn btn-primary" disabled>Построить график</button>
       </div>
@@ -72,6 +89,11 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
     const selFunc = container.querySelector('#barFunc');
     const selOrientation = container.querySelector('#barOrientation');
     const btnBuild = container.querySelector('#barBuild');
+
+    selOrientation.addEventListener('change', () => {
+        // обновляем призрачную диаграмму в превью
+        drawGhostBarChart(preview, selOrientation.value);
+    });
 
     [selX, selY, selFunc].forEach(el =>
       el.addEventListener('change', () => {
@@ -86,6 +108,9 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
       const func = selFunc.value;
       const orientation = selOrientation.value;
       if (!x || !y || !func) return;
+
+      const showLabels = container.querySelector('#showLabels').checked;
+      const showGrid = container.querySelector('#showGrid').checked;
 
       let sql;
       if (func === 'count') {
@@ -118,7 +143,10 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
         if (Array.isArray(json) && json.length) {
           const initialTitle = chartNameInput?.value || defaultChartTitle;
 
-          const chartInstance = drawBarChart(preview, json, orientation, initialTitle);
+          const chartInstance = drawBarChart(preview, json, orientation, initialTitle, {
+            showLabels,
+            showGrid
+          });
 
           if (btnDownload) btnDownload.disabled = false;
 
@@ -133,7 +161,7 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
           preview.innerHTML = `<p style="color:red;">Нет данных для построения графика.</p>`;
         }
       } catch (e) {
-        preview.innerHTML = `<p style="color:red;">Ошибка загрузки данных: ${e.message}</p>`;
+        preview.innerHTML = `<p style="color:red;">Невозможно построить график по введенным полям</p>`;
       }
     });
   } catch (err) {
@@ -142,7 +170,7 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
 }
 
 // ---------------- DRAW BAR CHART ----------------
-export function drawBarChart(preview, data, orientation = 'vertical', titleText = '') {
+export function drawBarChart(preview, data, orientation = 'vertical', titleText = '', opts = {}) {
   if (preview._chartInstance) preview._chartInstance.destroy();
 
   preview.innerHTML = '';
@@ -156,6 +184,11 @@ export function drawBarChart(preview, data, orientation = 'vertical', titleText 
   const colors = generateNaturalColors(values.length);
   const ctx = canvas.getContext('2d');
 
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal || 1;
+  const padding = range * 0.2; // 20% запаса сверху и снизу
+
   const chart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -168,36 +201,49 @@ export function drawBarChart(preview, data, orientation = 'vertical', titleText 
     },
     options: {
       responsive: true,
-      indexAxis: orientation === 'horizontal' ? 'y' : 'x', // ⬅️ ориентация
+      indexAxis: orientation === 'horizontal' ? 'y' : 'x', 
       plugins: {
         title: {
           display: true,
           text: titleText || 'Столбчатая диаграмма',
           font: { size: 16 }
         },
-        legend: { display: false },
+        legend: {
+            display: false
+        },
         tooltip: {
           callbacks: {
-            label: function(ctx) {
-              return `${ctx.label}: ${ctx.parsed.y ?? ctx.parsed.x}`;
+            label: (ctx) => {
+              const val = ctx.parsed;
+              const pct = ((val / total) * 100).toFixed(1) + '%';
+              return opts.showPercent
+                ? `${ctx.label}: ${val} (${pct})`
+                : `${ctx.label}: ${val}`;
             }
           }
         },
         datalabels: {
+          display: opts.showLabels ?? true,
           color: '#000',
           anchor: orientation === 'horizontal' ? 'end' : 'end', // где крепится подпись
           align: orientation === 'horizontal' ? 'right' : 'top', // смещение подписи
           offset: orientation === 'horizontal' ? 4 : 0, // отступ от края столба
           clamp: true, // не даёт тексту выходить за пределы канваса
           font: { weight: 'bold', size: 12 },
-          formatter: v => v
+          formatter: v => v.toFixed(2)
         }
       },
       scales: {
-        x: { title: { display: orientation === 'vertical', text: 'Категории' } },
+        x: { 
+            title: { display: orientation === 'vertical', text: 'Категории' },
+            grid: {display: opts.showGrid || false}
+        },
         y: { 
           title: { display: orientation === 'vertical', text: 'Значения' },
-          beginAtZero: true
+          grid: {display: opts.showGrid || false},
+          beginAtZero: false,
+          min: minVal - padding, 
+          max: maxVal + padding
         }
       }
     }
@@ -208,7 +254,7 @@ export function drawBarChart(preview, data, orientation = 'vertical', titleText 
 }
 
 // ---------------- GHOST BAR CHART ----------------
-export function drawGhostBarChart(preview) {
+export function drawGhostBarChart(preview, orientation = 'vertical') {
   if (preview._chartInstance) {
     preview._chartInstance.destroy();
     preview._chartInstance = null;
@@ -240,6 +286,7 @@ export function drawGhostBarChart(preview) {
     options: {
       responsive: false,
       animation: false,
+      indexAxis: orientation === 'vertical' ? 'x' : 'y',
       events: [],
       plugins: {
         legend: { display: false },
