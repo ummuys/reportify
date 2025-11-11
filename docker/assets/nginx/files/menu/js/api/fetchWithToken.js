@@ -1,4 +1,4 @@
-import { API_BASE, GET_ACCESS_TOKEN_PATH } from '../config/index.js';
+import { BASE_PATH, GET_ACCESS_TOKEN_PATH } from '../config/index.js';
 import { showAlert, applyRoleRestrictions } from '../ui/index.js';
 import { syncRoleFromToken } from '../core/auth.js';
 

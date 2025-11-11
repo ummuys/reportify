@@ -3,11 +3,14 @@ GREEN  := \033[1;32m
 RESET  := \033[0m
 
 
+SCRIPTS_PATH=scripts
+UPDATE_SECRETS=$(SCRIPTS_PATH)/update_secrets.sh
 DEV_COMPOSE=dev/docker-compose-dev.yaml
 PROD_COMPOSE=prod/docker-compose-prod.yaml
 
 # 			DEV			# 
 dev-start:
+	@./$(UPDATE_SECRETS)
 	-docker network create reportify_network
 	-docker compose -f $(DEV_COMPOSE) up -d
 
@@ -15,6 +18,7 @@ dev-stop:
 	-docker compose -f $(DEV_COMPOSE) down
 
 dev-update:
+	@./$(UPDATE_SECRETS)
 	-docker network create reportify_network
 	-docker compose -f $(DEV_COMPOSE) down
 	-docker image rm dev-app

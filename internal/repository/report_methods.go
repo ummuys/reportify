@@ -6,6 +6,7 @@ import (
 
 	"github.com/ummuys/reportify/internal/config"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 )
@@ -65,7 +66,9 @@ func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]a
 		}
 
 		row := make([]any, len(vals))
-		copy(row, vals)
+		for i, v := range vals {
+			row[i] = convertPGIntoGo(v)
+		}
 		data = append(data, row)
 	}
 
@@ -74,4 +77,62 @@ func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]a
 	}
 
 	return headers, data, rows.Err()
+}
+
+func convertPGIntoGo(v any) any {
+	switch val := v.(type) {
+	case nil:
+		return nil
+
+	case pgtype.Numeric:
+		if f, err := val.Float64Value(); err == nil {
+			return f.Float64
+		}
+		return nil
+
+	case pgtype.Int2:
+		if val.Valid {
+			return val.Int16
+		}
+		return nil
+
+	case pgtype.Int4:
+		if val.Valid {
+			return val.Int32
+		}
+		return nil
+
+	case pgtype.Int8:
+		if val.Valid {
+			return val.Int64
+		}
+		return nil
+
+	case pgtype.Bool:
+		if val.Valid {
+			return val.Bool
+		}
+		return nil
+
+	case pgtype.Text:
+		if val.Valid {
+			return val.String
+		}
+		return nil
+
+	case pgtype.Timestamp:
+		if val.Valid {
+			return val.Time
+		}
+		return nil
+
+	case pgtype.Date:
+		if val.Valid {
+			return val.Time
+		}
+		return nil
+
+	default:
+		return v
+	}
 }
