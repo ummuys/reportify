@@ -25,25 +25,58 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
     }
 
     container.innerHTML = `
-      <div class="chart-settings-form">
-        <label class="chart-field">
-          <span>Поле:</span>
-          <select id="pieField">
-            <option value="">Выберите поле</option>
-            ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-          </select>
-        </label>
+      <div class="chart-settings-form" style="align-items:flex-start;gap:8px;">
+        <div class="chart-settings-scrollable">
+            <h2 style="font-size:18px;margin-bottom:4px;margin-top:2px">Основные параметры</h2>
+            <label class="chart-field">
+            <span>Поле:</span>
+            <select id="pieField">
+                <option value="">Выберите поле</option>
+                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Функция:</span>
-          <select id="pieFunc">
-            <option value="">Выберите функцию</option>
-            <option value="value">Значение поля</option>
-            <option value="count">Количество (COUNT)</option>
-            <option value="sum">Сумма (SUM)</option>
-            <option value="product">Произведение (PRODUCT)</option>
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Функция:</span>
+            <select id="pieFunc">
+                <option value="">Выберите функцию</option>
+                <option value="value">Значение поля</option>
+                <option value="count">Количество (COUNT)</option>
+                <option value="sum">Сумма (SUM)</option>
+                <option value="product">Произведение (PRODUCT)</option>
+            </select>
+            </label>
+
+            <div class= "chart-display-settings">
+                <h2 style="font-size:18px;margin-bottom:4px">Отображение</h2>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать легенду</span>
+                <input type="checkbox" id="showLegend" checked />
+                </label>
+
+                <label class="chart-field">
+                <span>Позиция легенды:</span>
+                <select id="legendPosition">
+                    <option value="bottom">Снизу</option>
+                    <option value="right">Справа</option>
+                    <option value="left">Слева</option>
+                    <option value="top">Сверху</option>
+                </select>
+                </label>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать подписи на сегментах</span>
+                <input type="checkbox" id="showLabels" checked />
+                </label>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать проценты</span>
+                <input type="checkbox" id="showPercent" />
+                </label>
+
+            </div>
+        </div>
 
         <button id="pieBuild" class="btn btn-primary" disabled>Построить график</button>
       </div>
@@ -64,6 +97,11 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
       const func = selFunc.value;
       if (!field || !func) return;
 
+      const showLegend = container.querySelector('#showLegend').checked;
+      const legendPosition = container.querySelector('#legendPosition').value;
+      const showLabels = container.querySelector('#showLabels').checked;
+      const showPercent = container.querySelector('#showPercent').checked;
+
       let sql;
       if (func === 'value') {
         sql = `SELECT ${field} AS label, ${field} AS value FROM ${schema}.${table}`;
@@ -76,6 +114,7 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
       }
 
       preview.innerHTML = '<p>Загрузка данных...</p>';
+
       try {
         const chartNameInput = document.getElementById('chartName');
         const defaultChartTitle = type === 'donut' ? 'Кольцевая диаграмма' : 'Круговая диаграмма';
@@ -89,45 +128,42 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
           createdAt: new Date().toISOString(),
         });
 
-        // Если пришёл валидный массив — рисуем график
         if (Array.isArray(json) && json.length) {
-            const initialTitle = chartNameInput?.value || defaultChartTitle;
+          const initialTitle = chartNameInput?.value || defaultChartTitle;
 
-            // строим график
-            const chartInstance = drawPieChart(preview, json, type, initialTitle);
+          const chartInstance = drawPieChart(preview, json, type, initialTitle, {
+            showLegend,
+            legendPosition,
+            showLabels,
+            showPercent,
+          });
 
-            // включаем кнопку скачивания
-            if (btnDownload) btnDownload.disabled = false;
+          if (btnDownload) btnDownload.disabled = false;
 
-            // динамическое обновление заголовка
-            if (chartNameInput) {
-                chartNameInput.addEventListener('input', () => {
-                chartInstance.options.plugins.title.text = chartNameInput.value || initialTitle;
-                chartInstance.update();
-                });
-            }
+          if (chartNameInput) {
+            chartNameInput.addEventListener('input', () => {
+              chartInstance.options.plugins.title.text = chartNameInput.value || initialTitle;
+              chartInstance.update();
+            });
+          }
         } else {
-          if (btnDownload) btnDownload.disabled = true; // блокируем, если данных нет
           preview.innerHTML = `<p style="color:red;">Нет данных для построения графика.</p>`;
+          if (btnDownload) btnDownload.disabled = true;
         }
       } catch (e) {
-        preview.innerHTML = `<p style="color:red;">Ошибка загрузки данных: ${e.message}</p>`;
+        preview.innerHTML = `<p style="color:red;">Невозможно построить график по введенным полям</p>`;
       }
     });
 
   } catch (err) {
     container.innerHTML = `<p style="color:red;">Ошибка загрузки колонок: ${err.message}</p>`;
   }
-
-  
 }
 
+
 // ---------------- DRAW PIE / DONUT CHART ----------------
-export function drawPieChart(preview, data, type = 'pie', titleText = '') {
-  // Уничтожаем старый график
-  if (preview._chartInstance) {
-    preview._chartInstance.destroy();
-  }
+export function drawPieChart(preview, data, type = 'pie', titleText = '', opts = {}) {
+  if (preview._chartInstance) preview._chartInstance.destroy();
 
   preview.innerHTML = '';
   const canvas = document.createElement('canvas');
@@ -138,12 +174,9 @@ export function drawPieChart(preview, data, type = 'pie', titleText = '') {
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
   const colors = generateNaturalColors(values.length);
+  const total = values.reduce((a, b) => a + b, 0);
 
   const ctx = canvas.getContext('2d');
-
-  if (window.ChartDataLabels) {
-    Chart.register(window.ChartDataLabels);
-  }
 
   const chart = new Chart(ctx, {
     type: type === 'donut' ? 'doughnut' : 'pie',
@@ -166,30 +199,41 @@ export function drawPieChart(preview, data, type = 'pie', titleText = '') {
           text: titleText || (type === 'donut' ? 'Кольцевая диаграмма' : 'Круговая диаграмма'),
           font: { size: 16 }
         },
-        legend: { position: 'bottom', labels: { boxWidth: 20, font: { size: 14 } } },
+        legend: {
+          display: opts.showLegend ?? true,
+          position: opts.legendPosition || 'bottom',
+          labels: { boxWidth: 20, font: { size: 13 } }
+        },
         tooltip: {
           callbacks: {
-            label: function(ctx) {
-              const label = ctx.label || '';
-              const val = ctx.parsed || 0;
-              return `${label}: ${val}`;
+            label: (ctx) => {
+              const val = ctx.parsed.toFixed(2);
+              const pct = ((val / total) * 100).toFixed(1) + '%';
+              return opts.showPercent
+                ? `${ctx.label}: ${val} (${pct})`
+                : `${ctx.label}: ${val}`;
             }
           }
         },
         datalabels: {
+          display: opts.showLabels ?? true,
           color: '#fff',
           font: { weight: 'bold', size: 13 },
-          formatter: (value) => value
+          formatter: (value) => {
+            if (opts.showPercent) {
+              return ((value / total) * 100).toFixed(1) + '%';
+            }
+            return value;
+          }
         }
       }
     }
   });
 
-  // Сохраняем инстанс графика для дальнейших обновлений и удаления
   preview._chartInstance = chart;
-
-  return chart; // возвращаем экземпляр
+  return chart;
 }
+
 
 // ---------------- GHOST PIE / DONUT CHART ----------------
 export function drawGhostPieChart(preview, type = 'pie') {

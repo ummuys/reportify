@@ -26,33 +26,56 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
 
     container.innerHTML = `
       <div class="chart-settings-form">
-        <label class="chart-field">
-          <span>Ось X (категории):</span>
-          <select id="lineX">
-            <option value="">Выберите поле</option>
-            ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-          </select>
-        </label>
+        <div class="chart-settings-scrollable">
+            <h2 style="font-size:18px;margin-bottom:4px;margin-top:2px">Основные параметры</h2>
+            <label class="chart-field">
+            <span>Ось X (категории):</span>
+            <select id="lineX">
+                <option value="">Выберите поле</option>
+                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Ось Y (числовое поле):</span>
-          <select id="lineY">
-            <option value="">Выберите поле</option>
-            ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Ось Y (числовое поле):</span>
+            <select id="lineY">
+                <option value="">Выберите поле</option>
+                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+            </label>
 
-        <label class="chart-field">
-          <span>Функция:</span>
-          <select id="lineFunc">
-            <option value="">Выберите функцию</option>
-            <option value="count">Количество (COUNT)</option>
-            <option value="sum">Сумма (SUM)</option>
-            <option value="avg">Среднее (AVG)</option>
-            <option value="max">Максимум (MAX)</option>
-            <option value="min">Минимум (MIN)</option>
-          </select>
-        </label>
+            <label class="chart-field">
+            <span>Функция:</span>
+            <select id="lineFunc">
+                <option value="">Выберите функцию</option>
+                <option value="count">Количество (COUNT)</option>
+                <option value="sum">Сумма (SUM)</option>
+                <option value="avg">Среднее (AVG)</option>
+                <option value="max">Максимум (MAX)</option>
+                <option value="min">Минимум (MIN)</option>
+            </select>
+            </label>
+
+            <div class= "chart-display-settings">
+                <h2 style="font-size:18px;margin-bottom:4px">Отображение</h2>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать подписи на сегментах</span>
+                <input type="checkbox" id="showLabels" checked />
+                </label>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Показывать сетку</span>
+                <input type="checkbox" id="showGrid" checked />
+                </label>
+
+                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
+                <span>Закрасить площадь под графиком</span>
+                <input type="checkbox" id="fillArea" />
+                </label>
+
+            </div>
+        </div>
 
         <button id="lineBuild" class="btn btn-primary" disabled>Построить график</button>
       </div>
@@ -75,6 +98,10 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
       const y = selY.value;
       const func = selFunc.value;
       if (!x || !y || !func) return;
+
+      const showLabels = container.querySelector('#showLabels').checked;
+      const showGrid = container.querySelector('#showGrid').checked;
+      const fillArea = container.querySelector('#fillArea').checked;
 
       let sql;
       if (func === 'count') {
@@ -107,7 +134,11 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
         if (Array.isArray(json) && json.length) {
           const initialTitle = chartNameInput?.value || defaultChartTitle;
 
-          const chartInstance = drawLineChart(preview, json, initialTitle);
+          const chartInstance = drawLineChart(preview, json, initialTitle, {
+            showLabels,
+            showGrid,
+            fillArea
+          });
 
           if (btnDownload) btnDownload.disabled = false;
 
@@ -122,7 +153,7 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
           preview.innerHTML = `<p style="color:red;">Нет данных для построения графика.</p>`;
         }
       } catch (e) {
-        preview.innerHTML = `<p style="color:red;">Ошибка загрузки данных: ${e.message}</p>`;
+        preview.innerHTML = `<p style="color:red;">Невозможно построить график по введенным полям</p>`;
       }
     });
   } catch (err) {
@@ -131,7 +162,7 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
 }
 
 // ---------------- DRAW LINE CHART ----------------
-export function drawLineChart(preview, data, titleText = '') {
+export function drawLineChart(preview, data, titleText = '', opts = {}) {
   if (preview._chartInstance) preview._chartInstance.destroy();
 
   preview.innerHTML = '';
@@ -142,8 +173,12 @@ export function drawLineChart(preview, data, titleText = '') {
 
   const labels = data.map(item => item.label);
   const values = data.map(item => item.value);
-  const colors = generateNaturalColors(1);
   const ctx = canvas.getContext('2d');
+
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal || 1;
+  const padding = range * 0.2; // 20% запаса сверху и снизу
 
   const chart = new Chart(ctx, {
     type: 'line',
@@ -152,11 +187,11 @@ export function drawLineChart(preview, data, titleText = '') {
       datasets: [{
         label: 'Значения',
         data: values,
-        borderColor: colors[0],
+        borderColor: 'rgba(59,130,246,0.8)',
+        fill: opts.fillArea || false,
         backgroundColor: 'rgba(59,130,246,0.1)',
-        fill: true,
         tension: 0.3,
-        pointBackgroundColor: colors[0],
+        pointBackgroundColor: 'rgba(59,130,246,1)',
         pointRadius: 4
       }]
     },
@@ -175,20 +210,25 @@ export function drawLineChart(preview, data, titleText = '') {
           }
         },
         datalabels: {
+          display: opts.showLabels ?? true,
           align: 'top',
           anchor: 'end',
           color: '#000',
           font: { weight: 'bold', size: 12 },
-          formatter: v => v
+          formatter: v => v.toFixed(2)
         }
       },
       scales: {
         x: {
-          title: { display: true, text: 'Категории' }
+          title: { display: true, text: 'Категории' },
+          grid: {display: opts.showGrid || false}
         },
         y: {
-          beginAtZero: true,
-          title: { display: true, text: 'Значения' }
+          beginAtZero: false,
+          min: minVal - padding, 
+          max: maxVal + padding, 
+          title: { display: true, text: 'Значения' },
+          grid: {display: opts.showGrid || false}
         }
       }
     }

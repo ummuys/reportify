@@ -72,14 +72,14 @@
 }
 
 /* Красивый скролл для WebKit-браузеров */
-#historyList::-webkit-scrollbar {
+#historyList::-webkit-scrollbar, .chart-settings::-webkit-scrollbar {
   width: 8px;
 }
-#historyList::-webkit-scrollbar-thumb {
+#historyList::-webkit-scrollbar-thumb, .chart-settings::-webkit-scrollbar-thumb {
   background-color: hsla(167, 22%, 71%, .7);
   border-radius: 8px;
 }
-#historyList::-webkit-scrollbar-thumb:hover {
+#historyList::-webkit-scrollbar-thumb:hover, .chart-settings::-webkit-scrollbar-thumb:hover {
   background-color: hsla(167, 22%, 71%, .9);
 }
 
