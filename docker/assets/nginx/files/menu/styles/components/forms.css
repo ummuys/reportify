@@ -183,7 +183,7 @@ input.invalid, textarea.invalid {
 
 .chart-settings-form select {
   margin-top: 6px;
-  width: 100%;
+  width: 95%;
   border: 1px solid black;
   border-radius: 10px;
 }
@@ -191,5 +191,5 @@ input.invalid, textarea.invalid {
 .chart-display-settings {
   display: flex;
   flex-direction: column;
-  gap: 16px;                   
+  gap: 20px;                  
 }
