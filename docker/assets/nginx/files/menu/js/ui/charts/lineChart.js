@@ -85,6 +85,40 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
     const selY = container.querySelector('#lineY');
     const selFunc = container.querySelector('#lineFunc');
     const btnBuild = container.querySelector('#lineBuild');
+    const showLabels = container.querySelector('#showLabels').checked;
+    const showGrid = container.querySelector('#showGrid').checked;
+    const fillArea = container.querySelector('#fillArea').checked;
+
+    const updateLiveChart = () => {
+      const chart = preview._chartInstance;
+      if (!chart) return;
+
+      const showLabels = container.querySelector('#showLabels').checked;
+      const showGrid = container.querySelector('#showGrid').checked;
+      const fillArea = container.querySelector('#fillArea').checked;
+
+      // Обновляем только то, что реально есть
+      if (chart.options.scales.x && chart.options.scales.y) {
+        chart.options.scales.x.grid.display = showGrid;
+        chart.options.scales.y.grid.display = showGrid;
+      }
+
+      if (chart.options.plugins.datalabels) {
+        chart.options.plugins.datalabels.display = showLabels;
+      }
+
+      if (chart.data.datasets) {
+        chart.data.datasets.forEach(ds => {
+            ds.fill = fillArea;
+        });
+      }
+
+      chart.update();
+    };
+
+    container.querySelector("#showLabels").addEventListener('change', updateLiveChart);
+    container.querySelector("#showGrid").addEventListener('change', updateLiveChart);
+    container.querySelector("#fillArea").addEventListener('change', updateLiveChart);
 
     [selX, selY, selFunc].forEach(el =>
       el.addEventListener('change', () => {
@@ -98,10 +132,6 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
       const y = selY.value;
       const func = selFunc.value;
       if (!x || !y || !func) return;
-
-      const showLabels = container.querySelector('#showLabels').checked;
-      const showGrid = container.querySelector('#showGrid').checked;
-      const fillArea = container.querySelector('#fillArea').checked;
 
       let sql;
       if (func === 'count') {
@@ -139,6 +169,8 @@ export async function setupLineSettings(container, preview, btnDownload = null) 
             showGrid,
             fillArea
           });
+
+          updateLiveChart();
 
           if (btnDownload) btnDownload.disabled = false;
 
@@ -239,7 +271,7 @@ export function drawLineChart(preview, data, titleText = '', opts = {}) {
 }
 
 // ---------------- GHOST LINE CHART ----------------
-export function drawGhostLineChart(preview) {
+export function drawGhostLineChart(preview, container) {
   if (preview._chartInstance) {
     preview._chartInstance.destroy();
     preview._chartInstance = null;
@@ -263,7 +295,7 @@ export function drawGhostLineChart(preview) {
         data: [2, 4, 3, 5],
         borderColor: 'rgba(150,150,150,0.2)',
         backgroundColor: 'rgba(180,180,180,0.1)',
-        fill: true,
+        fill: false,
         pointRadius: 0,
         tension: 0.3
       }]
@@ -276,15 +308,51 @@ export function drawGhostLineChart(preview) {
         legend: { display: false },
         tooltip: { enabled: false },
         title: { display: false },
-        datalabels: { display: false }
+        datalabels: {
+          display: true,
+          align: 'top',
+          anchor: 'end',
+          color: 'rgba(150,150,150,0.6)',
+          font: { size: 12 },
+          formatter: v => v.toFixed(2)
+        }
       },
       scales: {
-        x: { display: false },
-        y: { display: false }
+        x: {
+            display: true,
+        },
+        y: {
+            display: true,
+            min: 1,
+            max: 6
+        }
       }
     }
   });
 
   requestAnimationFrame(() => { canvas.style.opacity = '1'; });
   preview._chartInstance = ghostChart;
+
+  if (container) {
+    const fillInput = container.querySelector('#fillArea');
+    const gridInput = container.querySelector('#showGrid');
+    const labelInput = container.querySelector('#showLabels');
+
+    const updateGhost = () => {
+      const fill = fillInput?.checked ?? true;
+      const showGrid = gridInput?.checked ?? false;
+      const showLabels = labelInput?.checked ?? false;
+
+      ghostChart.data.datasets.forEach(ds => ds.fill = fill);
+      ghostChart.options.plugins.datalabels.display = showLabels;
+      ghostChart.options.scales.x.display = showGrid;
+      ghostChart.options.scales.y.display = showGrid;
+
+      ghostChart.update();
+    };
+
+    fillInput?.addEventListener('change', updateGhost);
+    gridInput?.addEventListener('change', updateGhost);
+    labelInput?.addEventListener('change', updateGhost);
+  }
 }
