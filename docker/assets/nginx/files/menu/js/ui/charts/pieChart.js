@@ -66,7 +66,7 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
                 </label>
 
                 <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
-                <span>Показывать подписи на сегментах</span>
+                <span>Показывать значения на сегментах</span>
                 <input type="checkbox" id="showLabels" checked />
                 </label>
 

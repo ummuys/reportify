@@ -68,7 +68,7 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
                 <h2 style="font-size:18px;margin-bottom:4px">Отображение</h2>
 
                 <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
-                <span>Показывать подписи на сегментах</span>
+                <span>Показывать значения на графике</span>
                 <input type="checkbox" id="showLabels" checked />
                 </label>
 
