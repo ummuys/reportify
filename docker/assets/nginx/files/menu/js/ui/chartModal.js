@@ -56,7 +56,7 @@ export function initChartModal() {
       placeholder.style.display = type ? 'none' : 'flex';
 
       if (type === 'pie' || type === 'donut') {
-        drawGhostPieChart(chartPreview, type);
+        drawGhostPieChart(chartPreview, type, chartSettings);
         await setupPieSettings(chartSettings, chartPreview, type, btnDownload);
       }
 
@@ -66,7 +66,7 @@ export function initChartModal() {
       }
 
       else if (type === 'line') {
-        drawGhostLineChart(chartPreview);
+        drawGhostLineChart(chartPreview, chartSettings);
         await setupLineSettings(chartSettings, chartPreview, btnDownload);
       }
     });

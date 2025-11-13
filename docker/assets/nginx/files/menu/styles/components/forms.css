@@ -160,6 +160,7 @@ input.invalid, textarea.invalid {
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: hsla(167, 22%, 71%, .7) transparent;
+  padding-left: 2px;
 }
 
 .chart-settings-form {

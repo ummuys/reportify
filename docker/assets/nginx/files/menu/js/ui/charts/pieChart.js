@@ -29,50 +29,48 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
         <div class="chart-settings-scrollable">
             <h2 style="font-size:18px;margin-bottom:4px;margin-top:2px">Основные параметры</h2>
             <label class="chart-field">
-            <span>Поле:</span>
-            <select id="pieField">
-                <option value="">Выберите поле</option>
-                ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-            </select>
+                <span>Поле:</span>
+                <select id="pieField">
+                    <option value="">Выберите поле</option>
+                    ${cols.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                </select>
             </label>
 
             <label class="chart-field">
-            <span>Функция:</span>
-            <select id="pieFunc">
-                <option value="">Выберите функцию</option>
-                <option value="value">Значение поля</option>
-                <option value="count">Количество (COUNT)</option>
-                <option value="sum">Сумма (SUM)</option>
-                <option value="product">Произведение (PRODUCT)</option>
-            </select>
+                <span>Функция:</span>
+                <select id="pieFunc">
+                    <option value="">Выберите функцию</option>
+                    <option value="value">Значение поля</option>
+                    <option value="count">Количество (COUNT)</option>
+                    <option value="sum">Сумма (SUM)</option>
+                </select>
             </label>
 
             <div class= "chart-display-settings">
                 <h2 style="font-size:18px;margin-bottom:4px">Отображение</h2>
 
                 <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
-                <span>Показывать легенду</span>
-                <input type="checkbox" id="showLegend" checked />
+                    <span>Показывать легенду</span>
+                    <input type="checkbox" id="showLegend" checked />
                 </label>
 
                 <label class="chart-field">
-                <span>Позиция легенды:</span>
-                <select id="legendPosition">
-                    <option value="bottom">Снизу</option>
-                    <option value="right">Справа</option>
-                    <option value="left">Слева</option>
-                    <option value="top">Сверху</option>
-                </select>
+                    <span>Позиция легенды:</span>
+                    <select id="legendPosition">
+                        <option value="bottom">Снизу</option>
+                        <option value="right">Справа</option>
+                        <option value="left">Слева</option>
+                        <option value="top">Сверху</option>
+                    </select>
                 </label>
 
-                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
-                <span>Показывать значения на сегментах</span>
-                <input type="checkbox" id="showLabels" checked />
-                </label>
-
-                <label class="chart-field" style="display: flex; flex-direction: row; gap: 6px;">
-                <span>Показывать проценты</span>
-                <input type="checkbox" id="showPercent" />
+                <label class="chart-field">
+                    <span>Показывать на графике</span>
+                    <select id="displayOnChart">
+                        <option value="nothing">Ничего</option>
+                        <option value="value">Значения</option>
+                        <option value="percent">Проценты</option>
+                    </select>
                 </label>
 
             </div>
@@ -85,6 +83,41 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
     const selField = container.querySelector('#pieField');
     const selFunc = container.querySelector('#pieFunc');
     const btnBuild = container.querySelector('#pieBuild');
+    const showLegend = container.querySelector('#showLegend').checked;
+    const legendPosition = container.querySelector('#legendPosition').value;
+    const displayOnChart = container.querySelector('#displayOnChart').value;
+
+    const updateLiveChart = () => {
+      const chart = preview._chartInstance;
+      if (!chart) return;
+
+      const showLegend = container.querySelector('#showLegend').checked;
+      const legendPosition = container.querySelector('#legendPosition').value;
+      const displayOnChart = container.querySelector('#displayOnChart').value;
+
+      // Обновляем только то, что реально есть
+      if (chart.options.plugins.legend) {
+        chart.options.plugins.legend.display = showLegend;
+        chart.options.plugins.legend.position = legendPosition;
+      }
+
+      if (chart.options.plugins.datalabels) {
+        chart.options.plugins.datalabels.display = displayOnChart !== 'nothing';
+        chart.options.plugins.datalabels.formatter = (value, ctx) => {
+          const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+          if (displayOnChart === 'percent') {
+            return ((value / total) * 100).toFixed(1) + '%';
+          }
+          return displayOnChart === 'value' ? value : '';
+        };
+      }
+
+      chart.update();
+    };
+
+    container.querySelector('#showLegend').addEventListener('change', updateLiveChart);
+    container.querySelector('#legendPosition').addEventListener('change', updateLiveChart);
+    container.querySelector('#displayOnChart').addEventListener('change', updateLiveChart);
 
     [selField, selFunc].forEach(el =>
       el.addEventListener('change', () => {
@@ -97,11 +130,6 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
       const func = selFunc.value;
       if (!field || !func) return;
 
-      const showLegend = container.querySelector('#showLegend').checked;
-      const legendPosition = container.querySelector('#legendPosition').value;
-      const showLabels = container.querySelector('#showLabels').checked;
-      const showPercent = container.querySelector('#showPercent').checked;
-
       let sql;
       if (func === 'value') {
         sql = `SELECT ${field} AS label, ${field} AS value FROM ${schema}.${table}`;
@@ -109,9 +137,13 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
         sql = `SELECT ${field} AS label, COUNT(*) AS value FROM ${schema}.${table} GROUP BY ${field}`;
       } else if (func === 'sum') {
         sql = `SELECT ${field} AS label, SUM(${field}) AS value FROM ${schema}.${table} GROUP BY ${field}`;
-      } else if (func === 'product') {
-        sql = `SELECT ${field} AS label, EXP(SUM(LOG(${field}))) AS value FROM ${schema}.${table} GROUP BY ${field}`;
-      }
+      } //else if (func === 'avg') {
+    //     sql = `SELECT ${field} AS label, AVG(${field}) AS value FROM ${schema}.${table} GROUP BY ${field}`;
+    //   } else if (func === 'max') {
+    //     sql = `SELECT ${field} AS label, MAX(${field}) AS value FROM ${schema}.${table} GROUP BY ${field}`;
+    //   } else if (func === 'min') {
+    //     sql = `SELECT ${field} AS label, MIN(${field}) AS value FROM ${schema}.${table} GROUP BY ${field}`;
+    //   }
 
       preview.innerHTML = '<p>Загрузка данных...</p>';
 
@@ -134,9 +166,10 @@ export async function setupPieSettings(container, preview, type = 'pie', btnDown
           const chartInstance = drawPieChart(preview, json, type, initialTitle, {
             showLegend,
             legendPosition,
-            showLabels,
-            showPercent,
+            displayOnChart
           });
+
+          updateLiveChart();
 
           if (btnDownload) btnDownload.disabled = false;
 
@@ -216,11 +249,11 @@ export function drawPieChart(preview, data, type = 'pie', titleText = '', opts =
           }
         },
         datalabels: {
-          display: opts.showLabels ?? true,
+          display: !(opts.displayOnChart === 'nothing') ?? true,
           color: '#fff',
           font: { weight: 'bold', size: 13 },
           formatter: (value) => {
-            if (opts.showPercent) {
+            if (opts.displayOnChart === 'percent') {
               return ((value / total) * 100).toFixed(1) + '%';
             }
             return value;
@@ -236,7 +269,7 @@ export function drawPieChart(preview, data, type = 'pie', titleText = '', opts =
 
 
 // ---------------- GHOST PIE / DONUT CHART ----------------
-export function drawGhostPieChart(preview, type = 'pie') {
+export function drawGhostPieChart(preview, type = 'pie', container = null) {
   // Уничтожаем старый график, если он есть
   if (preview._chartInstance) {
     preview._chartInstance.destroy();
@@ -280,7 +313,7 @@ export function drawGhostPieChart(preview, type = 'pie') {
       events: [],
       cutout: type === 'donut' ? '60%' : '0%',
       plugins: {
-        legend: { display: false },
+        legend: { display: true, position: 'bottom' },
         title: { display: false },
         tooltip: { enabled: false },
         datalabels: { display: false } 

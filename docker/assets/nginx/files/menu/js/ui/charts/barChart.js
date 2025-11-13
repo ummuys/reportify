@@ -89,10 +89,36 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
     const selFunc = container.querySelector('#barFunc');
     const selOrientation = container.querySelector('#barOrientation');
     const btnBuild = container.querySelector('#barBuild');
+    const showLabels = container.querySelector('#showLabels').checked;
+    const showGrid = container.querySelector('#showGrid').checked;
+
+    const updateLiveChart = () => {
+      const chart = preview._chartInstance;
+      if (!chart) return;
+
+      const showLabels = container.querySelector('#showLabels').checked;
+      const showGrid = container.querySelector('#showGrid').checked;
+
+      // Обновляем только то, что реально есть
+      if (chart.options.scales.x && chart.options.scales.y) {
+        chart.options.scales.x.grid.display = showGrid;
+        chart.options.scales.y.grid.display = showGrid;
+      }
+
+      if (chart.options.plugins.datalabels) {
+        chart.options.plugins.datalabels.display = showLabels;
+      }
+
+      chart.update();
+    };
+
+    container.querySelector("#showLabels").addEventListener('change', updateLiveChart);
+    container.querySelector("#showGrid").addEventListener('change', updateLiveChart);
 
     selOrientation.addEventListener('change', () => {
-        // обновляем призрачную диаграмму в превью
-        drawGhostBarChart(preview, selOrientation.value);
+        if (!preview._chartInstance){
+            drawGhostBarChart(preview, selOrientation.value);
+        }
     });
 
     [selX, selY, selFunc].forEach(el =>
@@ -108,9 +134,6 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
       const func = selFunc.value;
       const orientation = selOrientation.value;
       if (!x || !y || !func) return;
-
-      const showLabels = container.querySelector('#showLabels').checked;
-      const showGrid = container.querySelector('#showGrid').checked;
 
       let sql;
       if (func === 'count') {
@@ -148,6 +171,8 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
             showGrid
           });
 
+          updateLiveChart();
+
           if (btnDownload) btnDownload.disabled = false;
 
           if (chartNameInput) {
@@ -156,6 +181,7 @@ export async function setupBarSettings(container, preview, btnDownload = null) {
               chartInstance.update();
             });
           }
+
         } else {
           if (btnDownload) btnDownload.disabled = true;
           preview.innerHTML = `<p style="color:red;">Нет данных для построения графика.</p>`;
@@ -212,28 +238,24 @@ export function drawBarChart(preview, data, orientation = 'vertical', titleText 
             display: false
         },
         tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const val = ctx.parsed;
-              const pct = ((val / total) * 100).toFixed(1) + '%';
-              return opts.showPercent
-                ? `${ctx.label}: ${val} (${pct})`
-                : `${ctx.label}: ${val}`;
+            callbacks: {
+                label: (ctx) => {
+                    return `${ctx.label}: ${val}`;
+                }
             }
-          }
         },
         datalabels: {
-          display: opts.showLabels ?? true,
-          color: '#000',
-          anchor: orientation === 'horizontal' ? 'end' : 'end', // где крепится подпись
-          align: orientation === 'horizontal' ? 'right' : 'top', // смещение подписи
-          offset: orientation === 'horizontal' ? 4 : 0, // отступ от края столба
-          clamp: true, // не даёт тексту выходить за пределы канваса
-          font: { weight: 'bold', size: 12 },
-          formatter: v => v.toFixed(2)
+            display: opts.showLabels ?? true,
+            color: '#000',
+            anchor: orientation === 'horizontal' ? 'end' : 'end', // где крепится подпись
+            align: orientation === 'horizontal' ? 'right' : 'top', // смещение подписи
+            offset: orientation === 'horizontal' ? 4 : 0, // отступ от края столба
+            clamp: true,
+            font: { weight: 'bold', size: 12 },
+            formatter: v => v.toFixed(2)
         }
       },
-      scales: {
+      scales: orientation === 'vertical' ? {
         x: { 
             title: { display: orientation === 'vertical', text: 'Категории' },
             grid: {display: opts.showGrid || false}
@@ -242,8 +264,21 @@ export function drawBarChart(preview, data, orientation = 'vertical', titleText 
           title: { display: orientation === 'vertical', text: 'Значения' },
           grid: {display: opts.showGrid || false},
           beginAtZero: false,
-          min: minVal - padding, 
-          max: maxVal + padding
+          min: (minVal - padding),
+          max: (maxVal + padding)
+        }
+      } :
+      {
+        x: { 
+            title: { display: orientation === 'vertical', text: 'Категории' },
+            grid: {display: opts.showGrid || false},
+            min: (minVal - padding),
+            max: (maxVal + padding)
+        },
+        y: { 
+          title: { display: orientation === 'vertical', text: 'Значения' },
+          grid: {display: opts.showGrid || false},
+          beginAtZero: false
         }
       }
     }
@@ -292,11 +327,22 @@ export function drawGhostBarChart(preview, orientation = 'vertical') {
         legend: { display: false },
         tooltip: { enabled: false },
         title: { display: false },
-        datalabels: { display: false }
+        datalabels: {
+          display: true,
+          align: 'top',
+          anchor: 'end',
+          color: 'rgba(180,180,180,0.5)',
+          font: { weight: 'bold', size: 12 },
+          formatter: v => v.toFixed(2)
+        }
       },
       scales: {
         x: { display: false },
-        y: { display: false }
+        y: {
+            display: true,
+            min: 1,
+            max: 6
+        }
       }
     }
   });
