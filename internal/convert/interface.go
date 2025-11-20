@@ -11,13 +11,13 @@ type ReportConvert interface {
 
 	// ToMD()
 
-	//Maybe
-	//ToTSV()
-	//ToYAML()
-	//ToParquet()
-	//ToArrow()
-	//ToSQLDump()
+	// Maybe
+	// ToTSV()
+	// ToYAML()
+	// ToParquet()
+	// ToArrow()
+	// ToSQLDump()
 
-	//Maybe maybe
-	//ToSuperSet()
+	// Maybe maybe
+	// ToSuperSet()
 }

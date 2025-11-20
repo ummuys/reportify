@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/ummuys/reportify/internal/di"
 	"github.com/ummuys/reportify/internal/web/middleware"
@@ -72,8 +73,12 @@ func CreateServer(tools di.Tools, repos di.Repositories, srv di.Services, sec di
 	}
 
 	server := &http.Server{
-		Addr:    net.JoinHostPort(host, port),
-		Handler: g,
+		Addr:              net.JoinHostPort(host, port),
+		Handler:           g,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	return server

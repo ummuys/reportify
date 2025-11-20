@@ -20,7 +20,6 @@ type repConv struct {
 }
 
 func NewReportConvert(logger *zerolog.Logger, SSUser bool) ReportConvert {
-
 	return &repConv{logger: logger}
 }
 

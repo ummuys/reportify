@@ -12,6 +12,7 @@ import (
 
 	"github.com/ummuys/reportify/internal/config"
 	"github.com/ummuys/reportify/internal/di"
+	"github.com/ummuys/reportify/internal/dto"
 	"github.com/ummuys/reportify/internal/errs"
 	"github.com/ummuys/reportify/internal/web"
 )
@@ -20,6 +21,7 @@ func main() {
 	mainCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	// INIT INTERFACES AND TOOLS
 	tools, err := di.InitTools()
 	if err != nil {
 		log.Fatal(err)
@@ -40,12 +42,17 @@ func main() {
 	hand := di.InitHandlers(tools, srv, sec)
 	log.Info().Msg("initialized all components")
 
+	// INIT CACHE AND DEFAULT USER
 	appConf, err := config.ParseAppConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("load app config failed")
 	}
 
-	if err := srv.AdminService.CreateUser(mainCtx, appConf.Username, appConf.Password, "admin"); err == nil || errors.Is(err, errs.ErrDuplicate) {
+	if err := srv.AdminService.CreateUser(mainCtx, dto.CreateUser{
+		Username: appConf.Username,
+		Password: appConf.Password,
+		Role:     "admin",
+	}); err == nil || errors.Is(err, errs.ErrDuplicate) {
 		log.Info().Msg("default admin user initialized")
 	} else {
 		log.Error().Err(err).Msg("failed to init admin user")
@@ -60,6 +67,7 @@ func main() {
 	}
 	tools.Logger.DbLog.Info().Msg("cache warm-up complete")
 
+	// START SERVER
 	server := web.CreateServer(tools, repos, srv, sec, hand)
 	errsCh := make(chan error, 4)
 	srvOff := make(chan struct{})
@@ -68,7 +76,7 @@ func main() {
 
 	wg.Go(func() {
 		<-mainCtx.Done()
-		defer server.Close()
+		defer func() { _ = server.Close() }()
 
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

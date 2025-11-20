@@ -17,7 +17,6 @@ type rDB struct {
 }
 
 func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error) {
-
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*10)
 	defer cancel()
 
@@ -37,7 +36,6 @@ func NewReportDB(pCtx context.Context, logger *zerolog.Logger) (ReportDB, error)
 	}
 
 	return obj, nil
-
 }
 
 func (r *rDB) CreateReport(pCtx context.Context, script string) ([]string, [][]any, error) {

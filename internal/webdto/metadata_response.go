@@ -1,4 +1,4 @@
-package models
+package webdto
 
 type ListTables struct {
 	Tables []Table `json:"tables"`

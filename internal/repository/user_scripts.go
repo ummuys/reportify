@@ -22,6 +22,7 @@ const UpdateUserPassword = `
 UPDATE identity.users SET password = $2 WHERE user_id = $1;
 `
 
+// #nosec G101 -- SQL query, not hardcoded password
 const UpdateUserRole = `
 UPDATE 
     identity.user_roles 
@@ -31,7 +32,7 @@ WHERE
     user_id = $1
 `
 
-// CheckCredentials
+// #nosec G101 -- SQL query, not hardcoded password
 const GetCredentials = `
 SELECT 
     u.user_id,

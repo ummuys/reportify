@@ -8,8 +8,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/ummuys/reportify/internal/cache"
 	"github.com/ummuys/reportify/internal/errs"
-	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/repository"
+	"github.com/ummuys/reportify/internal/webdto"
 )
 
 type mdService struct {
@@ -22,18 +22,17 @@ func NewMetadataService(logger *zerolog.Logger, db repository.MetadataDB, chc ca
 	return &mdService{logger: logger, db: db, chc: chc}
 }
 
-func (mds *mdService) GetSchemas(pCtx context.Context) (*models.ListSchemas, error) {
+func (mds *mdService) GetSchemas(pCtx context.Context) (*webdto.ListSchemas, error) {
 	mds.logger.Debug().Str("evt", "call GetSchemas")
 	data, err := mds.db.GetSchemas(pCtx)
-
 	if err != nil {
 		return nil, errs.ParsePgError(err)
 	}
 
-	var ls models.ListSchemas
-	ls.Schemas = make([]models.Schema, 0, len(data))
+	var ls webdto.ListSchemas
+	ls.Schemas = make([]webdto.Schema, 0, len(data))
 	for name, comm := range data {
-		ls.Schemas = append(ls.Schemas, models.Schema{Name: name, Comment: comm})
+		ls.Schemas = append(ls.Schemas, webdto.Schema{Name: name, Comment: comm})
 	}
 	sort.Slice(ls.Schemas, func(i, j int) bool {
 		return ls.Schemas[i].Name < ls.Schemas[j].Name
@@ -41,18 +40,17 @@ func (mds *mdService) GetSchemas(pCtx context.Context) (*models.ListSchemas, err
 	return &ls, nil
 }
 
-func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*models.ListTables, error) {
-
+func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*webdto.ListTables, error) {
 	mds.logger.Debug().Str("evt", "call GetTables")
 	data, err := mds.db.GetTables(pCtx, schemaName)
 	if err != nil {
 		return nil, errs.ParsePgError(err)
 	}
 
-	var lt models.ListTables
-	lt.Tables = make([]models.Table, 0, len(data))
+	var lt webdto.ListTables
+	lt.Tables = make([]webdto.Table, 0, len(data))
 	for name, comm := range data {
-		lt.Tables = append(lt.Tables, models.Table{Name: name, Comment: comm})
+		lt.Tables = append(lt.Tables, webdto.Table{Name: name, Comment: comm})
 	}
 	sort.Slice(lt.Tables, func(i, j int) bool {
 		return lt.Tables[i].Name < lt.Tables[j].Name
@@ -60,16 +58,16 @@ func (mds *mdService) GetTables(pCtx context.Context, schemaName string) (*model
 	return &lt, nil
 }
 
-func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*models.ListColumns, error) {
+func (mds *mdService) GetColumns(pCtx context.Context, schemaName string, tableName string) (*webdto.ListColumns, error) {
 	mds.logger.Debug().Str("evt", "call GetColumns")
 	data, err := mds.db.GetColumns(pCtx, schemaName, tableName)
 	if err != nil {
 		return nil, errs.ParsePgError(err)
 	}
-	var lc models.ListColumns
-	lc.Columns = make([]models.Column, 0, len(data))
+	var lc webdto.ListColumns
+	lc.Columns = make([]webdto.Column, 0, len(data))
 	for name, comm := range data {
-		lc.Columns = append(lc.Columns, models.Column{Name: name, Comment: comm})
+		lc.Columns = append(lc.Columns, webdto.Column{Name: name, Comment: comm})
 	}
 	sort.Slice(lc.Columns, func(i, j int) bool {
 		return lc.Columns[i].Name < lc.Columns[j].Name
@@ -87,9 +85,9 @@ func (mds *mdService) DeleteAllQueries(pCtx context.Context, key string) error {
 	return mds.chc.DeleteAll(pCtx, key)
 }
 
-func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value models.ReportParams) error {
+func (mds *mdService) DeleteQuery(pCtx context.Context, key string, value webdto.ReportParams) error {
 	mds.logger.Debug().Str("evt", "call DeleteQuery")
-	data := models.CacheValue(value)
+	data := webdto.CacheValue(value)
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err

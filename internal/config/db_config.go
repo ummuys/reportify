@@ -49,10 +49,13 @@ func parseDBEnv(prefix string) (DBConfig, error) {
 	if len(errs) > 0 {
 		return DBConfig{}, errors.New(strings.Join(errs, ", "))
 	}
-	if maxConn > 0 && minConn > 0 && int32(maxConn) < int32(minConn) {
+
+	// #nosec G115
+	if maxConn > 0 && minConn > 0 && maxConn < minConn {
 		return DBConfig{}, fmt.Errorf("max_conn must be >= min_conn")
 	}
 
+	// #nosec G115
 	return DBConfig{
 		Addr:                  addr,
 		MinConn:               int32(minConn),

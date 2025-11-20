@@ -10,7 +10,6 @@ import (
 
 func RequestLogger(logger *zerolog.Logger) gin.HandlerFunc {
 	return func(g *gin.Context) {
-
 		// Latenсy нормально не отображается
 		start := time.Now()
 		g.Next()
@@ -58,6 +57,5 @@ func RequestLogger(logger *zerolog.Logger) gin.HandlerFunc {
 		default:
 			evt.Info().Msg(msg)
 		}
-
 	}
 }

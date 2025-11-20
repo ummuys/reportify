@@ -18,7 +18,6 @@ type repCache struct {
 }
 
 func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, error) {
-
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
 	defer cancel()
 
@@ -44,7 +43,7 @@ func NewReportCache(pCtx context.Context, logger *zerolog.Logger) (ReportCache, 
 	}, nil
 }
 
-func (rc *repCache) Init(pCtx context.Context, queries map[string][]string) error {
+func (rc *repCache) Init(pCtx context.Context, queries map[string][]byte) error {
 	rc.logger.Debug().Str("evt", "call WarmUp").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
@@ -93,7 +92,7 @@ func (rc *repCache) Get(pCtx context.Context, key string) ([][]byte, error) {
 	return bytes, nil
 }
 
-func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
+func (rc *repCache) GetAll(pCtx context.Context) (map[string][]byte, error) {
 	rc.logger.Debug().Str("evt", "call GetAll").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*5)
 	defer cancel()
@@ -102,15 +101,25 @@ func (rc *repCache) GetAll(pCtx context.Context) (map[string][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	m := make(map[string][]string)
+	m := make(map[string][]byte)
 
 	for _, k := range keys {
 		val, err := rc.cli.LRange(ctx, k, 0, -1).Result()
 		if err != nil {
 			return nil, fmt.Errorf("can't get a value: %v", err)
 		}
-		m[k] = val
+		var queries []byte
+		queries = append(queries, '[')
+		for i, q := range val {
+			queries = append(queries, []byte(q)...)
+			if i+1 < len(val) {
+				queries = append(queries, ',')
+			}
+		}
+		queries = append(queries, ']')
+		m[k] = queries
 	}
+
 	return m, nil
 }
 
@@ -118,8 +127,6 @@ func (rc *repCache) Delete(pCtx context.Context, key string, value []byte) error
 	rc.logger.Debug().Str("evt", "call Delete").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*1)
 	defer cancel()
-
-	fmt.Println(value)
 
 	if _, err := rc.cli.LRem(ctx, key, 0, value).Result(); err != nil {
 		return fmt.Errorf("can't delete a value: %v", err)

@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/ummuys/reportify/internal/errs"
-	"github.com/ummuys/reportify/internal/models"
 	"github.com/ummuys/reportify/internal/service"
 	"github.com/ummuys/reportify/internal/validation"
+	"github.com/ummuys/reportify/internal/webdto"
 )
 
 type mdHandler struct {
@@ -31,8 +31,8 @@ func NewMetadataHandler(logger *zerolog.Logger, srv service.MetadataService) Met
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200  {array}   string                 "Имена схем"
-// @Failure      401  {object}  models.EmptyResponse   "Неавторизован"
-// @Failure      500  {object}  models.EmptyResponse   "Внутренняя ошибка сервера"
+// @Failure      401  {object}  webdto.EmptyResponse   "Неавторизован"
+// @Failure      500  {object}  webdto.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/schemas [get]
 func (mdh *mdHandler) GetSchemas() gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -41,12 +41,11 @@ func (mdh *mdHandler) GetSchemas() gin.HandlerFunc {
 		data, err := mdh.srv.GetSchemas(ctx)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternal.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternal.Error()})
 			return
 		}
 		g.Set("msg", "schema names are returned")
 		g.JSON(http.StatusOK, data)
-
 	}
 }
 
@@ -59,9 +58,9 @@ func (mdh *mdHandler) GetSchemas() gin.HandlerFunc {
 // @Security     BearerAuth
 // @Param        schema  query    string  true  "Имя схемы"
 // @Success      200     {array}  string                 "Имена таблиц"
-// @Failure      400     {object} models.EmptyResponse   "Не указано имя схемы"
-// @Failure      401     {object} models.EmptyResponse   "Неавторизован"
-// @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
+// @Failure      400     {object} webdto.EmptyResponse   "Не указано имя схемы"
+// @Failure      401     {object} webdto.EmptyResponse   "Неавторизован"
+// @Failure      500     {object} webdto.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/tables [get]
 func (mdh *mdHandler) GetTables() gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -70,19 +69,18 @@ func (mdh *mdHandler) GetTables() gin.HandlerFunc {
 		schema := g.Query("schema")
 		if schema == "" {
 			g.Set("msg", errs.ErrEmptySchemaName.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrEmptySchemaName.Error()})
+			g.AbortWithStatusJSON(http.StatusBadRequest, webdto.EmptyResponse{Message: errs.ErrEmptySchemaName.Error()})
 			return
 		}
 
 		data, err := mdh.srv.GetTables(ctx, schema)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		g.Set("msg", "table names are returned")
 		g.JSON(http.StatusOK, data)
-
 	}
 }
 
@@ -96,9 +94,9 @@ func (mdh *mdHandler) GetTables() gin.HandlerFunc {
 // @Param        schema  query    string  true  "Имя схемы"
 // @Param        table   query    string  true  "Имя таблицы"
 // @Success      200     {array}  string                 "Имена колонок"
-// @Failure      400     {object} models.EmptyResponse   "Не указаны schema или table"
-// @Failure      401     {object} models.EmptyResponse   "Неавторизован"
-// @Failure      500     {object} models.EmptyResponse   "Внутренняя ошибка сервера"
+// @Failure      400     {object} webdto.EmptyResponse   "Не указаны schema или table"
+// @Failure      401     {object} webdto.EmptyResponse   "Неавторизован"
+// @Failure      500     {object} webdto.EmptyResponse   "Внутренняя ошибка сервера"
 // @Router       /db/columns [get]
 func (mdh *mdHandler) GetColumns() gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -109,18 +107,17 @@ func (mdh *mdHandler) GetColumns() gin.HandlerFunc {
 		if schema == "" || table == "" {
 			err := fmt.Errorf("%v ; %v", errs.ErrEmptySchemaName, errs.ErrEmptyTableName)
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		data, err := mdh.srv.GetColumns(ctx, schema, table)
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		g.Set("msg", "column names are returned")
 		g.JSON(http.StatusOK, data)
-
 	}
 }
 
@@ -131,9 +128,9 @@ func (mdh *mdHandler) GetColumns() gin.HandlerFunc {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object}  models.QueryList        "Список запросов пользователя"
-// @Failure      401  {object}  models.EmptyResponse    "Неавторизован"
-// @Failure      500  {object}  models.EmptyResponse    "Внутренняя ошибка сервера"
+// @Success      200  {object}  webdto.QueryList        "Список запросов пользователя"
+// @Failure      401  {object}  webdto.EmptyResponse    "Неавторизован"
+// @Failure      500  {object}  webdto.EmptyResponse    "Внутренняя ошибка сервера"
 // @Router       /cache [get]
 func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -142,7 +139,7 @@ func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 		queries, err := mdh.srv.GetQueries(ctx, strconv.FormatInt(user_id, 10))
 		if err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 
@@ -151,7 +148,6 @@ func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 
 		g.Set("msg", "user queries are returned")
 		g.Data(http.StatusOK, "application/json; charset=", response)
-
 	}
 }
 
@@ -162,9 +158,9 @@ func (mdh *mdHandler) GetQueries() gin.HandlerFunc {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object}  models.EmptyResponse  "Запросы пользователя удалены"
-// @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
-// @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
+// @Success      200  {object}  webdto.EmptyResponse  "Запросы пользователя удалены"
+// @Failure      401  {object}  webdto.EmptyResponse  "Неавторизован"
+// @Failure      500  {object}  webdto.EmptyResponse  "Внутренняя ошибка сервера"
 // @Router       /cache/all [delete]
 func (mdh *mdHandler) DeleteAllQueries() gin.HandlerFunc {
 	return func(g *gin.Context) {
@@ -172,12 +168,12 @@ func (mdh *mdHandler) DeleteAllQueries() gin.HandlerFunc {
 		user_id := g.GetInt64("user_id")
 		if err := mdh.srv.DeleteAllQueries(ctx, strconv.FormatInt(user_id, 10)); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		msg := "all queries are deleted"
 		g.Set("msg", msg)
-		g.JSON(http.StatusOK, models.EmptyResponse{Message: msg})
+		g.JSON(http.StatusOK, webdto.EmptyResponse{Message: msg})
 	}
 }
 
@@ -188,36 +184,36 @@ func (mdh *mdHandler) DeleteAllQueries() gin.HandlerFunc {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request  body   models.DeleteQuery   true  "SQL-запрос для отчета"
-// @Success      200  {object}  models.EmptyResponse  "Запрос пользователя удален"
-// @Failure      401  {object}  models.EmptyResponse  "Неавторизован"
-// @Failure      500  {object}  models.EmptyResponse  "Внутренняя ошибка сервера"
+// @Param        request  body   webdto.DeleteQuery   true  "SQL-запрос для отчета"
+// @Success      200  {object}  webdto.EmptyResponse  "Запрос пользователя удален"
+// @Failure      401  {object}  webdto.EmptyResponse  "Неавторизован"
+// @Failure      500  {object}  webdto.EmptyResponse  "Внутренняя ошибка сервера"
 // @Router       /cache [delete]
 func (mdh *mdHandler) DeleteQuery() gin.HandlerFunc {
 	return func(g *gin.Context) {
 		ctx := g.Request.Context()
 		user_id := g.GetInt64("user_id")
-		var rawParam models.RawReportParams
+		var rawParam webdto.RawReportParams
 		if err := g.ShouldBindJSON(&rawParam); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
+			g.AbortWithStatusJSON(http.StatusBadRequest, webdto.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			return
 		}
 
 		param, err := validation.RequestParams(rawParam, false)
 		if err != nil {
-			g.AbortWithStatusJSON(http.StatusBadRequest, models.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
+			g.AbortWithStatusJSON(http.StatusBadRequest, webdto.EmptyResponse{Message: errs.ErrInvalidJSON.Error()})
 			g.Set("msg", err.Error())
 			return
 		}
 
 		if err := mdh.srv.DeleteQuery(ctx, strconv.FormatInt(user_id, 10), param); err != nil {
 			g.Set("msg", err.Error())
-			g.AbortWithStatusJSON(http.StatusInternalServerError, models.EmptyResponse{Message: errs.ErrInternalServer.Error()})
+			g.AbortWithStatusJSON(http.StatusInternalServerError, webdto.EmptyResponse{Message: errs.ErrInternalServer.Error()})
 			return
 		}
 		msg := "query is deleted"
 		g.Set("msg", msg)
-		g.JSON(http.StatusOK, models.EmptyResponse{Message: msg})
+		g.JSON(http.StatusOK, webdto.EmptyResponse{Message: msg})
 	}
 }

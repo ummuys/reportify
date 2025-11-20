@@ -125,3 +125,13 @@ race:
 vuln:
 	@echo "$(GREEN)[TEST]$(RESET) Running vuln..."
 	@govulncheck ./../...
+
+
+
+# CI
+
+code-review:
+	@cd .. && ./docker/scripts/pre-commit.sh
+
+code-auto-format:
+	@cd .. && gofumpt -w $$(find . -name '*.go' -type f)

@@ -23,14 +23,14 @@ func NewUserService(logger *zerolog.Logger, db repository.UserDB, ph secure.Pass
 func (u *uSrv) CheckCredentials(pCtx context.Context, username, password string) (int64, string, error) {
 	u.logger.Debug().Str("evt", "call CheckCredentials").Msg("")
 
-	user_id, role, hashPass, err := u.db.CheckCredentials(pCtx, username)
+	userInfo, err := u.db.CheckCredentials(pCtx, username)
 	if err != nil {
 		return 0, "", errs.ParsePgError(err)
 	}
 
-	if !u.ph.CheckHash(password, hashPass) {
+	if !u.ph.CheckHash(password, userInfo.Password) {
 		return 0, "", errs.ErrInvalidCredentials
 	}
 
-	return user_id, role, nil
+	return userInfo.UserID, userInfo.Role, nil
 }

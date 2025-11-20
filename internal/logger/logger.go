@@ -21,7 +21,7 @@ func InitLogger(path string) (*config.Loggers, error) {
 		TimeFormat: consoleTimeFormat,
 	}
 
-	//STD-OUT
+	// STD-OUT
 	file := initLogFile(path)
 
 	multiWriter := io.MultiWriter(file, cw)

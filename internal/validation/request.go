@@ -7,21 +7,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ummuys/reportify/internal/models"
+	"github.com/ummuys/reportify/internal/webdto"
 )
 
-func RequestParams(rawParams models.RawReportParams, toCreate bool) (models.ReportParams, error) {
+func RequestParams(rawParams webdto.RawReportParams, toCreate bool) (webdto.ReportParams, error) {
 	var (
-		params models.ReportParams
+		params webdto.ReportParams
 		err    error
 	)
 	if rawParams.ReportName == "" {
-		return models.ReportParams{}, errors.New("invalid report name")
+		return webdto.ReportParams{}, errors.New("invalid report name")
 	}
 	params.ReportName = rawParams.ReportName
 
 	if rawParams.ReportComm == "" {
-		return models.ReportParams{}, errors.New("invalid report commentary")
+		return webdto.ReportParams{}, errors.New("invalid report commentary")
 	}
 	params.ReportComm = rawParams.ReportComm
 
@@ -31,20 +31,20 @@ func RequestParams(rawParams models.RawReportParams, toCreate bool) (models.Repo
 			diff = -diff
 		}
 		if diff > 5*time.Minute {
-			return models.ReportParams{}, errors.New("invalid created report time")
+			return webdto.ReportParams{}, errors.New("invalid created report time")
 		}
 	}
 	params.CreatedAt = rawParams.CreatedAt
 
 	if err = checkQuery(rawParams.Sql); err != nil {
-		return models.ReportParams{}, err
+		return webdto.ReportParams{}, err
 	}
 	params.Sql = rawParams.Sql
 
 	if rawParams.CSVSep != "" {
 		params.CSVSep, err = checkSepCSV(rawParams.CSVSep)
 		if err != nil {
-			return models.ReportParams{}, err
+			return webdto.ReportParams{}, err
 		}
 	}
 

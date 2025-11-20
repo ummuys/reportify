@@ -1,4 +1,4 @@
-package models
+package webdto
 
 type Auth struct {
 	Username string `json:"username"`

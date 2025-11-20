@@ -10,8 +10,7 @@ import (
 
 var cfg config.TMConfig
 
-type tokMan struct {
-}
+type tokMan struct{}
 
 func NewTokenManager() (TokenManager, error) {
 	c, err := config.ParseTMConfig()

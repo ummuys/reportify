@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ummuys/reportify/internal/config"
+	"github.com/ummuys/reportify/internal/dto"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,7 +19,6 @@ type uDB struct {
 }
 
 func NewUserDB(pCtx context.Context, logger *zerolog.Logger) (UserDB, error) {
-
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*10)
 	defer cancel()
 
@@ -38,10 +38,9 @@ func NewUserDB(pCtx context.Context, logger *zerolog.Logger) (UserDB, error) {
 	}
 
 	return obj, nil
-
 }
 
-func (u *uDB) GetUsers(pCtx context.Context) ([][]any, error) {
+func (u *uDB) GetUsers(pCtx context.Context) ([]dto.GetUser, error) {
 	u.logger.Debug().Str("evt", "call GetUsers").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
@@ -53,28 +52,24 @@ func (u *uDB) GetUsers(pCtx context.Context) ([][]any, error) {
 	}
 	defer rows.Close()
 
-	var data [][]any
+	var users []dto.GetUser
 	for rows.Next() {
-		var (
-			id       int64
-			username string
-			role     string
-		)
-		err = rows.Scan(&id, &username, &role)
+		var u dto.GetUser
+		err = rows.Scan(&u.UserID, &u.Username, &u.Role)
 		if err != nil {
 			return nil, err
 		}
-		data = append(data, []any{id, username, role})
+		users = append(users, u)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return data, nil
+	return users, nil
 }
 
-func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword string, role string) (err error) {
+func (u *uDB) CreateUser(pCtx context.Context, userInfo dto.CreateUser) (err error) {
 	u.logger.Debug().Str("evt", "call CreateUser").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
@@ -93,12 +88,12 @@ func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword str
 		}
 	}()
 
-	_, err = tx.Exec(ctx, NewUserStep1, username, hashPassword)
+	_, err = tx.Exec(ctx, NewUserStep1, userInfo.Username, userInfo.Password)
 	if err != nil {
 		return
 	}
 
-	_, err = tx.Exec(ctx, NewUserStep2, username, role)
+	_, err = tx.Exec(ctx, NewUserStep2, userInfo.Username, userInfo.Role)
 	if err != nil {
 		return
 	}
@@ -110,7 +105,7 @@ func (u *uDB) CreateUser(pCtx context.Context, username string, hashPassword str
 	return
 }
 
-func (u *uDB) UpdateUser(pCtx context.Context, userID int64, username string, hashPassword string, role string) (err error) {
+func (u *uDB) UpdateUser(pCtx context.Context, userInfo dto.UpdateUser) (err error) {
 	u.logger.Debug().Str("evt", "call UpdateUser").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
@@ -129,22 +124,22 @@ func (u *uDB) UpdateUser(pCtx context.Context, userID int64, username string, ha
 		}
 	}()
 
-	if username != "" {
-		_, err = tx.Exec(ctx, UpdateUsername, userID, username)
+	if userInfo.Username != "" {
+		_, err = tx.Exec(ctx, UpdateUsername, userInfo.UserID, userInfo.Username)
 		if err != nil {
 			return
 		}
 	}
 
-	if hashPassword != "" {
-		_, err = tx.Exec(ctx, UpdateUserPassword, userID, hashPassword)
+	if userInfo.Password != "" {
+		_, err = tx.Exec(ctx, UpdateUserPassword, userInfo.UserID, userInfo.Password)
 		if err != nil {
 			return
 		}
 	}
 
-	if role != "" {
-		_, err = tx.Exec(ctx, UpdateUserRole, userID, role)
+	if userInfo.Role != "" {
+		_, err = tx.Exec(ctx, UpdateUserRole, userInfo.UserID, userInfo.Role)
 		if err != nil {
 			return
 		}
@@ -166,26 +161,22 @@ func (u *uDB) ValidateRole(pCtx context.Context, role string) error {
 	return err
 }
 
-func (u *uDB) CheckCredentials(pCtx context.Context, username string) (int64, string, string, error) {
+func (u *uDB) CheckCredentials(pCtx context.Context, username string) (dto.UserCredentials, error) {
 	u.logger.Debug().Str("evt", "call CheckCredentials").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	var (
-		user_id int64
-		role    string
-		pass    string
-	)
-	err := u.pool.QueryRow(ctx, GetCredentials, username).Scan(&user_id, &pass, &role)
-	return user_id, role, pass, err
+	var userInfo dto.UserCredentials
+	err := u.pool.QueryRow(ctx, GetCredentials, username).Scan(&userInfo.UserID, &userInfo.Password, &userInfo.Role)
+	return userInfo, err
 }
 
-func (u *uDB) DeleteUser(pCtx context.Context, username string) error {
+func (u *uDB) DeleteUser(pCtx context.Context, userInfo dto.DeleteUser) error {
 	u.logger.Debug().Str("evt", "call DeleteUser").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, time.Second*2)
 	defer cancel()
 
-	res, err := u.pool.Exec(ctx, DeleteUser, username)
+	res, err := u.pool.Exec(ctx, DeleteUser, userInfo.Username)
 	if res.RowsAffected() == 0 {
 		return pgx.ErrNoRows
 	}

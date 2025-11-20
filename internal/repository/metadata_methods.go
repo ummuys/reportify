@@ -78,7 +78,6 @@ func (m *mdDB) GetTables(pCtx context.Context, schemaName string) (map[string]st
 	defer rows.Close()
 
 	return unpackingRows(rows)
-
 }
 
 func (m *mdDB) GetColumns(pCtx context.Context, schemaName, tableName string) (map[string]string, error) {
@@ -110,7 +109,7 @@ func unpackingRows(rows pgx.Rows) (map[string]string, error) {
 	return res, rows.Err()
 }
 
-func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) (err error) {
+func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]byte) (err error) {
 	m.logger.Debug().Str("evt", "call SetCacheQuerys").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 30*time.Second)
 	defer cancel()
@@ -155,7 +154,7 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	for _, uid := range usersID {
 		val, ok := cache[uid]
 		if !ok {
-			b.Queue(qSetCacheQuery, uid, []string{})
+			b.Queue(qSetCacheQuery, uid, []byte("[]"))
 		} else {
 			b.Queue(qSetCacheQuery, uid, val)
 		}
@@ -181,7 +180,7 @@ func (m *mdDB) SetCacheQueries(pCtx context.Context, cache map[string][]string) 
 	return nil
 }
 
-func (m *mdDB) GetCacheQueries(pCtx context.Context) (map[string][]string, error) {
+func (m *mdDB) GetCacheQueries(pCtx context.Context) (map[string][]byte, error) {
 	m.logger.Debug().Str("evt", "call SaveCacheQuerys").Msg("")
 	ctx, cancel := context.WithTimeout(pCtx, 5*time.Second)
 	defer cancel()
@@ -192,11 +191,11 @@ func (m *mdDB) GetCacheQueries(pCtx context.Context) (map[string][]string, error
 	}
 	defer rows.Close()
 
-	quer := make(map[string][]string)
+	quer := make(map[string][]byte)
 	for rows.Next() {
 		var (
 			key   string
-			value []string
+			value []byte
 		)
 		err := rows.Scan(&key, &value)
 		if err != nil {

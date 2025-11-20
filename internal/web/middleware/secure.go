@@ -18,9 +18,17 @@ func Auth(tm secure.TokenManager, access []string) gin.HandlerFunc {
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		parts := strings.Fields(authHeader)
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+			g.Set("msg", "invalid token format")
+			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errs.ErrBadAccessToken.Error()})
+			return
+		}
+
+		tokenStr := parts[1]
 		claims, err := tm.ValidateAccessToken(tokenStr)
 		if err != nil {
+			g.Set("msg", err.Error())
 			g.Set("msg", err.Error())
 			g.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errs.ErrBadAccessToken.Error()})
 			return

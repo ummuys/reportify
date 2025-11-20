@@ -1,10 +1,14 @@
 package service
 
-import "context"
+import (
+	"context"
+
+	"github.com/ummuys/reportify/internal/dto"
+)
 
 type AdminService interface {
-	CreateUser(pCtx context.Context, username, password, role string) error
-	UpdateUser(pCtx context.Context, userID int64, username, password, role string) error
-	DeleteUser(pCtx context.Context, username string) error
-	GetUsers(pCtx context.Context) ([][]any, error)
+	CreateUser(pCtx context.Context, userInfo dto.CreateUser) error
+	UpdateUser(pCtx context.Context, userInfo dto.UpdateUser) error
+	DeleteUser(pCtx context.Context, userInfo dto.DeleteUser) error
+	GetUsers(pCtx context.Context) ([]dto.GetUser, error)
 }
