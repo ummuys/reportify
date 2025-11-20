@@ -76,11 +76,11 @@
   width: 8px;
 }
 #historyList::-webkit-scrollbar-thumb, .chart-settings::-webkit-scrollbar-thumb {
-  background-color: hsla(167, 22%, 71%, .7);
+  background-color: var(--mint-tint-700);
   border-radius: 8px;
 }
 #historyList::-webkit-scrollbar-thumb:hover, .chart-settings::-webkit-scrollbar-thumb:hover {
-  background-color: hsla(167, 22%, 71%, .9);
+  background-color: var(--mint-tint-900);
 }
 
 /* Убираем стрелочки (spinner) в Chrome, Edge, Safari */

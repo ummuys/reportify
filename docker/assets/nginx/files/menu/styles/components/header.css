@@ -9,19 +9,19 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 24px;
-  background: hsla(167, 22%, 71%, 0.8);
-  border-bottom: 1px solid hsla(167, 22%, 71%, .4);
+  background: var(--mint-tint-800);
+  border-bottom: 1px solid var(--mint-tint-400);
   backdrop-filter: blur(8px);
   box-sizing: border-box;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12); 
+  box-shadow: 0 2px 10px var(--overlay-black-12); 
   transition: box-shadow 0.3s ease, background 0.3s ease;
   margin: 5px;
   border-radius: 5px;
 }
 
 .header:hover {
-  background: hsla(167, 22%, 71%, 0.7);
-  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.16);
+  background: var(--mint-tint-700);
+  box-shadow: 0 3px 14px var(--overlay-black-16);
 }
 
 .header-left {

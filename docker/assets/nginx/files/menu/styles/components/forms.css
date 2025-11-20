@@ -1,6 +1,6 @@
 select, button, input[type="text"] {
     background: var(--bg);
-    border: 1px solid rgba(255,255,255,.18);
+    border: 1px solid var(--overlay-white-18);
     color: var(--text);
     border-radius: 12px;
     padding: 10px 12px;
@@ -63,8 +63,8 @@ textarea.sql {
     width: 100%;
     min-height: 160px;
     resize: vertical;
-    background: #fff;
-    border: 1px solid hsla(167, 22%, 71%, .8);
+    background: var(--color-white);
+    border: 1px solid var(--mint-tint-800);
     color: var(--text);
     border-radius: 12px;
     padding: 12px;
@@ -76,7 +76,7 @@ textarea.sql {
 
 #reportName {
   background: var(--bg);
-  border: 1px solid hsla(167, 22%, 71%, .8);
+  border: 1px solid var(--mint-tint-800);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 15px;
@@ -85,7 +85,7 @@ textarea.sql {
 
 #reportComment {
   background: var(--bg);
-  border: 1px solid hsla(167, 22%, 71%, .8);
+  border: 1px solid var(--mint-tint-800);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 15px;
@@ -99,7 +99,7 @@ textarea.sql {
 
 #limitInput {
   background: var(--bg);
-  border: 1px solid hsla(167, 22%, 71%, .8);
+  border: 1px solid var(--mint-tint-800);
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 15px;
@@ -115,7 +115,7 @@ textarea.sql {
 #limitInput.invalid {
   border-color: var(--err);
   outline: none;
-  box-shadow: 0 0 0 2px hsla(0, 100%, 75%, 0.3);
+  box-shadow: 0 0 0 2px var(--error-tint-300);
 }
 
 #limitError {
@@ -125,7 +125,7 @@ textarea.sql {
 
 /* --- Подсветка ошибок для обязательных полей --- */
 input.invalid, textarea.invalid {
-  border-color: hsla(0, 100%, 75%, 0.7);
+  border-color: var(--error-tint-700);
   box-shadow: 0 0 0 2px var(--err);
   outline: none;
 }
@@ -137,7 +137,7 @@ input.invalid, textarea.invalid {
 
 .counter {
   font-size: 12px;
-  color: #666;
+  color: var(--color-gray-500);
   margin-top: 4px;
   margin-left: 4px;
   user-select: none;
@@ -159,7 +159,7 @@ input.invalid, textarea.invalid {
   height: 100%;  
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: hsla(167, 22%, 71%, .7) transparent;
+  scrollbar-color: var(--mint-tint-700) transparent;
   padding-left: 2px;
 }
 
@@ -185,7 +185,7 @@ input.invalid, textarea.invalid {
 .chart-settings-form select {
   margin-top: 6px;
   width: 95%;
-  border: 1px solid black;
+  border: 1px solid var(--color-black-solid);
   border-radius: 10px;
 }
 
@@ -194,3 +194,4 @@ input.invalid, textarea.invalid {
   flex-direction: column;
   gap: 20px;                  
 }
+

@@ -5,19 +5,19 @@
 
 .dropdown-btn {
   background: var(--green);
-  border: 1px solid hsla(150, 69%, 55%, 1);
+  border: 1px solid var(--color-green-base);
   border-radius: 10px;
   padding: 8px 120px;
   font-size: 15px;
   cursor: pointer;
   transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 4px 14px rgba(15, 76, 80, 0.12);
+  box-shadow: 0 4px 14px var(--overlay-shadow-teal-soft);
 }
 
 .dropdown-btn:hover {
-    background: hsla(150, 69%, 55%, 1);
+    background: var(--color-green-base);
     transform: translateY(-1px);
-    box-shadow: 0 8px 26px rgba(15, 76, 80, 0.18);
+    box-shadow: 0 8px 26px var(--overlay-shadow-teal-strong);
 }
 
 .dropdown-content {
@@ -25,9 +25,9 @@
   top: 115%;
   left: 0;                /* привязано к кнопке, а сама кнопка уже отступлена */
   background: var(--bg);
-  border: 1px solid hsla(167, 22%, 71%, .6);
+  border: 1px solid var(--mint-tint-600);
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px var(--overlay-black-15);
   padding: 8px 16px;
   min-width: 300px;       /* сделаем длиннее */
   z-index: 1100;
@@ -46,4 +46,5 @@
   transform: translateY(0) scale(1);
   pointer-events: auto;
 }
+
 

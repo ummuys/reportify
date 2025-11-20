@@ -1,0 +1,28 @@
+:root {
+    /* Light strokes */
+    --overlay-white-08: rgba(255, 255, 255, 0.08); /* subtle outlines */
+    --overlay-white-12: rgba(255, 255, 255, 0.12); /* list borders */
+    --overlay-white-14: rgba(255, 255, 255, 0.14); /* chip border */
+    --overlay-white-18: rgba(255, 255, 255, 0.18); /* input strokes */
+    --overlay-white-20: rgba(255, 255, 255, 0.2); /* modal outlines */
+
+    /* Dark overlays / shadows */
+    --overlay-black-05: rgba(0, 0, 0, 0.05); /* soft drop shadows */
+    --overlay-black-10: rgba(0, 0, 0, 0.1); /* burger shadow */
+    --overlay-black-12: rgba(0, 0, 0, 0.12); /* cards/sidebar shadows */
+    --overlay-black-15: rgba(0, 0, 0, 0.15); /* dropdown shadow */
+    --overlay-black-16: rgba(0, 0, 0, 0.16); /* header shadow */
+    --overlay-black-20: rgba(0, 0, 0, 0.2); /* toast shadow */
+    --overlay-black-25: rgba(0, 0, 0, 0.25); /* modal shadow */
+    --overlay-black-30: rgba(0, 0, 0, 0.3); /* modal elevated shadow */
+    --overlay-black-60: rgba(0, 0, 0, 0.6); /* backdrop */
+
+    /* Teal shadows */
+    --overlay-shadow-teal-soft: rgba(15, 76, 80, 0.12); /* button/dropdown shadow */
+    --overlay-shadow-teal-strong: rgba(15, 76, 80, 0.18); /* hover shadow */
+
+    /* Utility overlays */
+    --overlay-mint-border: rgba(135, 184, 167, 0.4); /* dashed modal border */
+    --overlay-gray-soft: rgba(208, 208, 208, 0.85); /* loader backdrop */
+    --overlay-loader-ring: rgba(0, 126, 34, 0.6); /* loader ring trail */
+}

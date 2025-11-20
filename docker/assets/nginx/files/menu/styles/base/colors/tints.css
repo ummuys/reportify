@@ -1,0 +1,18 @@
+:root {
+    /* Mint transparencies */
+    --mint-tint-200: hsla(167, 22%, 71%, 0.2); /* Lightest mint backdrop */
+    --mint-tint-400: hsla(167, 22%, 71%, 0.4); /* Muted mint border/background */
+    --mint-tint-500: hsla(167, 45%, 65%, 0.5); /* Default panel fill */
+    --mint-tint-600: hsla(167, 22%, 71%, 0.6); /* Panel border/gradient end */
+    --mint-tint-700: hsla(167, 22%, 71%, 0.7); /* Elevated panel fill */
+    --mint-tint-800: hsla(167, 22%, 71%, 0.8); /* Hovered panel fill */
+    --mint-tint-900: hsla(167, 22%, 71%, 0.9); /* Intense mint surface */
+
+    /* White transparencies */
+    --white-tint-600: hsla(0, 0%, 100%, 0.6); /* Frosted surfaces */
+
+    /* Error transparencies */
+    --error-tint-300: hsla(0, 100%, 75%, 0.3); /* Error outline glow */
+    --error-tint-700: hsla(0, 100%, 75%, 0.7); /* Error border */
+    --error-tint-900: hsla(0, 100%, 75%, 0.9); /* Solid error background */
+}

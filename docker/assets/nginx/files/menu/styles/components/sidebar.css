@@ -5,8 +5,8 @@
   height: calc(100vh - 60px);
   width: 320px;
   min-width: 240px;
-  background: hsla(167, 22%, 71%, .2);
-  border-right: 1px solid hsla(167, 22%, 71%, .4);
+  background: var(--mint-tint-200);
+  border-right: 1px solid var(--mint-tint-400);
   display: flex;
   flex-direction: column;
   z-index: 900;
@@ -28,9 +28,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid hsla(167, 22%, 71%, .4);
+  border-bottom: 1px solid var(--mint-tint-400);
   z-index: 10;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12); 
+  box-shadow: 0 3px 5px var(--overlay-black-12); 
 }
 
 .sidebar-actions {

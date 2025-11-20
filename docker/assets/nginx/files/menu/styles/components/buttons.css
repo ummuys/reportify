@@ -3,11 +3,11 @@
 }
 
 .btn-ghost {
-    background: hsla(167, 22%, 71%, .8);
+    background: var(--mint-tint-800);
 }
 
 .btn-ghost:hover {
-    background-color: hsla(167, 22%, 71%, 1);
+    background-color: var(--color-mint-base);
 }
 
 .btn-primary {
@@ -17,7 +17,7 @@
 } 
 
 .btn-primary:hover {
-    background: hsla(150, 69%, 55%, 1);
+    background: var(--color-green-base);
 }
 
 .btn-primary:disabled {
@@ -32,19 +32,19 @@
 .btn-remove.btn {
     padding: 6px 10px;
     background-color: var(--err);
-    color: #fff;
+    color: var(--color-white);
     border: none;
     border-radius: 10px;
     cursor: pointer;
 }
 
 .btn-remove.btn:hover {
-    background-color: hsla(0, 100%, 75%, .9);
+    background-color: var(--error-tint-900);
 }
 
 .about-btn {
   background: var(--green);
-  border: 1px solid hsla(150, 69%, 55%, 1);
+  border: 1px solid var(--color-green-base);
   width: 150px;
   border-radius: 10px;
   padding: 10px 2px;
@@ -54,28 +54,28 @@
 
 .logout-btn {
   background: var(--green);
-  border: 1px solid hsla(150, 69%, 55%, 1);
+  border: 1px solid var(--color-green-base);
   color: var(--text);
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 15px;
   cursor: pointer;
   transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-  box-shadow: 0 4px 14px rgba(15, 76, 80, 0.12);
+  box-shadow: 0 4px 14px var(--overlay-shadow-teal-soft);
 }
 
 .logout-btn:hover {
-  background: hsla(150, 69%, 55%, 1);
+  background: var(--color-green-base);
   color: var(--text);
   transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(15, 76, 80, 0.18);
+  box-shadow: 0 8px 26px var(--overlay-shadow-teal-strong);
 }
 
 .btn-fav-filter {
   background: transparent;
   border: none;
   font-size: 22px;
-  color: #aaa;
+  color: var(--color-gray-400);
   cursor: pointer;
   transition: color 0.2s ease;
   padding: 2px 6px;
@@ -83,17 +83,17 @@
 }
 
 .btn-fav-filter:hover {
-  color: gold;
+  color: var(--color-gold-accent);
 }
 
 /* Активное состояние — фильтр включён */
 .btn-fav-filter.active {
-  color: gold;
+  color: var(--color-gold-accent);
 }
 
 .btn-clear-history {
-  background: hsla(0, 0%, 100%, 0.6);
-  border: 1px solid hsla(167, 22%, 71%, 0.6);
+  background: var(--white-tint-600);
+  border: 1px solid var(--mint-tint-600);
   border-radius: 8px;
   font-size: 16px;
   padding: 6px 7px;
@@ -105,13 +105,13 @@
 }
 
 .btn-clear-history:hover {
-  background: hsla(167, 22%, 71%, 0.7);
+  background: var(--mint-tint-700);
 }
 
 .btn-delete-history {
   background: transparent;
   border: none;
-  color: #666;
+  color: var(--color-gray-500);
   font-size: 16px;
   cursor: pointer;
   opacity: 0;
@@ -128,7 +128,7 @@
 .btn-fav-history {
   background: transparent;
   border: none;
-  color: #aaa;
+  color: var(--color-gray-400);
   font-size: 22px;
   opacity: 0;
   cursor: pointer;
@@ -138,11 +138,11 @@
 }
 
 .btn-fav-history.active {
-  color: gold;
+  color: var(--color-gold-accent);
 }
 
 .btn-fav-history:hover {
-  color: gold;
+  color: var(--color-gold-accent);
 }
 
 .history-item:hover .btn-delete-history {
@@ -170,7 +170,7 @@
 .btn.disabled:hover,
 .btn.is-disabled:hover {
   transform: none;
-  background: hsla(167, 22%, 71%, .8);
+  background: var(--mint-tint-800);
 }
 
 #btnCreateChart {
@@ -179,15 +179,17 @@
   font-size: 16px;
   border-radius: 10px;
   background: var(--green);
-  border: 1px solid hsla(150, 69%, 55%, 1);
+  border: 1px solid var(--color-green-base);
   transition: transform 0.18s ease, background 0.18s ease;
 }
 
 #btnCreateChart:hover {
-  background: hsla(150, 69%, 55%, 1);
+  background: var(--color-green-base);
   transform: scale(1.02);
 }
 
 .btn-preview.disabled:hover {
-    background: hsla(167, 22%, 71%, .8);
+    background: var(--mint-tint-800);
 }
+
+

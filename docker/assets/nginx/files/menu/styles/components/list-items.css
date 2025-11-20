@@ -13,15 +13,15 @@
     align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--overlay-white-12);
     border-radius: 10px;
-    background-color: hsla(167, 22%, 71%, 0.5);
+    background-color: var(--mint-tint-500);
     transition: background 0.15s ease transform .1s ease;
 }
 
 .item.dragging {
     opacity: 0.5;
-    background-color: hsla(167, 22%, 71%, 0.7);
+    background-color: var(--mint-tint-700);
     transform: scale(.99);
 }
 

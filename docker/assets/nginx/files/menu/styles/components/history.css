@@ -15,14 +15,14 @@
   flex-direction: column;
   gap: 10px;
   scrollbar-width: thin;
-  scrollbar-color: hsla(167, 22%, 71%, .7) transparent;
+  scrollbar-color: var(--mint-tint-700) transparent;
 }
 
 .history-list li {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: hsla(167, 22%, 71%, .6);
+  background: var(--mint-tint-600);
   border-radius: 10px;
   padding: 12px 14px;
   cursor: pointer;
@@ -33,12 +33,12 @@
 }
 
 .history-list li:hover {
-  background: hsla(167, 22%, 71%, .7);
+  background: var(--mint-tint-700);
   transform: scale(1.02);
 }
 
 .history-list li small {
-  color: #555;
+  color: var(--color-gray-600);
   margin-top: 4px;
 }
 

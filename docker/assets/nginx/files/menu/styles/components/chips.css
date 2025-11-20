@@ -10,10 +10,10 @@
 
 .chip {
     padding: 8px 12px;
-    border: 1px solid rgba(255,255,255,.14);
+    border: 1px solid var(--overlay-white-14);
     border-radius: 10px;
     font-size: 13px;
-    background: hsla(167, 22%, 71%, .4);
+    background: var(--mint-tint-400);
     cursor: pointer;
     text-align: center;
     width: 100%;
@@ -21,11 +21,11 @@
 }
 
 .chip.active {
-    background: hsla(167, 22%, 71%, 1);
+    background: var(--color-mint-base);
     font-weight: 550;
 }
 
 .chip:hover {
-  background: hsla(167, 22%, 71%, .7);
+  background: var(--mint-tint-700);
   transform: scale(1.03);
 }

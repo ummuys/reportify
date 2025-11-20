@@ -1,11 +1,15 @@
+@import url('./colors/palette.css');
+@import url('./colors/tints.css');
+@import url('./colors/effects.css');
+
 :root {
-    --bg: hsla(0, 0%, 100%, 1); 
-    --panel: hsla(167, 22%, 71%, .5);
-    --muted:hsla(167, 22%, 71%, .5); 
-    --text: hsla(0, 0%, 20%, 1);
-    --drop: hsla(0, 0%, 100%, 1); 
-    --drop-hover:hsla(0, 0%, 87%, 1);
-    --accent: hsla(221, 83%, 53%, 1);
-    --green: hsla(150, 69%, 55%, 1);
-    --err: hsla(0, 100%, 75%, 1);
+    --bg: var(--color-white);
+    --panel: var(--mint-tint-500);
+    --muted: var(--mint-tint-500);
+    --text: var(--color-text-strong);
+    --drop: var(--color-white);
+    --drop-hover: var(--color-white-contrast);
+    --accent: var(--color-blue-accent);
+    --green: var(--color-green-base);
+    --err: var(--color-error-base);
 }

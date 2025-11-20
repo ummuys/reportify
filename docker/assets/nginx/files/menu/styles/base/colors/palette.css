@@ -1,0 +1,23 @@
+:root {
+    /* Neutral solids */
+    --color-white: hsl(146, 47%, 97%); /* Primary white background */
+    --color-white-contrast: hsla(0, 0%, 87%, 1); /* Hover color for white surfaces */
+    --color-gray-400: #aaa; /* Muted text color */
+    --color-gray-500: #666; /* Secondary text color */
+    --color-gray-600: #555; /* Dimmed text color */
+    --color-black-solid: #000; /* True black for outlines */
+    --color-forest-700: #2d4a43; /* Deep green accent */
+    --color-text-strong: hsla(0, 0%, 20%, 1); /* Default body text */
+    --color-gold-accent: #ffd700; /* Favorite marker */
+
+    /* Brand solids */
+    --color-mint-base: hsla(167, 22%, 71%, 1); /* Mint brand color at full opacity */
+    --color-green-base: hsla(150, 69%, 55%, 1); /* Success/confirm green */
+    --color-blue-accent: hsla(221, 83%, 53%, 1); /* Focus/interactive accent */
+
+    /* Status solids */
+    --color-error-base: hsla(0, 100%, 75%, 1); /* Error state */
+
+    /* Utility solids */
+    --color-loader-ring-base: rgb(0, 126, 34); /* Loader ring leading edge */
+}
