@@ -1,5 +1,5 @@
 .panel {
-    background-image: linear-gradient(135deg, var(--mint-tint-500), var(--mint-tint-600));
+    background: linear-gradient(180deg, #fff 0%, #fbfefe 100%);
     border: 1px solid var(--overlay-white-08);
     border-radius: 16px;
     padding: 20px;
