@@ -5,10 +5,11 @@
 
 .btn-ghost {
     background: var(--btn-bg);
+    transition: 0.4s ease;
 }
 
 .btn-ghost:hover {
-    background-color: var(--color-mint-base);
+    background-color: var(--btn-bg-hv);
 }
 
 .btn-primary {
@@ -60,14 +61,15 @@
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 15px;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition: 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 4px 14px var(--overlay-shadow-teal-soft);
 }
 
 .logout-btn:hover {
-  background: var(--color-green-base);
-  color: var(--text);
+  background: var(--btn-bg-hv);
+  color: var(--bg);
   transform: translateY(-1px);
   box-shadow: 0 8px 26px var(--overlay-shadow-teal-strong);
 }
@@ -166,26 +168,29 @@
   cursor: default;
   pointer-events: auto;
   filter: grayscale(.03);
+  transition: 0.4s ease;
 }
 
 .btn.disabled:hover,
 .btn.is-disabled:hover {
   transform: none;
-  background: var(--mint-tint-800);
+  background: var(--btn-bg-hv);
 }
 
 #btnCreateChart {
   width: auto;
   padding: 10px 20px;
+  color: var(--bg);
   font-size: 16px;
+  font-weight: bold;
   border-radius: 10px;
   background: var(--green);
   border: 1px solid var(--color-green-base);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition: transform 0.18s ease, 0.18s ease;
 }
 
 #btnCreateChart:hover {
-  background: var(--color-green-base);
+  background: var(--btn-bg-hv);
   transform: scale(1.02);
 }
 

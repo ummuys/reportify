@@ -13,11 +13,11 @@
     border: 1px solid var(--overlay-white-14);
     border-radius: 10px;
     font-size: 13px;
-    background: var(--mint-tint-400);
+    background: var(--btn-bg);
     cursor: pointer;
     text-align: center;
     width: 100%;
-    transition: background 0.2s ease, transform 0.1s ease;
+    transition: 0.2s ease, transform 0.1s ease;
 }
 
 .chip.active {
@@ -26,6 +26,7 @@
 }
 
 .chip:hover {
-  background: var(--mint-tint-700);
+  background: var(--btn-bg-hv);
   transform: scale(1.03);
+  color: var(--bg);
 }

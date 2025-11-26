@@ -13,10 +13,11 @@
     --accent: var(--color-blue-accent);
     --green: var(--color-green-base);
     --err: var(--color-error-base);
-    --primary:#32c08a;
-    --btn-bg: #24d390;
+    --primary: #32c08a;
+    --btn-bg: #24c98a;
     --btn-text: #d3d7d5;
-    --primary-600:#23a977;
-    --panel:#e8f5ef;
-    --danger:#e15555;
+    --btn-bg-hv: #2eb27f;
+    --primary-600: #23a977;
+    --panel: #e8f5ef;
+    --danger: #e15555;
 }

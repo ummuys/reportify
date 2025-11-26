@@ -20,7 +20,7 @@
 }
 
 .header:hover {
-  background: var(--mint-tint-700);
+  /* background: var(--mint-tint-700); */
   box-shadow: 0 3px 14px var(--overlay-black-16);
 }
 
