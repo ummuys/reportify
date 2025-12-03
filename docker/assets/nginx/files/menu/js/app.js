@@ -24,7 +24,6 @@ function initTypedHeading() {
   new TypedConstructor(target, {
     strings: [
       'Конструктор отчёта',
-      'SQL генерируется автоматически',
       'Создавайте отчёты быстрее'
     ],
     typeSpeed: 45,

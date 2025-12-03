@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 24px;
-  background: var(--mint-tint-800);
+  background: var(--primary);
   border-bottom: 1px solid var(--mint-tint-400);
   backdrop-filter: blur(8px);
   box-sizing: border-box;
@@ -20,7 +20,7 @@
 }
 
 .header:hover {
-  background: var(--mint-tint-700);
+  /* background: var(--mint-tint-700); */
   box-shadow: 0 3px 14px var(--overlay-black-16);
 }
 

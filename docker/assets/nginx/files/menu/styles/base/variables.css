@@ -3,7 +3,8 @@
 @import url('./colors/effects.css');
 
 :root {
-    --bg: var(--color-white);
+    --bg: #ebf1ed;
+    /* --bg: var(--color-white); */
     --panel: var(--mint-tint-500);
     --muted: var(--mint-tint-500);
     --text: var(--color-text-strong);
@@ -12,4 +13,11 @@
     --accent: var(--color-blue-accent);
     --green: var(--color-green-base);
     --err: var(--color-error-base);
+    --primary: #32c08a;
+    --btn-bg: #24c98a;
+    --btn-text: #d3d7d5;
+    --btn-bg-hv: #2eb27f;
+    --primary-600: #23a977;
+    --panel: #e8f5ef;
+    --danger: #e15555;
 }
