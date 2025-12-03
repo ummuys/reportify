@@ -5,91 +5,41 @@ RESET  := \033[0m
 
 SCRIPTS_PATH=scripts
 UPDATE_SECRETS=$(SCRIPTS_PATH)/update_secrets.sh
-DEV_COMPOSE=dev/docker-compose-dev.yaml
-PROD_COMPOSE=prod/docker-compose-prod.yaml
+COMPOSE=docker-compose.yaml
 
-# 			DEV			# 
-dev-start:
+# 			APP			# 
+app-up: # Start the app
 	@./$(UPDATE_SECRETS)
 	-docker network create reportify_network
-	-docker compose -f $(DEV_COMPOSE) up -d
+	-docker compose -f $(COMPOSE) up -d
 
-dev-stop:
-	-docker compose -f $(DEV_COMPOSE) down
+app-down: 
+	-docker compose -f $(COMPOSE) down
 
-dev-update:
-	@./$(UPDATE_SECRETS)
-	-docker network create reportify_network
-	-docker compose -f $(DEV_COMPOSE) down
-	-docker image rm dev-app
-	-docker compose -f $(DEV_COMPOSE) up -d
+app-update:
+	-docker compose -f $(COMPOSE) down
+	-docker compose -f $(COMPOSE) up -d
 
-dev-check:
-	-docker compose -f $(DEV_COMPOSE) ps -a 
-
-dev-update-app:
-	-docker compose -f $(DEV_COMPOSE) down app
-	-docker image rm dev-app
-	-docker compose -f $(DEV_COMPOSE) up -d app
-
-dev-update-front:
-	-docker restart nginx
-
-dev-psql:
-	-docker exec -it db-report psql -U admin -d report
-
-dev-update-volumes:
-	-docker compose -f $(DEV_COMPOSE) down -v
-	-docker compose -f $(DEV_COMPOSE) up -d
-
-
-
-
-# 			PROD			# 
-prod-start:
-	-docker compose -f $(PROD_COMPOSE) up -d
-
-prod-stop:
-	-docker compose -f $(PROD_COMPOSE) down
-
-prod-update:
-	-docker compose -f $(PROD_COMPOSE) down
-	-docker image rm prod-app
-	-docker compose -f $(PROD_COMPOSE) up -d
-
-prod-check:
-	-docker compose -f $(PROD_COMPOSE) ps -a 
-
-prod-update-app:
-	-docker compose -f $(PROD_COMPOSE) down app
-	-docker image rm prod-app
-	-docker compose -f $(PROD_COMPOSE) up -d app
-
-prod-update-front:
-	-docker compose -f $(PROD_COMPOSE) down nginx
-	-docker compose -f $(PROD_COMPOSE) up -d nginx
-
-check_app_logs:
+app-logs:
 	-docker logs app
 
-delete_all_volumes:
-	-docker compose -f prod/docker-compose-prod.yaml down -v db-userdata
-	-docker compose -f prod/docker-compose-prod.yaml down -v db-report
-	-docker volume rm prod_pg_ud_data
-	-docker volume rm dev_pg_ud_data
-	-docker volume rm dev_pg_rp_data
+
+# 			DOCKER			# 
+containers-status:
+	-docker compose -f $(COMPOSE) ps -a
+
+update-app-image:
+	-docker compose -f $(COMPOSE) down
+	-docker image rm docker-app
+	-docker compose -f $(COMPOSE) up -d
+	
+clear-database-volumes:
+	-docker compose -f (COMPOSE) down -v
+	
 
 
 
-# HELP
-grafana-up:
-	-docker compose -f grafana/docker-compose.yaml up -d
-grafana-down:
-	-docker compose -f grafana/docker-compose.yaml down
-
-
-
-# TESTING
+# 			TESTING			# 
 srv-test:
 	@echo "$(GREEN)[TEST]$(RESET) Running tests..."
 	@gotestsum --format=github-actions ./../internal/service

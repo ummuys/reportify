@@ -18,5 +18,5 @@ RUN swag init -g cmd/main.go -o ./docs  \
 FROM alpine:3.22 AS runner
 WORKDIR /root/
 COPY --from=builder ./grant .
-EXPOSE 1337
+EXPOSE 8008
 CMD ["./app"]

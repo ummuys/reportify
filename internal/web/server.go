@@ -69,7 +69,7 @@ func CreateServer(tools di.Tools, repos di.Repositories, srv di.Services, sec di
 	host := os.Getenv("SERVER_IP")
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
-		port = "1337"
+		port = "8008"
 	}
 
 	server := &http.Server{

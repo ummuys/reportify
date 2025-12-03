@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-ENV_FILE="../environment/.env.dev"
+ENV_FILE="../.env"
 TMP_FILE="$(mktemp)"
 
 ACCESS_SECRET="$(openssl rand -hex 64)"

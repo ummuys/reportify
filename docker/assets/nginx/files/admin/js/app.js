@@ -171,7 +171,16 @@ function renderUsers(users = []) {
 async function loadUsers() {
   try {
     const data = await fetchJSON(ENDPOINTS.users);
-    renderUsers(data?.users || []);
+    const rawUsers = Array.isArray(data) ? data : (data?.users || []);
+
+    // нормализуем поля под то, что ждёт renderUsers
+    const users = rawUsers.map((u) => ({
+      user_id: u.user_id ?? u.UserID,
+      username: u.username ?? u.Username,
+      role: u.role ?? u.Role,
+    }));
+
+    renderUsers(users);
     logStatus("Список пользователей обновлён", "success");
   } catch (err) {
     console.error(err);
