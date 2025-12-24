@@ -8,15 +8,15 @@ UPDATE_SECRETS=$(SCRIPTS_PATH)/update_secrets.sh
 COMPOSE=docker-compose.yaml
 
 # 			APP			# 
-app-up: # Start the app
+up: # Start the app
 	@./$(UPDATE_SECRETS)
 	-docker network create reportify_network
 	-docker compose -f $(COMPOSE) up -d
 
-app-down: 
+down: 
 	-docker compose -f $(COMPOSE) down
 
-app-update:
+reload:
 	-docker compose -f $(COMPOSE) down
 	-docker compose -f $(COMPOSE) up -d
 
@@ -25,7 +25,7 @@ app-logs:
 
 
 # 			DOCKER			# 
-containers-status:
+status:
 	-docker compose -f $(COMPOSE) ps -a
 
 update-app-image:
